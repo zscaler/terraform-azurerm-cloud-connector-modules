@@ -1,0 +1,301 @@
+#!/bin/bash
+set -e
+
+usage()
+{
+    echo "Usage: $0 <up|destroy>"
+    exit 1
+}
+
+if [ $# -ne 1 ] ; then
+    usage
+else
+    case $1 in
+      up|destroy|do)
+          oper=$1
+      ;;
+      *)
+          usage
+      ;;
+    esac
+fi
+
+if [[ "$oper" == "up" || "destroy" ]]; then
+    # shellcheck disable=SC2153
+    if [ -z "$DTYPE" ]; then
+    while true; do
+     read -rp "Deployment Type: ( base | base_cc | base_cc_lb | cc_lb_custom ) : " dtype
+
+    case $dtype in
+      base|base_cc|base_cc_lb|cc_lb_custom)
+          echo "Deployment Type: ${dtype}"
+          break
+      ;;
+      *)
+          echo "Invalid Deployment Type: ${dtype}"
+      ;;
+    esac
+  done
+    else
+      dtype=$DTYPE
+    fi
+fi
+
+echo "Discovering processor architecture..."
+archdetect=$(uname -m)
+
+tversion=1.1.9
+echo "Detecting OS..."
+if [[ "$OSTYPE" == "linux"* ]]; then
+    os_str=linux
+    arch=amd64
+    ostype=Linux
+elif [[ "$OSTYPE" == "darwin"* && $archdetect == "arm64" ]]; then
+    os_str=darwin
+    arch=arm64
+    ostype=MacOS_arm64
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    os_str=darwin
+    arch=amd64
+    ostype=MacOS
+elif [[ "$OSTYPE" == "freebsd"* ]]; then
+    os_str=freebsd
+    arch=amd64
+    ostype=FreeBSD
+    echo "FreeBSD support coming soon..."
+    exit 1
+else
+    echo "Unsupported OS: $OSTYPE"
+    exit 1
+fi
+echo "OS is $ostype"
+
+dir=bin
+echo "Creating a local $dir directory if not present..."
+if [[ ! -e $dir ]]; then
+    mkdir $dir
+elif [[ ! -d $dir ]]; then
+    echo "$dir already exists but is not a directory" 1>&2
+    exit 1
+fi
+
+
+# if .zsecrc is not present we'll assume that Azure env was never set
+if [[ $dtype == base && ! -e ./.zsecrc ]]; then
+    echo "Checking Azure Environment Variables..."
+    read -p "Enter Azure Subcription ID: " azure_subscription_id
+    echo "export ARM_SUBSCRIPTION_ID=${azure_subscription_id}" > .zsecrc
+    echo "export TF_VAR_env_subscription_id=${azure_subscription_id}" >> .zsecrc
+    read -p "Enter Directory (tenant) ID: " azure_tenant_id
+    echo "export ARM_TENANT_ID=${azure_tenant_id}" >> .zsecrc
+    read -p "Enter Application (client) ID of Service Principal: " azure_client_id
+    echo "export ARM_CLIENT_ID=${azure_client_id}" >> .zsecrc
+    read -p "Enter Client Secret Value of Service Principal: " azure_client_secret
+    echo "export ARM_CLIENT_SECRET=${azure_client_secret}" >> .zsecrc
+    read -p "Enter Azure Region (e.g. westus2): " azure_location
+    echo "export TF_VAR_ARM_LOCATION=${azure_location}" >> .zsecrc
+fi
+
+echo "Checking Azure Environment Variables and Cloud Connector bootstrap requirements... For ZPA or custom/byo deployments, please stop and refer to the README and terraform.tfvars file instructions"
+# if .zsecrc is not present we'll assume that Azure env was never set
+if [[ ! -e ./.zsecrc ]]; then
+    read -p "Enter Azure Subcription ID: " azure_subscription_id
+    echo "export ARM_SUBSCRIPTION_ID=${azure_subscription_id}" > .zsecrc
+    echo "export TF_VAR_env_subscription_id=${azure_subscription_id}" >> .zsecrc
+    read -p "Enter Directory (tenant) ID: " azure_tenant_id
+    echo "export ARM_TENANT_ID=${azure_tenant_id}" >> .zsecrc
+    read -p "Enter Application (client) ID of Service Principal: " azure_client_id
+    echo "export ARM_CLIENT_ID=${azure_client_id}" >> .zsecrc
+    read -p "Enter Client Secret Value of Service Principal: " azure_client_secret
+    echo "export ARM_CLIENT_SECRET=${azure_client_secret}" >> .zsecrc
+    read -p "Enter Azure Region (e.g. westus2): " azure_location
+    echo "export TF_VAR_ARM_LOCATION=${azure_location}" >> .zsecrc
+    cc_instance_size_default=small
+    read -rp "Enter CC Instance Size. Valid input = small, medium, or large. This needs to match the size chosen in the CC provisioning template [Default=$cc_instance_size_default]: " cc_instance_size_input
+cc_instance_size=${cc_instance_size_input:-$cc_instance_size_default}
+    case $cc_instance_size in
+      small|medium|large)
+          echo "CC size: ${cc_instance_size}"
+          echo "export TF_VAR_cc_instance_size=${cc_instance_size}" >> .zsecrc
+      ;;
+      *)
+          echo "Invalid CC size: ${cc_instance_size}"
+          exit 1
+      ;;
+    esac
+
+ccvm_instance_type_default=Standard_D2s_v3
+while true; do
+    read -rp "Enter desired Azure VM type for CC. Recommended types: Small CC (Standard_D2s_v3); Medium (Standard_D8s_v3 or Standard_DS3_v2); Large (Standard_D16s_v3 or Standard_DS5_v2) [Default=$ccvm_instance_type_default]: " ccvm_instance_type_input
+ccvm_instance_type=${ccvm_instance_type_input:-$ccvm_instance_type_default}
+case $ccvm_instance_type in 
+	Standard_D2s_v3|Standard_DS3_v2|Standard_D8s_v3|Standard_D16s_v3|Standard_DS5_v2 ) 
+    echo "CC VM type: ${ccvm_instance_type}"
+    echo "export TF_VAR_ccvm_instance_type=${ccvm_instance_type}" >> .zsecrc
+    break
+    ;;
+	*)
+    echo "Invalid CC VM type: ${ccvm_instance_type}. Please enter an approved VM type"
+    esac
+done 
+
+small_cc_instance=("Standard_D2s_v3" "Standard_DS3_v2" "Standard_D8s_v3" "Standard_D16s_v3" "Standard_DS5_v2")
+medium_cc_instance=("Standard_D8s_v3" "Standard_DS3_v2" "Standard_D16s_v3" "Standard_DS5_v2")
+large_cc_instance=("Standard_D16s_v3" "Standard_DS5_v2")
+
+
+if [[ ${small_cc_instance[*]} =~ $ccvm_instance_type && "$cc_instance_size" == small ]]; then
+echo "Proceeding. ${ccvm_instance_type} compatible with ${cc_instance_size} Cloud Connector size"
+elif [[ ${medium_cc_instance[*]} =~ $ccvm_instance_type && "$cc_instance_size" == medium ]]; then
+echo "Proceeding. ${ccvm_instance_type} compatible with ${cc_instance_size} Cloud Connector size"
+elif [[ ${large_cc_instance[*]} =~ $ccvm_instance_type && "$cc_instance_size" == large ]]; then
+echo "Proceeding. ${ccvm_instance_type} compatible with ${cc_instance_size} Cloud Connector size"
+elif [[ $dtype == base ]]; then
+echo "Proceeding with no CCs to deploy"
+else
+    echo "Invalid CC deployment. ${ccvm_instance_type} not compatible with ${cc_instance_size} Cloud Connector size"
+    exit 1
+fi
+    read -rp "Enter CC Provisioning URL (E.g. connector.zscaler.net/api/v1/provUrl?name=azure_prov_url): " cc_vm_prov_url
+    echo "Provisioning URL entered is: $cc_vm_prov_url. Make sure this matches the CC Instance Size $cc_instance_size chosen."
+    echo "export TF_VAR_cc_vm_prov_url=${cc_vm_prov_url}" >> .zsecrc
+    read -rp "Enter Azure Key Vault URL (E.g https://zscaler-cc-demo.vault.azure.net): " azure_vault_url
+    echo "Key Vault URL entered is: $azure_vault_url"
+    echo "export TF_VAR_azure_vault_url=${azure_vault_url}" >> .zsecrc
+http_probe_port_default=50000
+    read -rp "Enter CC service health probe TCP port number. Valid input = 80 or any number between 1024-65535 [Default=$http_probe_port_default]: " http_probe_port_input
+http_probe_port=${http_probe_port_input:-$http_probe_port_default}
+if ((http_probe_port == 80 || http_probe_port >= 1024 && http_probe_port <= 65535)); then
+    echo "valid HTTP probe port input of $http_probe_port"
+    echo "export TF_VAR_http_probe_port=${http_probe_port}" >> .zsecrc
+else
+    echo "Invalid HTTP probe port value"
+    exit 1
+fi
+    echo "Cloud Connector User Managed Identity Information:"
+while true; do
+    read -r -p "Is the Managed Identity in the same Subscription ID? [yes/no] " response
+case $response in 
+	yes|y ) 
+    echo "Managed Identity is in the same Subscription"
+    break
+    ;;
+	no|n )
+	read -p "Enter Subscription ID of Managed Identity: " managed_identity_subscription_id
+    echo "export TF_VAR_managed_identity_subscription_id=${managed_identity_subscription_id}" >> .zsecrc
+    break
+    ;;
+	* ) echo "invalid response. Please enter yes or no";;
+    esac
+done  
+    read -p "Enter Managed Identity Name: " cc_vm_managed_identity_name 
+    echo "export TF_VAR_cc_vm_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
+    read -p "Enter Managed Identity Resource Group: " cc_vm_managed_identity_resource_group
+    echo "export TF_VAR_cc_vm_managed_identity_resource_group=${cc_vm_managed_identity_resource_group}" >> .zsecrc
+    
+cc_count_default=2
+if [[ "$dtype" == *"lb"* ]]; then
+    read -p "Enter how many Cloud Connectors do you want to deploy? [Default=$cc_count_default]: " cc_count_input
+cc_count=${cc_count_input:-$cc_count_default}
+if ((cc_count >= 1 && cc_count <= 20)); then
+    echo "${dtype} will deploy ${cc_count} Cloud Connector in ${azure_location}"
+    echo "export TF_VAR_cc_count=${cc_count}" >> .zsecrc
+else
+    echo "invalid cc_count value. Must be a number between 1 and 20"
+    exit 1
+fi
+elif [[ "$dtype" == "base_cc" ]]; then
+    echo "${dtype} will deploy one Cloud Connector in ${azure_location}"   
+fi
+
+zones_enabled_default=false
+    read -rp "Do you want these Cloud Connectors deployed in dedicated Availability Zones/subnets? [Default=$zones_enabled_default]: " zones_enabled_input
+zones_enabled=${zones_enabled_input:-$zones_enabled_default}
+if [[ "$zones_enabled" == "true" ]]; then
+    echo "export TF_VAR_zones_enabled=${zones_enabled}" >> .zsecrc
+    echo "How many zones do you want Cloud Connectors deployed in? ${azure_location} must support zones for this to work"
+    read -p "Enter number of zones. [1, 2, or 3]: " zones
+
+
+  case $zones in
+      1|one)
+          echo "Zones selected: 1"
+          echo "export TF_VAR_zones='[\"1\"]'" >> .zsecrc
+      ;;
+      2|two)
+          echo "Zones selected: 1 and 2"
+          echo "export TF_VAR_zones='[\"1\", \"2\"]'" >> .zsecrc
+      ;;
+      3|three)
+          echo "Zones selected: 1, 2, and 3"
+          echo "export TF_VAR_zones='[\"1\", \"2\", \"3\"]'" >> .zsecrc
+      ;;
+      *)
+          echo "Invalid zones selection: ${zones}"
+          exit 1
+      ;;
+    esac
+elif [[ "$zones_enabled" == "false" ]]; then
+    echo "No zones defined"
+else
+    echo "Invalid zones input"
+    exit 1
+  fi
+fi
+
+ #add local bin directory to PATH
+if ! grep -Fxq "export PATH=\${PATH}:\${PWD}/bin" .zsecrc; then
+    echo 'export PATH=${PATH}:${PWD}/bin' >> .zsecrc
+fi
+. ./.zsecrc
+
+if [ -z "$ARM_CLIENT_ID" ] || [ -z "$ARM_CLIENT_SECRET" ] || [ -z "$ARM_SUBSCRIPTION_ID" ] || [ -z "$ARM_TENANT_ID" ] || [ -z "$TF_VAR_ARM_LOCATION" ]; then
+    echo "Azure Access info is missing. Remove .zsecrc file and rerun $0 $1"
+    exit 1
+fi
+
+if [[ $dtype != "base" ]]; then
+    echo "Checking Cloud Connector provisioning info"
+  if [ -z "$TF_VAR_cc_vm_prov_url" ] || [ -z "$TF_VAR_azure_vault_url" ] || [ -z "$TF_VAR_http_probe_port" ] || [ -z "$TF_VAR_cc_instance_size" ] || [ -z "$TF_VAR_ccvm_instance_type" ] || [ -z "$TF_VAR_cc_vm_managed_identity_name" ] || [ -z "$TF_VAR_cc_vm_managed_identity_resource_group" ]; then
+    echo "Cloud Connector provisioning info is missing. Remove .zsecrc file and rerun $0 $1"
+    exit 1
+  fi
+fi
+
+
+echo "Download terraform binary for $ostype if not present..."
+if [[ ! -e ./$dir/terraform ]]; then
+    curl -o ./$dir/terraform_${tversion}_${arch}.zip https://releases.hashicorp.com/terraform/$tversion/terraform_${tversion}_${os_str}_${arch}.zip
+    unzip ./$dir/terraform_${tversion}_${arch}.zip -d ./$dir
+    rm -f ./$dir/terraform_${tversion}_${arch}.zip
+fi
+
+if [[ "$oper" == "do" ]]; then
+    exit 1
+fi
+
+if [[ "$oper" == "up" ]]; then
+    echo "Bringing up Cloud Connector cluster..."
+    ./$dir/terraform -chdir=$dtype init
+    if [[ "$AUTO_APPROVE" ]]; then
+        ./$dir/terraform -chdir=$dtype apply -auto-approve -var arm_location=$TF_VAR_ARM_LOCATION -var-file="../terraform.tfvars"
+    else
+        ./$dir/terraform -chdir=$dtype apply -var arm_location=$TF_VAR_ARM_LOCATION -var-file="../terraform.tfvars"
+    fi
+
+elif [[ "$oper" == "destroy" ]]; then
+    echo "Destroying Cloud Connector cluster..."
+    ./$dir/terraform -chdir=$dtype init
+    if [[ "$AUTO_APPROVE" ]]; then
+        ./$dir/terraform -chdir=$dtype destroy -auto-approve -var arm_location=$TF_VAR_ARM_LOCATION -var-file="../terraform.tfvars"
+    else
+      ./$dir/terraform -chdir=$dtype destroy -var arm_location=$TF_VAR_ARM_LOCATION -var-file="../terraform.tfvars"
+    fi
+    rm -rf bin 
+    cd $dtype
+    rm -rf .terraform* && rm -f terraform.tfstate*
+    rm -f *.pem && rm -f *.pem.pub
+    rm -f name_prefix random_string
+    rm -rf user.key user.crt
+    rm -rf systems.json setup-*.tar
+fi
