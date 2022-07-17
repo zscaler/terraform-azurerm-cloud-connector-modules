@@ -81,7 +81,7 @@ fi
 
 az_regions=["westus","westus2","eastus","centralus","centraluseuap","southcentralus","northcentralus","westcentralus","eastus2","eastus2euap","brazilsouth","brazilus","northeurope","westeurope","eastasia","southeastasia","japanwest","japaneast","koreacentral","koreasouth","southindia","westindia","centralindia","australiaeast","australiasoutheast","canadacentral","canadaeast","uksouth","ukwest","francecentral","francesouth","australiacentral","australiacentral2","uaecentral","uaenorth","southafricanorth","southafricawest","switzerlandnorth","switzerlandwest","germanynorth","germanywestcentral","norwayeast","norwaywest","brazilsoutheast","westus3","swedencentral","swedensouth"] 
 # if .zsecrc is not present we'll assume that Azure env was never set
-if [[ $dtype == base && ! -e ./.zsecrc ]]; then
+if [[ $dtype == "base" && ! -e ./.zsecrc ]]; then
     echo "Checking Azure Environment Variables..."
     read -p "Enter Azure Subcription ID: " azure_subscription_id
     echo "export ARM_SUBSCRIPTION_ID=${azure_subscription_id}" > .zsecrc
@@ -96,7 +96,8 @@ if [[ $dtype == base && ! -e ./.zsecrc ]]; then
     if [[ ${az_regions[*]} =~ $azure_location ]]; then
     echo "export TF_VAR_arm_location=${azure_location}" >> .zsecrc
     else
-    echo "Invalid Azure region name entered. Delete .zsecrc file and re-run zsec..."
+    echo "Invalid Azure region name entered."
+    echo "Delete .zsecrc file and re-run zsec up..."
     exit 1
     fi
 fi
@@ -117,7 +118,8 @@ if [[ ! -e ./.zsecrc ]]; then
     if [[ ${az_regions[*]} =~ $azure_location ]]; then
     echo "export TF_VAR_arm_location=${azure_location}" >> .zsecrc
     else
-    echo "Invalid Azure region name entered. Delete .zsecrc file and re-run zsec..."
+    echo "Invalid Azure region name entered."
+    echo "Delete .zsecrc file and re-run zsec up..."
     exit 1
     fi
     cc_instance_size_default=small
@@ -125,11 +127,12 @@ if [[ ! -e ./.zsecrc ]]; then
 cc_instance_size=${cc_instance_size_input:-$cc_instance_size_default}
     case $cc_instance_size in
       small|medium|large)
-          echo "CC size: ${cc_instance_size}"
+          echo "Cloud Connector size: ${cc_instance_size}"
           echo "export TF_VAR_cc_instance_size=${cc_instance_size}" >> .zsecrc
       ;;
       *)
-          echo "Invalid CC size: ${cc_instance_size}"
+          echo "Invalid Cloud Connector size: ${cc_instance_size}."
+          echo "Delete .zsecrc file and re-run zsecup ..."
           exit 1
       ;;
     esac
@@ -140,12 +143,12 @@ while true; do
 ccvm_instance_type=${ccvm_instance_type_input:-$ccvm_instance_type_default}
 case $ccvm_instance_type in 
 	Standard_D2s_v3|Standard_DS3_v2|Standard_D8s_v3|Standard_D16s_v3|Standard_DS5_v2 ) 
-    echo "CC VM type: ${ccvm_instance_type}"
+    echo "Cloud Connector VM type: ${ccvm_instance_type}"
     echo "export TF_VAR_ccvm_instance_type=${ccvm_instance_type}" >> .zsecrc
     break
     ;;
 	*)
-    echo "Invalid CC VM type: ${ccvm_instance_type}. Please enter an approved VM type"
+    echo "Invalid Cloud Connector VM type: ${ccvm_instance_type}. Please enter an approved VM type"
     esac
 done 
 
@@ -163,6 +166,7 @@ elif [[ $dtype == base ]]; then
 echo "Proceeding with no CCs to deploy"
 else
     echo "Invalid CC deployment. ${ccvm_instance_type} not compatible with ${cc_instance_size} Cloud Connector size"
+    echo "Delete .zsecrc file and re-run zsec up..."
     exit 1
 fi
     read -rp "Enter CC Provisioning URL (E.g. connector.zscaler.net/api/v1/provUrl?name=azure_prov_url): " cc_vm_prov_url
@@ -175,10 +179,11 @@ http_probe_port_default=50000
     read -rp "Enter CC service health probe TCP port number. Valid input = 80 or any number between 1024-65535 [Default=$http_probe_port_default]: " http_probe_port_input
 http_probe_port=${http_probe_port_input:-$http_probe_port_default}
 if ((http_probe_port == 80 || http_probe_port >= 1024 && http_probe_port <= 65535)); then
-    echo "valid HTTP probe port input of $http_probe_port"
+    echo "Valid HTTP probe port input of $http_probe_port"
     echo "export TF_VAR_http_probe_port=${http_probe_port}" >> .zsecrc
 else
     echo "Invalid HTTP probe port value"
+    echo "Delete .zsecrc file and re-run zsec up..."
     exit 1
 fi
     echo "Cloud Connector User Managed Identity Information:"
@@ -204,13 +209,14 @@ done
     
 cc_count_default=2
 if [[ "$dtype" == *"lb"* ]]; then
-    read -p "Enter how many Cloud Connectors do you want to deploy? [Default=$cc_count_default]: " cc_count_input
+    read -p "Enter how many Cloud Connectors to deploy? [Default=$cc_count_default]: " cc_count_input
 cc_count=${cc_count_input:-$cc_count_default}
 if ((cc_count >= 1 && cc_count <= 20)); then
     echo "${dtype} will deploy ${cc_count} Cloud Connector in ${azure_location}"
     echo "export TF_VAR_cc_count=${cc_count}" >> .zsecrc
 else
     echo "invalid cc_count value. Must be a number between 1 and 20"
+    echo "Delete .zsecrc file and re-run zsec up..."
     exit 1
 fi
 elif [[ "$dtype" == "base_cc" ]]; then
@@ -296,6 +302,7 @@ elif [[ "$zone1_use" == "false" && "$zone2_use" == "true" && "$zone3_use" == "tr
     echo "export TF_VAR_zones='[\"2\", \"3\"]'" >> .zsecrc   
 else
     echo "Invalid Zones selection. exiting..."
+    echo "Delete .zsecrc file and re-run zsec up..."
     exit 1
 fi 
 elif [[ "$zones_enabled" == "false" ]]; then
@@ -303,6 +310,7 @@ elif [[ "$zones_enabled" == "false" ]]; then
     echo "No zones defined"
 else
     echo "Invalid Zones selection. exiting..."
+    echo "Delete .zsecrc file and re-run zsec up..."
     exit 1
 fi
 else
