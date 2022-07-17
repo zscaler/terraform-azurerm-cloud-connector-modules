@@ -79,7 +79,7 @@ elif [[ ! -d $dir ]]; then
     exit 1
 fi
 
-
+az_regions=["westus","westus2","eastus","centralus","centraluseuap","southcentralus","northcentralus","westcentralus","eastus2","eastus2euap","brazilsouth","brazilus","northeurope","westeurope","eastasia","southeastasia","japanwest","japaneast","koreacentral","koreasouth","southindia","westindia","centralindia","australiaeast","australiasoutheast","canadacentral","canadaeast","uksouth","ukwest","francecentral","francesouth","australiacentral","australiacentral2","uaecentral","uaenorth","southafricanorth","southafricawest","switzerlandnorth","switzerlandwest","germanynorth","germanywestcentral","norwayeast","norwaywest","brazilsoutheast","westus3","swedencentral","swedensouth"] 
 # if .zsecrc is not present we'll assume that Azure env was never set
 if [[ $dtype == base && ! -e ./.zsecrc ]]; then
     echo "Checking Azure Environment Variables..."
@@ -93,7 +93,12 @@ if [[ $dtype == base && ! -e ./.zsecrc ]]; then
     read -p "Enter Client Secret Value of Service Principal: " azure_client_secret
     echo "export ARM_CLIENT_SECRET=${azure_client_secret}" >> .zsecrc
     read -p "Enter Azure Region (e.g. westus2): " azure_location
-    echo "export TF_VAR_ARM_LOCATION=${azure_location}" >> .zsecrc
+    if [[ ${az_regions[*]} =~ $azure_location ]]; then
+    echo "export TF_VAR_arm_location=${azure_location}" >> .zsecrc
+    else
+    echo "Invalid Azure region name entered. Delete .zsecrc file and re-run zsec..."
+    exit 1
+    fi
 fi
 
 echo "Checking Azure Environment Variables and Cloud Connector bootstrap requirements... For ZPA or custom/byo deployments, please stop and refer to the README and terraform.tfvars file instructions"
@@ -109,7 +114,12 @@ if [[ ! -e ./.zsecrc ]]; then
     read -p "Enter Client Secret Value of Service Principal: " azure_client_secret
     echo "export ARM_CLIENT_SECRET=${azure_client_secret}" >> .zsecrc
     read -p "Enter Azure Region (e.g. westus2): " azure_location
-    echo "export TF_VAR_ARM_LOCATION=${azure_location}" >> .zsecrc
+    if [[ ${az_regions[*]} =~ $azure_location ]]; then
+    echo "export TF_VAR_arm_location=${azure_location}" >> .zsecrc
+    else
+    echo "Invalid Azure region name entered. Delete .zsecrc file and re-run zsec..."
+    exit 1
+    fi
     cc_instance_size_default=small
     read -rp "Enter CC Instance Size. Valid input = small, medium, or large. This needs to match the size chosen in the CC provisioning template [Default=$cc_instance_size_default]: " cc_instance_size_input
 cc_instance_size=${cc_instance_size_input:-$cc_instance_size_default}
@@ -142,7 +152,6 @@ done
 small_cc_instance=("Standard_D2s_v3" "Standard_DS3_v2" "Standard_D8s_v3" "Standard_D16s_v3" "Standard_DS5_v2")
 medium_cc_instance=("Standard_D8s_v3" "Standard_DS3_v2" "Standard_D16s_v3" "Standard_DS5_v2")
 large_cc_instance=("Standard_D16s_v3" "Standard_DS5_v2")
-
 
 if [[ ${small_cc_instance[*]} =~ $ccvm_instance_type && "$cc_instance_size" == small ]]; then
 echo "Proceeding. ${ccvm_instance_type} compatible with ${cc_instance_size} Cloud Connector size"
@@ -208,39 +217,98 @@ elif [[ "$dtype" == "base_cc" ]]; then
     echo "${dtype} will deploy one Cloud Connector in ${azure_location}"   
 fi
 
+
+az_supported_regions=["australiaeast","brazilsouth","canadacentral","centralindia","centralus","eastasia","eastus","eastus2","francecentral","germanywestcentral","japaneast","koreacentral","northeurope","norwayeast","southafricanorth","southcentralus","southeastasia","swedencentral","uksouth","westeurope","westus2"]
+if [[ ${az_supported_regions[*]} =~ $azure_location ]]; then
+echo "Azure region ${azure_location} supports Zones..."
 zones_enabled_default=false
-    read -rp "Do you want these Cloud Connectors deployed in dedicated Availability Zones/subnets? [Default=$zones_enabled_default]: " zones_enabled_input
+    read -rp "Deploy Cloud Connectors in dedicated Availability Zones/subnets? (Enter true or false) [Default=$zones_enabled_default]: " zones_enabled_input
 zones_enabled=${zones_enabled_input:-$zones_enabled_default}
 if [[ "$zones_enabled" == "true" ]]; then
     echo "export TF_VAR_zones_enabled=${zones_enabled}" >> .zsecrc
-    echo "How many zones do you want Cloud Connectors deployed in? ${azure_location} must support zones for this to work"
-    read -p "Enter number of zones. [1, 2, or 3]: " zones
+    echo "Choose zones [1-3] to deploy in. ${azure_location} must also support zones for this to work"
 
-
-  case $zones in
-      1|one)
-          echo "Zones selected: 1"
-          echo "export TF_VAR_zones='[\"1\"]'" >> .zsecrc
-      ;;
-      2|two)
-          echo "Zones selected: 1 and 2"
-          echo "export TF_VAR_zones='[\"1\", \"2\"]'" >> .zsecrc
-      ;;
-      3|three)
-          echo "Zones selected: 1, 2, and 3"
-          echo "export TF_VAR_zones='[\"1\", \"2\", \"3\"]'" >> .zsecrc
-      ;;
-      *)
-          echo "Invalid zones selection: ${zones}"
-          exit 1
-      ;;
+    while true; do
+    read -p "Zone 1 (yes/no): " zone1_response
+case $zone1_response in 
+	yes|y ) 
+    echo "Availability Zone 1 selected"
+    zone1_use=true
+    break
+    ;;
+	no|n )
+    zone1_use=false
+    break
+    ;;
+	* ) echo "invalid response. Please enter yes or no";;
     esac
+done 
+    while true; do
+    read -p "Zone 2 (yes/no): " zone2_response
+case $zone2_response in 
+	yes|y ) 
+    echo "Availability Zone 2 selected"
+    zone2_use=true
+    break
+    ;;
+	no|n )
+    zone2_use=false
+    break
+    ;;
+	* ) echo "invalid response. Please enter yes or no";;
+    esac
+done
+    while true; do
+    read -p "Zone 3 (yes/no): " zone3_response
+case $zone3_response in 
+	yes|y ) 
+    echo "Availability Zone 3 selected"
+    zone3_use=true
+    break
+    ;;
+	no|n )
+    zone3_use=false
+    break
+    ;;
+	* ) echo "invalid response. Please enter yes or no";;
+    esac
+done 
+if [[ "$zone1_use" == "true" && "$zone2_use" == "false" && "$zone3_use" == "false" ]]; then
+    echo "Zones selected: 1"
+    echo "export TF_VAR_zones='[\"1\"]'" >> .zsecrc
+elif [[ "$zone1_use" == "false" && "$zone2_use" == "true" && "$zone3_use" == "false" ]]; then
+    echo "Zones selected: 2"
+    echo "export TF_VAR_zones='[\"2\"]'" >> .zsecrc
+elif [[ "$zone1_use" == "false" && "$zone2_use" == "false" && "$zone3_use" == "true" ]]; then
+    echo "Zones selected: 3"
+    echo "export TF_VAR_zones='[\"3\"]'" >> .zsecrc
+elif [[ "$zone1_use" == "true" && "$zone2_use" == "true" && "$zone3_use" == "false" ]]; then
+    echo "Zones selected: 1 and 2"
+    echo "export TF_VAR_zones='[\"1\", \"2\"]'" >> .zsecrc
+elif [[ "$zone1_use" == "true" && "$zone2_use" == "true" && "$zone3_use" == "true" ]]; then
+    echo "Zones selected: 1, 2, and 3"
+    echo "export TF_VAR_zones='[\"1\", \"2\", \"3\"]'" >> .zsecrc
+elif [[ "$zone1_use" == "true" && "$zone2_use" == "false" && "$zone3_use" == "true" ]]; then
+    echo "Zones selected: 1 and 3"
+    echo "export TF_VAR_zones='[\"1\", \"3\"]'" >> .zsecrc  
+elif [[ "$zone1_use" == "false" && "$zone2_use" == "true" && "$zone3_use" == "true" ]]; then
+    echo "Zones selected: 2 and 3"
+    echo "export TF_VAR_zones='[\"2\", \"3\"]'" >> .zsecrc   
+else
+    echo "Invalid Zones selection. exiting..."
+    exit 1
+fi 
 elif [[ "$zones_enabled" == "false" ]]; then
+    echo "export TF_VAR_zones_enabled=${zones_enabled}" >> .zsecrc
     echo "No zones defined"
 else
-    echo "Invalid zones input"
+    echo "Invalid Zones selection. exiting..."
     exit 1
-  fi
+fi
+else
+echo "Azure region ${azure_location} does not support Zones. Proceeding..."
+fi
+
 fi
 
  #add local bin directory to PATH
@@ -249,7 +317,7 @@ if ! grep -Fxq "export PATH=\${PATH}:\${PWD}/bin" .zsecrc; then
 fi
 . ./.zsecrc
 
-if [ -z "$ARM_CLIENT_ID" ] || [ -z "$ARM_CLIENT_SECRET" ] || [ -z "$ARM_SUBSCRIPTION_ID" ] || [ -z "$ARM_TENANT_ID" ] || [ -z "$TF_VAR_ARM_LOCATION" ]; then
+if [ -z "$ARM_CLIENT_ID" ] || [ -z "$ARM_CLIENT_SECRET" ] || [ -z "$ARM_SUBSCRIPTION_ID" ] || [ -z "$ARM_TENANT_ID" ] || [ -z "$TF_VAR_arm_location" ]; then
     echo "Azure Access info is missing. Remove .zsecrc file and rerun $0 $1"
     exit 1
 fi
@@ -278,18 +346,18 @@ if [[ "$oper" == "up" ]]; then
     echo "Bringing up Cloud Connector cluster..."
     ./$dir/terraform -chdir=$dtype init
     if [[ "$AUTO_APPROVE" ]]; then
-        ./$dir/terraform -chdir=$dtype apply -auto-approve -var arm_location=$TF_VAR_ARM_LOCATION -var-file="../terraform.tfvars"
+        ./$dir/terraform -chdir=$dtype apply -auto-approve -var-file="../terraform.tfvars"
     else
-        ./$dir/terraform -chdir=$dtype apply -var arm_location=$TF_VAR_ARM_LOCATION -var-file="../terraform.tfvars"
+        ./$dir/terraform -chdir=$dtype apply -var-file="../terraform.tfvars"
     fi
 
 elif [[ "$oper" == "destroy" ]]; then
     echo "Destroying Cloud Connector cluster..."
     ./$dir/terraform -chdir=$dtype init
     if [[ "$AUTO_APPROVE" ]]; then
-        ./$dir/terraform -chdir=$dtype destroy -auto-approve -var arm_location=$TF_VAR_ARM_LOCATION -var-file="../terraform.tfvars"
+        ./$dir/terraform -chdir=$dtype destroy -auto-approve -var-file="../terraform.tfvars"
     else
-      ./$dir/terraform -chdir=$dtype destroy -var arm_location=$TF_VAR_ARM_LOCATION -var-file="../terraform.tfvars"
+      ./$dir/terraform -chdir=$dtype destroy -var-file="../terraform.tfvars"
     fi
     rm -rf bin 
     cd $dtype

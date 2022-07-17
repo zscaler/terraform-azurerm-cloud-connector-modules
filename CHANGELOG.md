@@ -7,6 +7,8 @@
 * azurerm_public_ip resource updated per Network API version 2020-08-01 (https://azure.microsoft.com/en-us/updates/zone-behavior-change/)
 * NSG resources broken out into individual child module
 * zsec enhancement inputs
+* ZS-17339 - support for Managed Identities in different Azure Subsciptions
+* zsec full service deployment support
 
 
 ## 1.1.2 (June 13, 2022)
