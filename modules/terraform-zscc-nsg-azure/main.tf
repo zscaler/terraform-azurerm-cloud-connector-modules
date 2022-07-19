@@ -48,7 +48,7 @@ resource "azurerm_network_security_group" "cc-mgmt-nsg" {
 data "azurerm_network_security_group" "mgt-nsg-selected" {
   count               = var.byo_nsg == false ? length(azurerm_network_security_group.cc-mgmt-nsg.*.id) : length(var.byo_mgmt_nsg_names)
   name                = var.byo_nsg == false ? "${var.name_prefix}-cc-mgmt-nsg-${count.index + 1}-${var.resource_tag}" : element(var.byo_mgmt_nsg_names, count.index)
-  resource_group_name = var.byo_nsg == false ? var.resource_group : var.byo_nsg_rg
+  resource_group_name = var.resource_group
 }
 
 
@@ -90,5 +90,5 @@ resource "azurerm_network_security_group" "cc-service-nsg" {
 data "azurerm_network_security_group" "service-nsg-selected" {
   count               = var.byo_nsg == false ? length(azurerm_network_security_group.cc-service-nsg.*.id) : length(var.byo_mgmt_nsg_names)
   name                = var.byo_nsg == false ? "${var.name_prefix}-cc-service-nsg-${count.index + 1}-${var.resource_tag}" : element(var.byo_mgmt_nsg_names, count.index)
-  resource_group_name = var.byo_nsg == false ? var.resource_group : var.byo_nsg_rg
+  resource_group_name = var.resource_group
 }
