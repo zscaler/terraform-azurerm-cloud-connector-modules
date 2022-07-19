@@ -237,7 +237,13 @@ module "cc-nsg" {
   resource_group = data.azurerm_resource_group.selected.name
   location       = var.arm_location
   global_tags    = local.global_tags
+  
   byo_nsg        = var.byo_nsg
+  # optional inputs. only required if byo_nsg set to true
+  byo_mgmt_nsg_names = var.byo_mgmt_nsg_names
+  byo_service_nsg_names = var.byo_service_nsg_names
+  byo_nsg_rg = var.byo_nsg_rg
+  # optional inputs. only required if byo_nsg set to true
 }
 
 
