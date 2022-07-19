@@ -55,4 +55,5 @@ resource "azurerm_lb_rule" "cc-lb-rule" {
   frontend_ip_configuration_name = azurerm_lb.cc-lb.frontend_ip_configuration[0].name
   probe_id                       = azurerm_lb_probe.cc-lb-probe.id
   load_distribution              = var.load_distribution
+  backend_address_pool_ids       = [azurerm_lb_backend_address_pool.cc-lb-backend-pool.id]
 }

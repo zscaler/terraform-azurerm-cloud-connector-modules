@@ -34,8 +34,8 @@ resource "null_resource" "save-key" {
 
   provisioner "local-exec" {
     command = <<EOF
-      echo "${tls_private_key.key.private_key_pem}" > ${var.name_prefix}-key-${random_string.suffix.result}.pem
-      chmod 0600 ${var.name_prefix}-key-${random_string.suffix.result}.pem
+      echo "${tls_private_key.key.private_key_pem}" > ../${var.name_prefix}-key-${random_string.suffix.result}.pem
+      chmod 0600 ../${var.name_prefix}-key-${random_string.suffix.result}.pem
 EOF
   }
 }
@@ -55,7 +55,7 @@ USERDATA
 
 resource "local_file" "user-data-file" {
   content  = local.userdata
-  filename = "user_data"
+  filename = "../user_data"
 }
 
 
@@ -200,7 +200,7 @@ resource "null_resource" "cc-error-checker" {
   count = local.valid_cc_create ? 0 : 1 # 0 means no error is thrown, else throw error
   provisioner "local-exec" {
     command = <<EOF
-      echo "Cloud Connector parameters were invalid. No appliances were created. Please check the documentation and cc_instance_size / ccvm_instance_type values that were chosen" >> errorlog.txt
+      echo "Cloud Connector parameters were invalid. No appliances were created. Please check the documentation and cc_instance_size / ccvm_instance_type values that were chosen" >> ../errorlog.txt
 EOF
   }
 }

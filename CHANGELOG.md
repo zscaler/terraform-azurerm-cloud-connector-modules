@@ -14,6 +14,7 @@
 * base_cc renamed to base_1cc
 * bug-124439 - accelerated_networking_enabled variable added to service interfaces. left default false for now until support added
 * workload and bastion hosts changed from ubuntu to centos
+* added TF_DATA_DIR to zsec and backend.tf to each deployment type to maintain root path as "examples/" directory for all deployments
 
 
 previous changelog would all disappear
