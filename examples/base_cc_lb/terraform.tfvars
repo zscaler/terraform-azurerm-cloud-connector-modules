@@ -1,13 +1,13 @@
 ## This is only a sample terraform.tfvars file.
 ## Uncomment and change the below variables according to your specific environment
 #####################################################################################################################
-            ##### Variables 1-12 are populated automically if terraform is ran via ZSEC bash script.   ##### 
-            ##### Modifying the variables in this file will override any inputs from ZSEC              #####
+##### Variables 1-12 are populated automically if terraform is ran via ZSEC bash script.   ##### 
+##### Modifying the variables in this file will override any inputs from ZSEC              #####
 #####################################################################################################################
 
 
 #####################################################################################################################
-                  ##### Cloud Init Provisioning variables for userdata file  #####
+##### Cloud Init Provisioning variables for userdata file  #####
 #####################################################################################################################
 ## 1. Zscaler Cloud Connector Provisioning URL E.g. connector.zscaler.net/api/v1/provUrl?name=azure_prov_url
 
@@ -23,11 +23,11 @@
 #http_probe_port                        = 50000
 
 #####################################################################################################################
-                ##### Prerequisite Provisioned Managed Identity Resource and Resource Group  #####
-                ##### Managed Identity should have GET/LIST access to Key Vault Secrets and  #####
-                ##### Network Contributor Role Assignment to Subscription or RG where Cloud  #####
-                ##### Connectors will be provisioned prior to terraform deployment.          #####
-                ##### (minimum Role permissions: Microsoft.Network/networkInterfaces/read)   ##### 
+##### Prerequisite Provisioned Managed Identity Resource and Resource Group  #####
+##### Managed Identity should have GET/LIST access to Key Vault Secrets and  #####
+##### Network Contributor Role Assignment to Subscription or RG where Cloud  #####
+##### Connectors will be provisioned prior to terraform deployment.          #####
+##### (minimum Role permissions: Microsoft.Network/networkInterfaces/read)   ##### 
 #####################################################################################################################
 
 
@@ -47,7 +47,7 @@
 
 
 #####################################################################################################################
-                ##### Custom variables. Only change if required for your environment  #####
+##### Custom variables. Only change if required for your environment  #####
 #####################################################################################################################
 
 ## 7. Azure region where Cloud Connector resources will be deployed. This environment variable is automatically populated if running ZSEC script

@@ -1,17 +1,17 @@
 # generate a random string
 resource "random_string" "suffix" {
-  length = 8
-  upper = false
+  length  = 8
+  upper   = false
   special = false
 }
 
 # Map default tags with values to be assigned to all tagged resources
 locals {
   global_tags = {
-  Owner       = var.owner_tag
-  ManagedBy   = "terraform"
-  Vendor      = "Zscaler"
-  Environment = var.environment
+    Owner       = var.owner_tag
+    ManagedBy   = "terraform"
+    Vendor      = "Zscaler"
+    Environment = var.environment
   }
 }
 
@@ -23,7 +23,7 @@ locals {
 ############################################################################################################################
 # private key for login
 resource "tls_private_key" "key" {
-  algorithm   = var.tls_key_algorithm
+  algorithm = var.tls_key_algorithm
 }
 
 # save the private key
@@ -49,7 +49,7 @@ EOF
 resource "azurerm_resource_group" "main" {
   name     = "${var.name_prefix}-rg-${random_string.suffix.result}"
   location = var.arm_location
-  
+
   tags = local.global_tags
 }
 
@@ -60,7 +60,7 @@ resource "azurerm_virtual_network" "vnet" {
   address_space       = [var.network_address_space]
   location            = var.arm_location
   resource_group_name = azurerm_resource_group.main.name
-  
+
   tags = local.global_tags
 }
 
@@ -104,5 +104,5 @@ module "workload" {
   resource_group = azurerm_resource_group.main.name
   subnet_id      = azurerm_subnet.workload-subnet.id
   ssh_key        = tls_private_key.key.public_key_openssh
-  dns_servers    = ["8.8.8.8","8.8.4.4"]
+  dns_servers    = ["8.8.8.8", "8.8.4.4"]
 }

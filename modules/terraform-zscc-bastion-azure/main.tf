@@ -31,9 +31,9 @@ resource "azurerm_public_ip" "bastion-pip" {
 
 
 resource "azurerm_network_interface" "bastion-nic" {
-  name                      = "${var.name_prefix}-bastion-nic-${var.resource_tag}"
-  location                  = var.location
-  resource_group_name       = var.resource_group
+  name                = "${var.name_prefix}-bastion-nic-${var.resource_tag}"
+  location            = var.location
+  resource_group_name = var.resource_group
 
   ip_configuration {
     name                          = "${var.name_prefix}-bastion-nic-conf-${var.resource_tag}"
@@ -53,13 +53,13 @@ resource "azurerm_network_interface_security_group_association" "bastion-nic-ass
 
 
 resource "azurerm_linux_virtual_machine" "bastion-vm" {
-  name                         = "${var.name_prefix}-bastion-vm-${var.resource_tag}"
-  location                     = var.location
-  resource_group_name          = var.resource_group
-  network_interface_ids        = [azurerm_network_interface.bastion-nic.id]
-  size                         = var.instance_size
-  admin_username               = var.server_admin_username
-  computer_name                = "${var.name_prefix}-bastion-${var.resource_tag}"
+  name                  = "${var.name_prefix}-bastion-vm-${var.resource_tag}"
+  location              = var.location
+  resource_group_name   = var.resource_group
+  network_interface_ids = [azurerm_network_interface.bastion-nic.id]
+  size                  = var.instance_size
+  admin_username        = var.server_admin_username
+  computer_name         = "${var.name_prefix}-bastion-${var.resource_tag}"
   admin_ssh_key {
     username   = var.server_admin_username
     public_key = "${trimspace(var.ssh_key)} ${var.server_admin_username}@me.io"

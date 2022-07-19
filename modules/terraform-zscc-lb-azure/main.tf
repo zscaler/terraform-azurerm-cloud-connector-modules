@@ -4,10 +4,10 @@
 
 # Create Standard Load Balancer
 resource "azurerm_lb" "cc-lb" {
-  name                       = "${var.name_prefix}-cc-lb-${var.resource_tag}"
-  location                     = var.location
-  resource_group_name          = var.resource_group
-  sku                          = "Standard"
+  name                = "${var.name_prefix}-cc-lb-${var.resource_tag}"
+  location            = var.location
+  resource_group_name = var.resource_group
+  sku                 = "Standard"
 
   tags = var.global_tags
 
@@ -15,9 +15,9 @@ resource "azurerm_lb" "cc-lb" {
     ignore_changes = [
       tags,
     ]
-}
-  
-  
+  }
+
+
   frontend_ip_configuration {
     name                          = "${var.name_prefix}-cc-lb-ip-${var.resource_tag}"
     subnet_id                     = var.subnet_id
@@ -28,8 +28,8 @@ resource "azurerm_lb" "cc-lb" {
 
 # Create backend address pool for load balancer
 resource "azurerm_lb_backend_address_pool" "cc-lb-backend-pool" {
-  name                = "${var.name_prefix}-cc-lb-backend-${var.resource_tag}"
-  loadbalancer_id     = azurerm_lb.cc-lb.id
+  name            = "${var.name_prefix}-cc-lb-backend-${var.resource_tag}"
+  loadbalancer_id = azurerm_lb.cc-lb.id
 }
 
 
@@ -39,7 +39,7 @@ resource "azurerm_lb_probe" "cc-lb-probe" {
   resource_group_name = var.resource_group
   loadbalancer_id     = azurerm_lb.cc-lb.id
   protocol            = "Http"
-  port                = var.http_probe_port 
+  port                = var.http_probe_port
   request_path        = "/?cchealth"
 }
 

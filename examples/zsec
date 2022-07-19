@@ -1,5 +1,6 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+
+set -eo pipefail
 
 usage()
 {
@@ -24,7 +25,7 @@ if [[ "$oper" == "up" || "destroy" ]]; then
     # shellcheck disable=SC2153
     if [ -z "$DTYPE" ]; then
     while true; do
-     read -rp "Deployment: ( greenfield | brownfield ): " deploy
+     read -r -p "Deployment: ( greenfield | brownfield ): " deploy
 
     case $deploy in
       greenfield)
@@ -40,7 +41,7 @@ if [[ "$oper" == "up" || "destroy" ]]; then
   done
     
     while [ "$deploy" == "greenfield" ]; do
-     read -rp "Deployment Type: ( base | base_1cc | base_cc_lb ) : " dtype
+     read -r -p "Deployment Type: ( base | base_1cc | base_cc_lb ) : " dtype
 
     case $dtype in
       base|base_1cc|base_cc_lb|cc_lb_custom)
@@ -54,7 +55,7 @@ if [[ "$oper" == "up" || "destroy" ]]; then
   done
     
     while [ "$deploy" == "brownfield" ]; do
-     read -rp "Deployment Type: ( cc_lb_custom ) : " dtype
+     read -r -p "Deployment Type: ( cc_lb_custom ) : " dtype
 
     case $dtype in
       cc_lb_custom)
@@ -114,16 +115,16 @@ az_regions=["westus","westus2","eastus","centralus","centraluseuap","southcentra
 # if .zsecrc is not present we'll assume that Azure env was never set
 if [[ $dtype == "base" && ! -e ./.zsecrc ]]; then
     echo "Checking Azure Environment Variables..."
-    read -p "Enter Azure Subcription ID: " azure_subscription_id
+    read -r -p "Enter Azure Subcription ID: " azure_subscription_id
     echo "export ARM_SUBSCRIPTION_ID=${azure_subscription_id}" > .zsecrc
     echo "export TF_VAR_env_subscription_id=${azure_subscription_id}" >> .zsecrc
-    read -p "Enter Directory (tenant) ID: " azure_tenant_id
+    read -r -p "Enter Directory (tenant) ID: " azure_tenant_id
     echo "export ARM_TENANT_ID=${azure_tenant_id}" >> .zsecrc
-    read -p "Enter Application (client) ID of Service Principal: " azure_client_id
+    read -r -p "Enter Application (client) ID of Service Principal: " azure_client_id
     echo "export ARM_CLIENT_ID=${azure_client_id}" >> .zsecrc
-    read -p "Enter Client Secret Value of Service Principal: " azure_client_secret
+    read -r -p "Enter Client Secret Value of Service Principal: " azure_client_secret
     echo "export ARM_CLIENT_SECRET=${azure_client_secret}" >> .zsecrc
-    read -p "Enter Azure Region (e.g. westus2): " azure_location
+    read -r -p "Enter Azure Region (e.g. westus2): " azure_location
     if [[ ${az_regions[*]} =~ $azure_location ]]; then
     echo "export TF_VAR_arm_location=${azure_location}" >> .zsecrc
     else
@@ -136,16 +137,16 @@ fi
 echo "Checking Azure Environment Variables and Cloud Connector bootstrap requirements... For ZPA or custom/byo deployments, please stop and refer to the README and terraform.tfvars file instructions"
 # if .zsecrc is not present we'll assume that Azure env was never set
 if [[ ! -e ./.zsecrc ]]; then
-    read -p "Enter Azure Subcription ID: " azure_subscription_id
+    read -r -p "Enter Azure Subcription ID: " azure_subscription_id
     echo "export ARM_SUBSCRIPTION_ID=${azure_subscription_id}" > .zsecrc
     echo "export TF_VAR_env_subscription_id=${azure_subscription_id}" >> .zsecrc
-    read -p "Enter Directory (tenant) ID: " azure_tenant_id
+    read -r -p "Enter Directory (tenant) ID: " azure_tenant_id
     echo "export ARM_TENANT_ID=${azure_tenant_id}" >> .zsecrc
-    read -p "Enter Application (client) ID of Service Principal: " azure_client_id
+    read -r -p "Enter Application (client) ID of Service Principal: " azure_client_id
     echo "export ARM_CLIENT_ID=${azure_client_id}" >> .zsecrc
-    read -p "Enter Client Secret Value of Service Principal: " azure_client_secret
+    read -r -p "Enter Client Secret Value of Service Principal: " azure_client_secret
     echo "export ARM_CLIENT_SECRET=${azure_client_secret}" >> .zsecrc
-    read -p "Enter Azure Region (e.g. westus2): " azure_location
+    read -r -p "Enter Azure Region (e.g. westus2): " azure_location
     if [[ ${az_regions[*]} =~ $azure_location ]]; then
     echo "export TF_VAR_arm_location=${azure_location}" >> .zsecrc
     else
@@ -154,7 +155,7 @@ if [[ ! -e ./.zsecrc ]]; then
     exit 1
     fi
     cc_instance_size_default=small
-    read -rp "Enter CC Instance Size. Valid input = small, medium, or large. This needs to match the size chosen in the CC provisioning template [Default=$cc_instance_size_default]: " cc_instance_size_input
+    read -r -p "Enter CC Instance Size. Valid input = small, medium, or large. This needs to match the size chosen in the CC provisioning template [Default=$cc_instance_size_default]: " cc_instance_size_input
 cc_instance_size=${cc_instance_size_input:-$cc_instance_size_default}
     case $cc_instance_size in
       small|medium|large)
@@ -170,7 +171,7 @@ cc_instance_size=${cc_instance_size_input:-$cc_instance_size_default}
 
 ccvm_instance_type_default=Standard_D2s_v3
 while true; do
-    read -rp "Enter desired Azure VM type for CC. Recommended types: Small CC (Standard_D2s_v3); Medium (Standard_D8s_v3 or Standard_DS3_v2); Large (Standard_D16s_v3 or Standard_DS5_v2) [Default=$ccvm_instance_type_default]: " ccvm_instance_type_input
+    read -r -p "Enter desired Azure VM type for CC. Recommended types: Small CC (Standard_D2s_v3); Medium (Standard_D8s_v3 or Standard_DS3_v2); Large (Standard_D16s_v3 or Standard_DS5_v2) [Default=$ccvm_instance_type_default]: " ccvm_instance_type_input
 ccvm_instance_type=${ccvm_instance_type_input:-$ccvm_instance_type_default}
 case $ccvm_instance_type in 
 	Standard_D2s_v3|Standard_DS3_v2|Standard_D8s_v3|Standard_D16s_v3|Standard_DS5_v2 ) 
@@ -200,14 +201,14 @@ else
     echo "Delete .zsecrc file and re-run zsec up..."
     exit 1
 fi
-    read -rp "Enter CC Provisioning URL (E.g. connector.zscaler.net/api/v1/provUrl?name=azure_prov_url): " cc_vm_prov_url
+    read -r -p "Enter CC Provisioning URL (E.g. connector.zscaler.net/api/v1/provUrl?name=azure_prov_url): " cc_vm_prov_url
     echo "Provisioning URL entered is: $cc_vm_prov_url. Make sure this matches the CC Instance Size $cc_instance_size chosen."
     echo "export TF_VAR_cc_vm_prov_url=${cc_vm_prov_url}" >> .zsecrc
-    read -rp "Enter Azure Key Vault URL (E.g https://zscaler-cc-demo.vault.azure.net): " azure_vault_url
+    read -r -p "Enter Azure Key Vault URL (E.g https://zscaler-cc-demo.vault.azure.net): " azure_vault_url
     echo "Key Vault URL entered is: $azure_vault_url"
     echo "export TF_VAR_azure_vault_url=${azure_vault_url}" >> .zsecrc
 http_probe_port_default=50000
-    read -rp "Enter CC service health probe TCP port number. Valid input = 80 or any number between 1024-65535 [Default=$http_probe_port_default]: " http_probe_port_input
+    read -r -p "Enter CC service health probe TCP port number. Valid input = 80 or any number between 1024-65535 [Default=$http_probe_port_default]: " http_probe_port_input
 http_probe_port=${http_probe_port_input:-$http_probe_port_default}
 if ((http_probe_port == 80 || http_probe_port >= 1024 && http_probe_port <= 65535)); then
     echo "Valid HTTP probe port input of $http_probe_port"
@@ -226,21 +227,21 @@ case $response in
     break
     ;;
 	no|n )
-	read -p "Enter Subscription ID of Managed Identity: " managed_identity_subscription_id
+	read -r -p "Enter Subscription ID of Managed Identity: " managed_identity_subscription_id
     echo "export TF_VAR_managed_identity_subscription_id=${managed_identity_subscription_id}" >> .zsecrc
     break
     ;;
 	* ) echo "invalid response. Please enter yes or no";;
     esac
 done  
-    read -p "Enter Managed Identity Name: " cc_vm_managed_identity_name 
+    read -r -p "Enter Managed Identity Name: " cc_vm_managed_identity_name 
     echo "export TF_VAR_cc_vm_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
-    read -p "Enter Managed Identity Resource Group: " cc_vm_managed_identity_rg
+    read -r -p "Enter Managed Identity Resource Group: " cc_vm_managed_identity_rg
     echo "export TF_VAR_cc_vm_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
     
 cc_count_default=2
 if [[ "$dtype" == *"lb"* ]]; then
-    read -p "Enter how many Cloud Connectors to deploy? [Default=$cc_count_default]: " cc_count_input
+    read -r -p "Enter how many Cloud Connectors to deploy? [Default=$cc_count_default]: " cc_count_input
 cc_count=${cc_count_input:-$cc_count_default}
 if ((cc_count >= 1 && cc_count <= 20)); then
     echo "${dtype} will deploy ${cc_count} Cloud Connector in ${azure_location}"
@@ -259,14 +260,14 @@ az_supported_regions=["australiaeast","brazilsouth","canadacentral","centralindi
 if [[ ${az_supported_regions[*]} =~ $azure_location ]]; then
 echo "Azure region ${azure_location} supports Zones..."
 zones_enabled_default=false
-    read -rp "Deploy Cloud Connectors in dedicated Availability Zones/subnets? (Enter true or false) [Default=$zones_enabled_default]: " zones_enabled_input
+    read -r -p "Deploy Cloud Connectors in dedicated Availability Zones/subnets? (Enter true or false) [Default=$zones_enabled_default]: " zones_enabled_input
 zones_enabled=${zones_enabled_input:-$zones_enabled_default}
 if [[ "$zones_enabled" == "true" ]]; then
     echo "export TF_VAR_zones_enabled=${zones_enabled}" >> .zsecrc
     echo "Choose zones [1-3] to deploy in. ${azure_location} must also support zones for this to work"
 
     while true; do
-    read -p "Zone 1 (yes/no): " zone1_response
+    read -r -p "Zone 1 (yes/no): " zone1_response
 case $zone1_response in 
 	yes|y ) 
     echo "Availability Zone 1 selected"
@@ -281,7 +282,7 @@ case $zone1_response in
     esac
 done 
     while true; do
-    read -p "Zone 2 (yes/no): " zone2_response
+    read -r -p "Zone 2 (yes/no): " zone2_response
 case $zone2_response in 
 	yes|y ) 
     echo "Availability Zone 2 selected"
@@ -296,7 +297,7 @@ case $zone2_response in
     esac
 done
     while true; do
-    read -p "Zone 3 (yes/no): " zone3_response
+    read -r -p "Zone 3 (yes/no): " zone3_response
 case $zone3_response in 
 	yes|y ) 
     echo "Availability Zone 3 selected"
@@ -384,20 +385,20 @@ fi
 
 if [[ "$oper" == "up" ]]; then
     echo "Bringing up Cloud Connector cluster..."
-    TF_DATA_DIR=../.terraform ./$dir/terraform -chdir=$dtype init
+    TF_DATA_DIR=../.terraform ./$dir/terraform -chdir="$dtype" init
     if [[ "$AUTO_APPROVE" ]]; then
-        TF_DATA_DIR=../.terraform ./$dir/terraform -chdir=$dtype apply -auto-approve
+        TF_DATA_DIR=../.terraform ./$dir/terraform -chdir="$dtype" apply -auto-approve
     else
-        TF_DATA_DIR=../.terraform ./$dir/terraform -chdir=$dtype apply
+        TF_DATA_DIR=../.terraform ./$dir/terraform -chdir="$dtype" apply
     fi
 
 elif [[ "$oper" == "destroy" ]]; then
     echo "Destroying Cloud Connector cluster..."
-    TF_DATA_DIR=../.terraform ./$dir/terraform -chdir=$dtype init
+    TF_DATA_DIR=../.terraform ./$dir/terraform -chdir="$dtype" init
     if [[ "$AUTO_APPROVE" ]]; then
-        TF_DATA_DIR=../.terraform ./$dir/terraform -chdir=$dtype destroy -auto-approve
+        TF_DATA_DIR=../.terraform ./$dir/terraform -chdir="$dtype" destroy -auto-approve
     else
-      TF_DATA_DIR=../.terraform ./$dir/terraform -chdir=$dtype destroy
+      TF_DATA_DIR=../.terraform ./$dir/terraform -chdir="$dtype" destroy
     fi
     rm -rf bin 
     rm -rf **/.terraform/* && rm -rf **/.terraform*

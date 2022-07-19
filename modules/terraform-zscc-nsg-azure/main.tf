@@ -58,7 +58,7 @@ resource "azurerm_network_security_group" "cc-service-nsg" {
   name                = "${var.name_prefix}-cc-service-nsg-${count.index + 1}-${var.resource_tag}"
   location            = var.location
   resource_group_name = var.resource_group
-  
+
   security_rule {
     name                       = "ALL_VNET"
     priority                   = 4000
@@ -66,12 +66,12 @@ resource "azurerm_network_security_group" "cc-service-nsg" {
     access                     = "Allow"
     protocol                   = "*"
     source_port_range          = "*"
-    destination_port_range     = "*"  
+    destination_port_range     = "*"
     source_address_prefix      = "VirtualNetwork"
     destination_address_prefix = "*"
   }
 
-  security_rule {              
+  security_rule {
     name                       = "OUTBOUND"
     priority                   = 4000
     direction                  = "Outbound"
@@ -82,7 +82,7 @@ resource "azurerm_network_security_group" "cc-service-nsg" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
-  
+
   tags = var.global_tags
 }
 

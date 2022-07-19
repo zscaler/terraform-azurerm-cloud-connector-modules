@@ -1,7 +1,7 @@
 ## This is only a sample terraform.tfvars file.
 ## Uncomment and change the below variables according to your specific environment
 #####################################################################################################################
-                ##### Custom variables. Only change if required for your environment  #####
+##### Custom variables. Only change if required for your environment  #####
 #####################################################################################################################
 
 ## 1. Azure region where Cloud Connector resources will be deployed. This environment variable is automatically populated if running ZSEC script
