@@ -205,28 +205,28 @@ EOF
 # Cloud Connector Module variables
 # Create 1 CC VM
 module "cc-vm" {
-  source                                = "../../modules/terraform-zscc-ccvm-azure"
-  name_prefix                           = var.name_prefix
-  resource_tag                          = random_string.suffix.result
-  global_tags                           = local.global_tags
-  resource_group                        = azurerm_resource_group.main.name
-  mgmt_subnet_id                        = azurerm_subnet.cc-subnet.*.id
-  service_subnet_id                     = azurerm_subnet.cc-subnet.*.id
-  ssh_key                               = tls_private_key.key.public_key_openssh
-  managed_identity_id                   = data.azurerm_user_assigned_identity.selected.id
-  user_data                             = local.userdata
-  location                              = var.arm_location
-  zones_enabled                         = var.zones_enabled
-  zones                                 = var.zones
-  ccvm_instance_type                    = var.ccvm_instance_type
-  ccvm_image_publisher                  = var.ccvm_image_publisher
-  ccvm_image_offer                      = var.ccvm_image_offer
-  ccvm_image_sku                        = var.ccvm_image_sku
-  ccvm_image_version                    = var.ccvm_image_version
-  cc_instance_size                      = var.cc_instance_size
-
-  #mgmt_nsg_id    = module.cc-sg.mgmt_security_group_id
-  #service_nsg_id = module.cc-sg.service_security_group_id
+  source                          = "../../modules/terraform-zscc-ccvm-azure"
+  name_prefix                     = var.name_prefix
+  resource_tag                    = random_string.suffix.result
+  global_tags                     = local.global_tags
+  resource_group                  = azurerm_resource_group.main.name
+  mgmt_subnet_id                  = azurerm_subnet.cc-subnet.*.id
+  service_subnet_id               = azurerm_subnet.cc-subnet.*.id
+  ssh_key                         = tls_private_key.key.public_key_openssh
+  managed_identity_id             = module.cc-identity.managed_identity_id
+  user_data                       = local.userdata
+  location                        = var.arm_location
+  zones_enabled                   = var.zones_enabled
+  zones                           = var.zones
+  ccvm_instance_type              = var.ccvm_instance_type
+  ccvm_image_publisher            = var.ccvm_image_publisher
+  ccvm_image_offer                = var.ccvm_image_offer
+  ccvm_image_sku                  = var.ccvm_image_sku
+  ccvm_image_version              = var.ccvm_image_version
+  cc_instance_size                = var.cc_instance_size
+  mgmt_nsg_id                     = module.cc-nsg.mgmt_nsg_id
+  service_nsg_id                  = module.cc-nsg.service_nsg_id
+  accelerated_networking_enabled  = var.accelerated_networking_enabled
 
   depends_on = [
     azurerm_subnet_nat_gateway_association.subnet-nat-association-ec,
@@ -234,10 +234,30 @@ module "cc-vm" {
   ]
 }
 
-data "azurerm_user_assigned_identity" "selected" {
-  provider            = azurerm.managed_identity_sub
-  name                = var.cc_vm_managed_identity_name
-  resource_group_name = var.cc_vm_managed_identity_resource_group
+
+# Create Network Security Group and rules to be assigned to CC mgmt and and service interface(s). Default behavior will create 1 of each resource per CC VM. Set variable reuse_nsg
+# to true if you would like a single security group created and assigned to ALL Cloud Connectors
+module "cc-nsg" {
+  source         = "../../modules/terraform-zscc-nsg-azure"
+  nsg_count      = var.reuse_nsg == false ? var.cc_count : 1
+  name_prefix    = var.name_prefix
+  resource_tag   = random_string.suffix.result
+  resource_group = azurerm_resource_group.main.name
+  location       = var.arm_location
+  global_tags    = local.global_tags
+}
+
+
+# Reference User Managed Identity resource to obtain ID to be assigned to all Cloud Connectors
+module "cc-identity" {
+  source                      = "../../modules/terraform-zscc-identity-azure"
+  cc_vm_managed_identity_name = var.cc_vm_managed_identity_name
+  cc_vm_managed_identity_rg   = var.cc_vm_managed_identity_rg
+  
+  #optional variable provider block defined in versions.tf to support managed identity resource being in a different subscription
+  providers = {
+    azurerm = azurerm.managed_identity_sub
+  }
 }
 
 # Create Workload Route Table to send to Cloud Connector

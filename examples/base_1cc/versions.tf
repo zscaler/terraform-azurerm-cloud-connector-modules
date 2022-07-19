@@ -26,4 +26,5 @@ provider "azurerm" {
   alias  = "managed_identity_sub"
   subscription_id = var.managed_identity_subscription_id == null ? var.env_subscription_id : var.managed_identity_subscription_id
   features {}
+  skip_provider_registration = true
 }

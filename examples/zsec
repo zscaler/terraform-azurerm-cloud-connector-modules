@@ -24,10 +24,26 @@ if [[ "$oper" == "up" || "destroy" ]]; then
     # shellcheck disable=SC2153
     if [ -z "$DTYPE" ]; then
     while true; do
-     read -rp "Deployment Type: ( base | base_cc | base_cc_lb | cc_lb_custom ) : " dtype
+     read -rp "Deployment: ( greenfield | brownfield ): " deploy
+
+    case $deploy in
+      greenfield)
+          break
+      ;;
+      brownfield)
+          break
+      ;;    
+      *)
+          echo "Invalid Deployment Type: ${dtype}"
+      ;;
+    esac
+  done
+    
+    while [ "$deploy" == "greenfield" ]; do
+     read -rp "Deployment Type: ( base | base_1cc | base_cc_lb ) : " dtype
 
     case $dtype in
-      base|base_cc|base_cc_lb|cc_lb_custom)
+      base|base_1cc|base_cc_lb|cc_lb_custom)
           echo "Deployment Type: ${dtype}"
           break
       ;;
@@ -36,6 +52,21 @@ if [[ "$oper" == "up" || "destroy" ]]; then
       ;;
     esac
   done
+    
+    while [ "$deploy" == "brownfield" ]; do
+     read -rp "Deployment Type: ( cc_lb_custom ) : " dtype
+
+    case $dtype in
+      cc_lb_custom)
+          echo "Deployment Type: ${dtype}"
+          break
+      ;;
+      *)
+          echo "Invalid Deployment Type: ${dtype}"
+      ;;
+    esac
+  done
+    
     else
       dtype=$DTYPE
     fi
@@ -204,8 +235,8 @@ case $response in
 done  
     read -p "Enter Managed Identity Name: " cc_vm_managed_identity_name 
     echo "export TF_VAR_cc_vm_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
-    read -p "Enter Managed Identity Resource Group: " cc_vm_managed_identity_resource_group
-    echo "export TF_VAR_cc_vm_managed_identity_resource_group=${cc_vm_managed_identity_resource_group}" >> .zsecrc
+    read -p "Enter Managed Identity Resource Group: " cc_vm_managed_identity_rg
+    echo "export TF_VAR_cc_vm_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
     
 cc_count_default=2
 if [[ "$dtype" == *"lb"* ]]; then
@@ -219,7 +250,7 @@ else
     echo "Delete .zsecrc file and re-run zsec up..."
     exit 1
 fi
-elif [[ "$dtype" == "base_cc" ]]; then
+elif [[ "$dtype" == "base_1cc" ]]; then
     echo "${dtype} will deploy one Cloud Connector in ${azure_location}"   
 fi
 
@@ -319,6 +350,7 @@ fi
 
 fi
 
+
  #add local bin directory to PATH
 if ! grep -Fxq "export PATH=\${PATH}:\${PWD}/bin" .zsecrc; then
     echo 'export PATH=${PATH}:${PWD}/bin' >> .zsecrc
@@ -332,7 +364,7 @@ fi
 
 if [[ $dtype != "base" ]]; then
     echo "Checking Cloud Connector provisioning info"
-  if [ -z "$TF_VAR_cc_vm_prov_url" ] || [ -z "$TF_VAR_azure_vault_url" ] || [ -z "$TF_VAR_http_probe_port" ] || [ -z "$TF_VAR_cc_instance_size" ] || [ -z "$TF_VAR_ccvm_instance_type" ] || [ -z "$TF_VAR_cc_vm_managed_identity_name" ] || [ -z "$TF_VAR_cc_vm_managed_identity_resource_group" ]; then
+  if [ -z "$TF_VAR_cc_vm_prov_url" ] || [ -z "$TF_VAR_azure_vault_url" ] || [ -z "$TF_VAR_http_probe_port" ] || [ -z "$TF_VAR_cc_instance_size" ] || [ -z "$TF_VAR_ccvm_instance_type" ] || [ -z "$TF_VAR_cc_vm_managed_identity_name" ] || [ -z "$TF_VAR_cc_vm_managed_identity_rg" ]; then
     echo "Cloud Connector provisioning info is missing. Remove .zsecrc file and rerun $0 $1"
     exit 1
   fi
@@ -354,18 +386,18 @@ if [[ "$oper" == "up" ]]; then
     echo "Bringing up Cloud Connector cluster..."
     ./$dir/terraform -chdir=$dtype init
     if [[ "$AUTO_APPROVE" ]]; then
-        ./$dir/terraform -chdir=$dtype apply -auto-approve -var-file="../terraform.tfvars"
+        ./$dir/terraform -chdir=$dtype apply -auto-approve
     else
-        ./$dir/terraform -chdir=$dtype apply -var-file="../terraform.tfvars"
+        ./$dir/terraform -chdir=$dtype apply
     fi
 
 elif [[ "$oper" == "destroy" ]]; then
     echo "Destroying Cloud Connector cluster..."
     ./$dir/terraform -chdir=$dtype init
     if [[ "$AUTO_APPROVE" ]]; then
-        ./$dir/terraform -chdir=$dtype destroy -auto-approve -var-file="../terraform.tfvars"
+        ./$dir/terraform -chdir=$dtype destroy -auto-approve
     else
-      ./$dir/terraform -chdir=$dtype destroy -var-file="../terraform.tfvars"
+      ./$dir/terraform -chdir=$dtype destroy
     fi
     rm -rf bin 
     cd $dtype

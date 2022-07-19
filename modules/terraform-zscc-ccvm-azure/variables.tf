@@ -176,3 +176,19 @@ variable "managed_identity_id" {
   type        = string
   description = "ID of the User Managed Identity assigned to Cloud Connector VM"
 }
+
+variable "mgmt_nsg_id" {
+  description = "Cloud Connector management nsg id"
+  type        = list(string)
+}
+
+variable "service_nsg_id" {
+  description = "Cloud Connector service nsg id"
+  type        = list(string)
+}
+
+variable "accelerated_networking_enabled" {
+  type        = bool
+  default     =  false  
+  description = "Enable/Disable accelerated networking support on all Cloud Connector service interfaces"
+}

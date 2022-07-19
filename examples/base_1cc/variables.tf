@@ -33,11 +33,6 @@ variable "environment" {
   default     = "Development"
 }
 
-variable "server_admin_username" {
-  default   = "ubuntu"
-  type      = string
-}
-
 variable "tls_key_algorithm" {
   default   = "RSA"
   type      = string
@@ -55,7 +50,7 @@ variable "cc_vm_managed_identity_name" {
   type      = string
 }
 
-variable "cc_vm_managed_identity_resource_group" {
+variable "cc_vm_managed_identity_rg" {
   description = "Resource Group of the Azure Managed Identity name to attach to the CC VM. E.g. edgeconnector_rg_1"
   type      = string
 }
@@ -133,8 +128,8 @@ variable "cc_count" {
   type    = number
   default = 1
    validation {
-          condition     = var.cc_count == 1
-          error_message = "Input cc_count must be equal 1 for this base_cc deployment type."
+          condition     = var.cc_count > 0 && var.cc_count < 2
+          error_message = "Input cc_count must be equal to 1 for this base_1cc deployment type."
         }
 }
 
@@ -197,4 +192,16 @@ contains(local.small_cc_instance, var.ccvm_instance_type) && var.cc_instance_siz
 contains(local.medium_cc_instance, var.ccvm_instance_type) && var.cc_instance_size == "medium" ||
 contains(local.large_cc_instance, var.ccvm_instance_type) && var.cc_instance_size == "large"
  )
+}
+
+variable "reuse_nsg" {
+  description = "Specifies whether the NSG module should create 1:1 network security groups per instance or 1 network security group for all instances"
+  default     = "false"
+  type        = bool
+}
+
+variable "accelerated_networking_enabled" {
+  type        = bool
+  default     =  false  
+  description = "Enable/Disable accelerated networking support on all Cloud Connector service interfaces"
 }

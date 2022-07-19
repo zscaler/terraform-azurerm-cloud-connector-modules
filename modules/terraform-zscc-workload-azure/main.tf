@@ -55,7 +55,6 @@ resource "azurerm_network_interface" "server-nic" {
     private_ip_address_allocation = "dynamic"
   }
   
-  #dns_servers = ["8.8.8.8", "8.8.4.4"]
   dns_servers = var.dns_servers
   
   tags = var.global_tags

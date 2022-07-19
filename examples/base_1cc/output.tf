@@ -2,12 +2,15 @@ locals {
 
   testbedconfig = <<TB
 
-1) Change to deployment base directory and copy the SSH key to the bastion host
-cd base
+1) Change to deployment base_1cc directory and copy the SSH key to the bastion host
+cd base_1cc
 scp -i ${var.name_prefix}-key-${random_string.suffix.result}.pem ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}:/home/centos/.
 
 2) SSH to the bastion host
 ssh -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}
+
+3) SSH to the CC
+ssh -i ${var.name_prefix}-key-${random_string.suffix.result}.pem zsroot@${module.cc-vm.private_ip[0]} -o "proxycommand ssh -W %h:%p -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}"
 
 4) SSH to the server host
 ssh -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.workload.private_ip[0]} -o "proxycommand ssh -W %h:%p -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}"
@@ -19,8 +22,15 @@ ${join("\n", module.workload.private_ip)}
 Resource Group: 
 ${azurerm_resource_group.main.name}
 
+All CC Primary Service IPs:
+${join("\n", module.cc-vm.service_ip)}
+
+All NAT GW IPs:
+${join("\n", azurerm_public_ip.nat-pip.*.ip_address)}
+
 Bastion Public IP: 
 ${module.bastion.public_ip}
+
 TB
 }
 

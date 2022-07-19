@@ -22,7 +22,7 @@ variable "public_subnet_id" {
 }
 
 variable "server_admin_username" {
-  default   = "ubuntu"
+  default   = "centos"
   type      = string
 }
 
@@ -37,17 +37,17 @@ variable "instance_size" {
 
 variable "instance_image_publisher" {
   description = "The image publisher"
-  default     = "Canonical"
+  default     = "OpenLogic"
 }
 
 variable "instance_image_offer" {
   description = "The image offer"
-  default     = "UbuntuServer"
+  default     = "CentOS"
 }
 
 variable "instance_image_sku" {
   description = "The image sku"
-  default     = "18_04-lts-gen2"
+  default     = "7.5"
 }
 
 variable "instance_image_version" {
