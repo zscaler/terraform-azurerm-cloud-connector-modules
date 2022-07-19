@@ -44,19 +44,19 @@ resource "azurerm_network_security_group" "server-nsg" {
 }
 
 resource "azurerm_network_interface" "server-nic" {
-  count                     = var.vm_count
-  name                      = "${var.name_prefix}-server-${count.index + 1}-nic-${var.resource_tag}"
-  location                  = var.location
-  resource_group_name       = var.resource_group
+  count               = var.vm_count
+  name                = "${var.name_prefix}-server-${count.index + 1}-nic-${var.resource_tag}"
+  location            = var.location
+  resource_group_name = var.resource_group
 
   ip_configuration {
     name                          = "${var.name_prefix}-server-${count.index + 1}-nic-conf-${var.resource_tag}"
     subnet_id                     = var.subnet_id
     private_ip_address_allocation = "dynamic"
   }
-  
+
   dns_servers = var.dns_servers
-  
+
   tags = var.global_tags
 }
 
@@ -67,15 +67,15 @@ resource "azurerm_network_interface_security_group_association" "server-nic-asso
 }
 
 resource "azurerm_linux_virtual_machine" "server-vm" {
-  count                        = var.vm_count
-  name                         = "${var.name_prefix}-server-vm-${count.index + 1}-${var.resource_tag}"
-  location                     = var.location
-  resource_group_name          = var.resource_group
+  count               = var.vm_count
+  name                = "${var.name_prefix}-server-vm-${count.index + 1}-${var.resource_tag}"
+  location            = var.location
+  resource_group_name = var.resource_group
 
-  network_interface_ids        = [azurerm_network_interface.server-nic[count.index].id]
-  size                         = var.instance_size
-  admin_username               = var.server_admin_username
-  computer_name                = "${var.name_prefix}-server-${count.index + 1}-${var.resource_tag}"
+  network_interface_ids = [azurerm_network_interface.server-nic[count.index].id]
+  size                  = var.instance_size
+  admin_username        = var.server_admin_username
+  computer_name         = "${var.name_prefix}-server-${count.index + 1}-${var.resource_tag}"
   admin_ssh_key {
     username   = var.server_admin_username
     public_key = "${trimspace(var.ssh_key)} ${var.server_admin_username}@me.io"

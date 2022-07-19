@@ -1,17 +1,17 @@
 # generate a random string
 resource "random_string" "suffix" {
-  length = 8
-  upper = false
+  length  = 8
+  upper   = false
   special = false
 }
 
 # Map default tags with values to be assigned to all tagged resources
 locals {
   global_tags = {
-  Owner       = var.owner_tag
-  ManagedBy   = "terraform"
-  Vendor      = "Zscaler"
-  Environment = var.environment
+    Owner       = var.owner_tag
+    ManagedBy   = "terraform"
+    Vendor      = "Zscaler"
+    Environment = var.environment
   }
 }
 
@@ -23,7 +23,7 @@ locals {
 ############################################################################################################################
 # private key for login
 resource "tls_private_key" "key" {
-  algorithm   = var.tls_key_algorithm
+  algorithm = var.tls_key_algorithm
 }
 
 # save the private key
@@ -64,7 +64,7 @@ resource "local_file" "user-data-file" {
 resource "azurerm_resource_group" "main" {
   name     = "${var.name_prefix}-rg-${random_string.suffix.result}"
   location = var.arm_location
-  
+
   tags = local.global_tags
 }
 
@@ -75,7 +75,7 @@ resource "azurerm_virtual_network" "vnet" {
   address_space       = [var.network_address_space]
   location            = var.arm_location
   resource_group_name = azurerm_resource_group.main.name
-  
+
   tags = local.global_tags
 }
 
@@ -123,7 +123,7 @@ resource "azurerm_nat_gateway" "nat-gw" {
   resource_group_name     = azurerm_resource_group.main.name
   idle_timeout_in_minutes = 10
   zones                   = local.zones_supported ? [element(var.zones, count.index)] : null
-  
+
   tags = local.global_tags
 }
 
@@ -163,7 +163,7 @@ module "workload" {
   resource_group = azurerm_resource_group.main.name
   subnet_id      = azurerm_subnet.workload-subnet.id
   ssh_key        = tls_private_key.key.public_key_openssh
-  dns_servers    = ["8.8.8.8","8.8.4.4"]
+  dns_servers    = ["8.8.8.8", "8.8.4.4"]
 }
 
 
@@ -205,28 +205,28 @@ EOF
 # Cloud Connector Module variables
 # Create 1 CC VM
 module "cc-vm" {
-  source                          = "../../modules/terraform-zscc-ccvm-azure"
-  name_prefix                     = var.name_prefix
-  resource_tag                    = random_string.suffix.result
-  global_tags                     = local.global_tags
-  resource_group                  = azurerm_resource_group.main.name
-  mgmt_subnet_id                  = azurerm_subnet.cc-subnet.*.id
-  service_subnet_id               = azurerm_subnet.cc-subnet.*.id
-  ssh_key                         = tls_private_key.key.public_key_openssh
-  managed_identity_id             = module.cc-identity.managed_identity_id
-  user_data                       = local.userdata
-  location                        = var.arm_location
-  zones_enabled                   = var.zones_enabled
-  zones                           = var.zones
-  ccvm_instance_type              = var.ccvm_instance_type
-  ccvm_image_publisher            = var.ccvm_image_publisher
-  ccvm_image_offer                = var.ccvm_image_offer
-  ccvm_image_sku                  = var.ccvm_image_sku
-  ccvm_image_version              = var.ccvm_image_version
-  cc_instance_size                = var.cc_instance_size
-  mgmt_nsg_id                     = module.cc-nsg.mgmt_nsg_id
-  service_nsg_id                  = module.cc-nsg.service_nsg_id
-  accelerated_networking_enabled  = var.accelerated_networking_enabled
+  source                         = "../../modules/terraform-zscc-ccvm-azure"
+  name_prefix                    = var.name_prefix
+  resource_tag                   = random_string.suffix.result
+  global_tags                    = local.global_tags
+  resource_group                 = azurerm_resource_group.main.name
+  mgmt_subnet_id                 = azurerm_subnet.cc-subnet.*.id
+  service_subnet_id              = azurerm_subnet.cc-subnet.*.id
+  ssh_key                        = tls_private_key.key.public_key_openssh
+  managed_identity_id            = module.cc-identity.managed_identity_id
+  user_data                      = local.userdata
+  location                       = var.arm_location
+  zones_enabled                  = var.zones_enabled
+  zones                          = var.zones
+  ccvm_instance_type             = var.ccvm_instance_type
+  ccvm_image_publisher           = var.ccvm_image_publisher
+  ccvm_image_offer               = var.ccvm_image_offer
+  ccvm_image_sku                 = var.ccvm_image_sku
+  ccvm_image_version             = var.ccvm_image_version
+  cc_instance_size               = var.cc_instance_size
+  mgmt_nsg_id                    = module.cc-nsg.mgmt_nsg_id
+  service_nsg_id                 = module.cc-nsg.service_nsg_id
+  accelerated_networking_enabled = var.accelerated_networking_enabled
 
   depends_on = [
     azurerm_subnet_nat_gateway_association.subnet-nat-association-ec,
@@ -253,7 +253,7 @@ module "cc-identity" {
   source                      = "../../modules/terraform-zscc-identity-azure"
   cc_vm_managed_identity_name = var.cc_vm_managed_identity_name
   cc_vm_managed_identity_rg   = var.cc_vm_managed_identity_rg
-  
+
   #optional variable provider block defined in versions.tf to support managed identity resource being in a different subscription
   providers = {
     azurerm = azurerm.managed_identity_sub

@@ -22,8 +22,8 @@ variable "public_subnet_id" {
 }
 
 variable "server_admin_username" {
-  default   = "centos"
-  type      = string
+  default = "centos"
+  type    = string
 }
 
 variable "ssh_key" {

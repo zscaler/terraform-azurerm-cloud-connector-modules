@@ -32,13 +32,13 @@ variable "byo_nsg" {
 }
 
 variable "byo_mgmt_nsg_names" {
-  type = list(string)
-  default = null
+  type        = list(string)
+  default     = null
   description = "Management Network Security Group ID for Cloud Connector association"
 }
 
 variable "byo_service_nsg_names" {
-  type = list(string)
-  default = null
+  type        = list(string)
+  default     = null
   description = "Service Network Security Group ID for Cloud Connector association"
 }

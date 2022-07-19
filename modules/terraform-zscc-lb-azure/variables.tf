@@ -19,15 +19,15 @@ variable "subnet_id" {
 
 variable "http_probe_port" {
   description = "port for Cloud Connector cloud init to enable listener port for HTTP probe from LB"
-  default = 0
+  default     = 0
   validation {
-          condition     = (
-            var.http_probe_port == 0 ||
-            var.http_probe_port == 80 ||
-          ( var.http_probe_port >= 1024 && var.http_probe_port <= 65535 )
-        )
-          error_message = "Input http_probe_port must be set to a single value of 80 or any number between 1024-65535."
-      }
+    condition = (
+      var.http_probe_port == 0 ||
+      var.http_probe_port == 80 ||
+      (var.http_probe_port >= 1024 && var.http_probe_port <= 65535)
+    )
+    error_message = "Input http_probe_port must be set to a single value of 80 or any number between 1024-65535."
+  }
 }
 
 variable "location" {
@@ -35,17 +35,17 @@ variable "location" {
 }
 
 variable "load_distribution" {
-  type = string
+  type        = string
   description = "Azure LB load distribution method"
-  default = "SourceIP"
-   validation {
-          condition     = ( 
-            var.load_distribution == "SourceIP"  ||
-            var.load_distribution == "SourceIPProtocol" ||
-            var.load_distribution == "Default"
-          )
-          error_message = "Input load_distribution must be set to either SourceIP, SourceIPProtocol, or Default."
-      }
+  default     = "SourceIP"
+  validation {
+    condition = (
+      var.load_distribution == "SourceIP" ||
+      var.load_distribution == "SourceIPProtocol" ||
+      var.load_distribution == "Default"
+    )
+    error_message = "Input load_distribution must be set to either SourceIP, SourceIPProtocol, or Default."
+  }
 }
 variable "global_tags" {
   description = "populate custom user provided tags"
