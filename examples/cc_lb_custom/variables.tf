@@ -33,11 +33,6 @@ variable "environment" {
   default     = "Development"
 }
 
-variable "server_admin_username" {
-  default   = "ubuntu"
-  type      = string
-}
-
 variable "tls_key_algorithm" {
   default   = "RSA"
   type      = string
@@ -55,7 +50,7 @@ variable "cc_vm_managed_identity_name" {
   type      = string
 }
 
-variable "cc_vm_managed_identity_resource_group" {
+variable "cc_vm_managed_identity_rg" {
   description = "Resource Group of the Azure Managed Identity name to attach to the CC VM. E.g. edgeconnector_rg_1"
   type      = string
 }
@@ -277,4 +272,54 @@ contains(local.small_cc_instance, var.ccvm_instance_type) && var.cc_instance_siz
 contains(local.medium_cc_instance, var.ccvm_instance_type) && var.cc_instance_size == "medium" ||
 contains(local.large_cc_instance, var.ccvm_instance_type) && var.cc_instance_size == "large"
  )
+}
+
+variable "reuse_nsg" {
+  description = "Specifies whether the NSG module should create 1:1 network security groups per instance or 1 network security group for all instances"
+  default     = "false"
+  type        = bool
+}
+
+variable "byo_nsg" {
+  default     = false
+  type        = bool
+  description = "Bring your own Network Security Group for Cloud Connector"
+}
+
+variable "byo_nsg_rg" {
+  default     = ""
+  type        = string
+  description = "User provided existing NSG Resource Group"
+}
+
+variable "byo_mgmt_nsg_names" {
+  type = list(string)
+  default = null
+  description = "Management Network Security Group ID for Cloud Connector association"
+}
+
+variable "byo_service_nsg_names" {
+  type = list(string)
+  default = null
+  description = "Service Network Security Group ID for Cloud Connector association"
+}
+
+variable "accelerated_networking_enabled" {
+  type        = bool
+  default     =  false  
+  description = "Enable/Disable accelerated networking support on all Cloud Connector service interfaces"
+}
+
+variable "load_distribution" {
+  type = string
+  description = "Azure LB load distribution method"
+  default = "SourceIP"
+   validation {
+          condition     = ( 
+            var.load_distribution == "SourceIP"  || ## 2 tuple hash
+            var.load_distribution == "SourceIPProtocol" || ## 3 tuple hash
+            var.load_distribution == "Default"  # 5 tuple hash
+          )
+          error_message = "Input load_distribution must be set to either SourceIP, SourceIPProtocol, or Default."
+      }
 }

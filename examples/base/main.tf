@@ -83,7 +83,7 @@ resource "azurerm_subnet" "workload-subnet" {
 
 # 2. Create Bastion Host
 module "bastion" {
-  source           = "../modules/terraform-zsbastion-azure"
+  source           = "../../modules/terraform-zscc-bastion-azure"
   location         = var.arm_location
   name_prefix      = var.name_prefix
   resource_tag     = random_string.suffix.result
@@ -95,7 +95,7 @@ module "bastion" {
 
 # 3. Create Workloads
 module "workload" {
-  source         = "../modules/terraform-zsworkload-azure"
+  source         = "../../modules/terraform-zscc-workload-azure"
   vm_count       = var.vm_count
   location       = var.arm_location
   name_prefix    = var.name_prefix

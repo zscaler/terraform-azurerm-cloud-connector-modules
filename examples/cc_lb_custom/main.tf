@@ -196,48 +196,73 @@ EOF
 # zones variables.
 # E.g. cc_count set to 4 and 2 zones ['1","2"] will create 2x CCs in AZ1 and 2x CCs in AZ2
 module "cc-vm" {
-  cc_count                              = var.cc_count
-  source                                = "../../modules/terraform-zscc-ccvm-azure"
-  name_prefix                           = var.name_prefix
-  resource_tag                          = random_string.suffix.result
-  global_tags                           = local.global_tags
-  resource_group                        = data.azurerm_resource_group.selected.name
-  mgmt_subnet_id                        = data.azurerm_subnet.cc-selected.*.id
-  service_subnet_id                     = data.azurerm_subnet.cc-selected.*.id
-  ssh_key                               = tls_private_key.key.public_key_openssh
-  managed_identity_id                   = data.azurerm_user_assigned_identity.selected.id
-  user_data                             = local.userdata
-  backend_address_pool                  = module.cc-lb.lb_backend_address_pool
-  lb_association_enabled                = true
-  location                              = var.arm_location
-  zones_enabled                         = var.zones_enabled
-  zones                                 = var.zones
-  ccvm_instance_type                    = var.ccvm_instance_type
-  ccvm_image_publisher                  = var.ccvm_image_publisher
-  ccvm_image_offer                      = var.ccvm_image_offer
-  ccvm_image_sku                        = var.ccvm_image_sku
-  ccvm_image_version                    = var.ccvm_image_version
-  cc_instance_size                      = var.cc_instance_size
-
+  cc_count                = var.cc_count
+  source                  = "../../modules/terraform-zscc-ccvm-azure"
+  name_prefix             = var.name_prefix
+  resource_tag            = random_string.suffix.result
+  global_tags             = local.global_tags
+  resource_group          = data.azurerm_resource_group.selected.name
+  mgmt_subnet_id          = data.azurerm_subnet.cc-selected.*.id
+  service_subnet_id       = data.azurerm_subnet.cc-selected.*.id
+  ssh_key                 = tls_private_key.key.public_key_openssh
+  managed_identity_id     = module.cc-identity.managed_identity_id
+  user_data               = local.userdata
+  backend_address_pool    = module.cc-lb.lb_backend_address_pool
+  lb_association_enabled  = true
+  location                = var.arm_location
+  zones_enabled           = var.zones_enabled
+  zones                   = var.zones
+  ccvm_instance_type      = var.ccvm_instance_type
+  ccvm_image_publisher    = var.ccvm_image_publisher
+  ccvm_image_offer        = var.ccvm_image_offer
+  ccvm_image_sku          = var.ccvm_image_sku
+  ccvm_image_version      = var.ccvm_image_version
+  cc_instance_size        = var.cc_instance_size
+  mgmt_nsg_id             = module.cc-nsg.mgmt_nsg_id
+  service_nsg_id          = module.cc-nsg.service_nsg_id
+  
   depends_on = [
     local_file.user-data-file,
   ]
 }
 
-data "azurerm_user_assigned_identity" "selected" {
-  provider            = azurerm.managed_identity_sub
-  name                = var.cc_vm_managed_identity_name
-  resource_group_name = var.cc_vm_managed_identity_resource_group
+
+# Create Network Security Group and rules to be assigned to CC mgmt and and service interface(s). Default behavior will create 1 of each resource per CC VM. Set variable reuse_nsg
+# to true if you would like a single security group created and assigned to ALL Cloud Connectors
+module "cc-nsg" {
+  source         = "../../modules/terraform-zscc-nsg-azure"
+  nsg_count      = var.reuse_nsg == false ? var.cc_count : 1
+  name_prefix    = var.name_prefix
+  resource_tag   = random_string.suffix.result
+  resource_group = data.azurerm_resource_group.selected.name
+  location       = var.arm_location
+  global_tags    = local.global_tags
+  byo_nsg        = var.byo_nsg
 }
 
+
+# Reference User Managed Identity resource to obtain ID to be assigned to all Cloud Connectors
+module "cc-identity" {
+  source                      = "../../modules/terraform-zscc-identity-azure"
+  cc_vm_managed_identity_name = var.cc_vm_managed_identity_name
+  cc_vm_managed_identity_rg   = var.cc_vm_managed_identity_rg
+  
+  #optional variable provider block defined in versions.tf to support managed identity resource being in a different subscription
+  providers = {
+    azurerm = azurerm.managed_identity_sub
+  }
+}
+
+
+# Azure Load Balancer Module variables
 module "cc-lb" {
-  source                                = "../../modules/terraform-zscc-lb-azure"
-  name_prefix                           = var.name_prefix
-  resource_tag                          = random_string.suffix.result
-  global_tags                           = local.global_tags
-  resource_group                        = data.azurerm_resource_group.selected.name
-  location                              = var.arm_location
-  subnet_id                             = data.azurerm_subnet.cc-selected.*.id[0]
-  http_probe_port                       = var.http_probe_port
-  load_distribution                     = "SourceIP"
+  source            = "../../modules/terraform-zscc-lb-azure"
+  name_prefix       = var.name_prefix
+  resource_tag      = random_string.suffix.result
+  global_tags       = local.global_tags
+  resource_group    = data.azurerm_resource_group.selected.name
+  location          = var.arm_location
+  subnet_id         = data.azurerm_subnet.cc-selected.*.id[0]
+  http_probe_port   = var.http_probe_port
+  load_distribution = var.load_distribution
 }

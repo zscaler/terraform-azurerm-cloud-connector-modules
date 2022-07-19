@@ -5,7 +5,6 @@ locals {
 Resource Group: 
 ${data.azurerm_resource_group.selected.name}
 
-
 All CC Management IPs:
 ${join("\n", module.cc-vm.private_ip)}
 

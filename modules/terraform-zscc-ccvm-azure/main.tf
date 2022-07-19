@@ -10,85 +10,6 @@ EOF
 
 data "azurerm_subscription" "current-subscription" {}
 
-# Create NSG for CC Management interfaces
-resource "azurerm_network_security_group" "cc-mgmt-nsg" {
-  count               = local.valid_cc_create ? var.cc_count : 0
-  name                = "${var.name_prefix}-ccvm-${count.index + 1}-mgmt-nsg-${var.resource_tag}"
-  location            = var.location
-  resource_group_name = var.resource_group
-
-  security_rule {
-    name                       = "SSH_VNET"
-    priority                   = 4000
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefix      = "VirtualNetwork"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "ICMP_VNET"
-    priority                   = 4001
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Icmp"
-    source_port_range          = "*"
-    destination_port_range     = "*"
-    source_address_prefix      = "VirtualNetwork"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "OUTBOUND"
-    priority                   = 4000
-    direction                  = "Outbound"
-    access                     = "Allow"
-    protocol                   = "*"
-    source_port_range          = "*"
-    destination_port_range     = "*"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  tags = var.global_tags
-}
-
-# Create NSG for CC service interfaces
-resource "azurerm_network_security_group" "cc-service-nsg" {
-  count               = local.valid_cc_create ? var.cc_count : 0
-  name                = "${var.name_prefix}-ccvm-${count.index + 1}-service-nsg-${var.resource_tag}"
-  location            = var.location
-  resource_group_name = var.resource_group
-  
-  security_rule {
-    name                       = "ALL_VNET"
-    priority                   = 4000
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "*"
-    source_port_range          = "*"
-    destination_port_range     = "*"  
-    source_address_prefix      = "VirtualNetwork"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {              
-    name                       = "OUTBOUND"
-    priority                   = 4000
-    direction                  = "Outbound"
-    access                     = "Allow"
-    protocol                   = "*"
-    source_port_range          = "*"
-    destination_port_range     = "*"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-  
-  tags = var.global_tags
-}
 
 # Create CC Management interfaces
 resource "azurerm_network_interface" "cc-mgmt-nic" {
@@ -112,7 +33,7 @@ resource "azurerm_network_interface" "cc-mgmt-nic" {
 resource "azurerm_network_interface_security_group_association" "cc-mgmt-nic-association" {
   count                     = var.cc_count
   network_interface_id      = azurerm_network_interface.cc-mgmt-nic[count.index].id
-  network_security_group_id = azurerm_network_security_group.cc-mgmt-nsg[count.index].id
+  network_security_group_id = element(var.mgmt_nsg_id, count.index)
 
   depends_on = [azurerm_network_interface.cc-mgmt-nic]
 }
@@ -125,6 +46,7 @@ resource "azurerm_network_interface" "cc-service-nic" {
   location                        = var.location
   resource_group_name             = var.resource_group
   enable_ip_forwarding            = true
+  enable_accelerated_networking   = var.accelerated_networking_enabled
 
   ip_configuration {
     name                          = var.cc_instance_size == "small" ? "${var.name_prefix}-cc-service-nic-conf-${var.resource_tag}" : "${var.name_prefix}-cc-lb-nic-conf-${var.resource_tag}"
@@ -142,7 +64,7 @@ resource "azurerm_network_interface" "cc-service-nic" {
 resource "azurerm_network_interface_security_group_association" "cc-service-nic-association" {
   count                     = local.valid_cc_create ? var.cc_count : 0
   network_interface_id      = azurerm_network_interface.cc-service-nic[count.index].id
-  network_security_group_id = azurerm_network_security_group.cc-service-nsg[count.index].id
+  network_security_group_id = element(var.service_nsg_id, count.index)
 
   depends_on = [azurerm_network_interface.cc-service-nic]
 }
@@ -155,6 +77,7 @@ resource "azurerm_network_interface" "cc-service-nic-1" {
   location                        = var.location
   resource_group_name             = var.resource_group
   enable_ip_forwarding            = true
+  enable_accelerated_networking   = var.accelerated_networking_enabled
 
   ip_configuration {
     name                          = "${var.name_prefix}-cc-service-nic-1-conf-${var.resource_tag}"
@@ -172,7 +95,7 @@ resource "azurerm_network_interface" "cc-service-nic-1" {
 resource "azurerm_network_interface_security_group_association" "cc-service-nic-1-association" {
   count                     = var.cc_instance_size != "small" ? length(azurerm_network_interface.cc-service-nic-1) : 0
   network_interface_id      = azurerm_network_interface.cc-service-nic-1[count.index].id
-  network_security_group_id = azurerm_network_security_group.cc-service-nsg[count.index].id
+  network_security_group_id = element(var.service_nsg_id, count.index)
 
   depends_on = [azurerm_network_interface.cc-service-nic-1]
 }
@@ -180,11 +103,12 @@ resource "azurerm_network_interface_security_group_association" "cc-service-nic-
 
 # Create Cloud Connector Service Interface #2 for Medium/Large CC. This resource will not be created for "small" CC instances
 resource "azurerm_network_interface" "cc-service-nic-2" {
-  count                     = local.valid_cc_create && var.cc_instance_size != "small" ? var.cc_count : 0
-  name                      = "${var.name_prefix}-ccvm-${count.index + 1}-service-nic-2-${var.resource_tag}"
-  location                  = var.location
-  resource_group_name       = var.resource_group
-  enable_ip_forwarding      = true
+  count                           = local.valid_cc_create && var.cc_instance_size != "small" ? var.cc_count : 0
+  name                            = "${var.name_prefix}-ccvm-${count.index + 1}-service-nic-2-${var.resource_tag}"
+  location                        = var.location
+  resource_group_name             = var.resource_group
+  enable_ip_forwarding            = true
+  enable_accelerated_networking   = var.accelerated_networking_enabled
 
   ip_configuration {
     name                          = "${var.name_prefix}-cc-service-nic-2-conf-${var.resource_tag}"
@@ -202,7 +126,7 @@ resource "azurerm_network_interface" "cc-service-nic-2" {
 resource "azurerm_network_interface_security_group_association" "cc-service-nic-2-association" {
   count                     = var.cc_instance_size != "small" ? length(azurerm_network_interface.cc-service-nic-2) : 0
   network_interface_id      = azurerm_network_interface.cc-service-nic-2[count.index].id
-  network_security_group_id = azurerm_network_security_group.cc-service-nsg[count.index].id
+  network_security_group_id = element(var.service_nsg_id, count.index)
 
   depends_on = [azurerm_network_interface.cc-service-nic-2]
 }
@@ -210,11 +134,12 @@ resource "azurerm_network_interface_security_group_association" "cc-service-nic-
 
 # Create Cloud Connector Service Interface #3 for Large CC. This resource will not be created for "small" or "medium" CC instances
 resource "azurerm_network_interface" "cc-service-nic-3" {
-  count                     = local.valid_cc_create && var.cc_instance_size == "large" ? var.cc_count : 0
-  name                      = "${var.name_prefix}-ccvm-${count.index + 1}-service-nic-3-${var.resource_tag}"
-  location                  = var.location
-  resource_group_name       = var.resource_group
-  enable_ip_forwarding      = true
+  count                           = local.valid_cc_create && var.cc_instance_size == "large" ? var.cc_count : 0
+  name                            = "${var.name_prefix}-ccvm-${count.index + 1}-service-nic-3-${var.resource_tag}"
+  location                        = var.location
+  resource_group_name             = var.resource_group
+  enable_ip_forwarding            = true
+  enable_accelerated_networking   = var.accelerated_networking_enabled
 
   ip_configuration {
     name                          = "${var.name_prefix}-cc-service-nic-3-conf-${var.resource_tag}"
@@ -232,7 +157,7 @@ resource "azurerm_network_interface" "cc-service-nic-3" {
 resource "azurerm_network_interface_security_group_association" "cc-service-nic-3-association" {
   count                     = var.cc_instance_size == "large" ? length(azurerm_network_interface.cc-service-nic-3) : 0
   network_interface_id      = azurerm_network_interface.cc-service-nic-3[count.index].id
-  network_security_group_id = azurerm_network_security_group.cc-service-nsg[count.index].id
+  network_security_group_id = element(var.service_nsg_id, count.index)
 
   depends_on = [azurerm_network_interface.cc-service-nic-3]
 }

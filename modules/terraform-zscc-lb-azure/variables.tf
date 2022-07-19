@@ -35,10 +35,19 @@ variable "location" {
 }
 
 variable "load_distribution" {
+  type = string
   description = "Azure LB load distribution method"
-  default     = "SourceIP"
+  default = "SourceIP"
+   validation {
+          condition     = ( 
+            var.load_distribution == "SourceIP"  ||
+            var.load_distribution == "SourceIPProtocol" ||
+            var.load_distribution == "Default"
+          )
+          error_message = "Input load_distribution must be set to either SourceIP, SourceIPProtocol, or Default."
+      }
 }
-
 variable "global_tags" {
   description = "populate custom user provided tags"
 }
+

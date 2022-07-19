@@ -1,11 +1,7 @@
-output "private_ip" {
-  value = azurerm_network_interface.cc-mgmt-nic.*.private_ip_address
+output "mgmt_nsg_id" {
+  value = data.azurerm_network_security_group.mgt-nsg-selected.*.id
 }
 
-output "service_ip" {
-  value = azurerm_network_interface.cc-service-nic.*.private_ip_address
-}
-
-output "cc_hostname" {
-  value = azurerm_linux_virtual_machine.cc-vm.*.computer_name
+output "service_nsg_id" {
+  value = data.azurerm_network_security_group.service-nsg-selected.*.id
 }
