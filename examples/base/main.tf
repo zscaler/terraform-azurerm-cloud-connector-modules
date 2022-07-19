@@ -34,8 +34,8 @@ resource "null_resource" "save-key" {
 
   provisioner "local-exec" {
     command = <<EOF
-      echo "${tls_private_key.key.private_key_pem}" > ${var.name_prefix}-key-${random_string.suffix.result}.pem
-      chmod 0600 ${var.name_prefix}-key-${random_string.suffix.result}.pem
+      echo "${tls_private_key.key.private_key_pem}" > ../${var.name_prefix}-key-${random_string.suffix.result}.pem
+      chmod 0600 ../${var.name_prefix}-key-${random_string.suffix.result}.pem
 EOF
   }
 }

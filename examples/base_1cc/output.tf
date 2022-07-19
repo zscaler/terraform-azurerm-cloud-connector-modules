@@ -2,8 +2,7 @@ locals {
 
   testbedconfig = <<TB
 
-1) Change to deployment base_1cc directory and copy the SSH key to the bastion host
-cd base_1cc
+1) Copy the SSH key to the bastion host
 scp -i ${var.name_prefix}-key-${random_string.suffix.result}.pem ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}:/home/centos/.
 
 2) SSH to the bastion host
@@ -40,5 +39,5 @@ output "testbedconfig" {
 
 resource "local_file" "testbed" {
   content = local.testbedconfig
-  filename = "testbed.txt"
+  filename = "../testbed.txt"
 }

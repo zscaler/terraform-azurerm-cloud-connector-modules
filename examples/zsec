@@ -384,26 +384,27 @@ fi
 
 if [[ "$oper" == "up" ]]; then
     echo "Bringing up Cloud Connector cluster..."
-    ./$dir/terraform -chdir=$dtype init
+    TF_DATA_DIR=../.terraform ./$dir/terraform -chdir=$dtype init
     if [[ "$AUTO_APPROVE" ]]; then
-        ./$dir/terraform -chdir=$dtype apply -auto-approve
+        TF_DATA_DIR=../.terraform ./$dir/terraform -chdir=$dtype apply -auto-approve
     else
-        ./$dir/terraform -chdir=$dtype apply
+        TF_DATA_DIR=../.terraform ./$dir/terraform -chdir=$dtype apply
     fi
 
 elif [[ "$oper" == "destroy" ]]; then
     echo "Destroying Cloud Connector cluster..."
-    ./$dir/terraform -chdir=$dtype init
+    TF_DATA_DIR=../.terraform ./$dir/terraform -chdir=$dtype init
     if [[ "$AUTO_APPROVE" ]]; then
-        ./$dir/terraform -chdir=$dtype destroy -auto-approve
+        TF_DATA_DIR=../.terraform ./$dir/terraform -chdir=$dtype destroy -auto-approve
     else
-      ./$dir/terraform -chdir=$dtype destroy
+      TF_DATA_DIR=../.terraform ./$dir/terraform -chdir=$dtype destroy
     fi
     rm -rf bin 
-    cd $dtype
+    rm -rf **/.terraform/* && rm -rf **/.terraform*
     rm -rf .terraform* && rm -f terraform.tfstate*
     rm -f *.pem && rm -f *.pem.pub
     rm -f name_prefix random_string
     rm -rf user.key user.crt
     rm -rf systems.json setup-*.tar
+    rm -rf **/errorlog.txt
 fi
