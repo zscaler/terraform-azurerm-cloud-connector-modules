@@ -31,12 +31,6 @@ variable "byo_nsg" {
   description = "Bring your own network security group for Cloud Connector"
 }
 
-variable "byo_nsg_rg" {
-  default     = ""
-  type        = string
-  description = "User provided existing NSG Resource Group"
-}
-
 variable "byo_mgmt_nsg_names" {
   type = list(string)
   default = null

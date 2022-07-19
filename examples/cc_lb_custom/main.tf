@@ -234,15 +234,14 @@ module "cc-nsg" {
   nsg_count      = var.reuse_nsg == false ? var.cc_count : 1
   name_prefix    = var.name_prefix
   resource_tag   = random_string.suffix.result
-  resource_group = data.azurerm_resource_group.selected.name
+  resource_group = var.byo_nsg == false ? data.azurerm_resource_group.selected.name : var.byo_nsg_rg 
   location       = var.arm_location
   global_tags    = local.global_tags
   
-  byo_nsg        = var.byo_nsg
+  byo_nsg               = var.byo_nsg
   # optional inputs. only required if byo_nsg set to true
-  byo_mgmt_nsg_names = var.byo_mgmt_nsg_names
+  byo_mgmt_nsg_names    = var.byo_mgmt_nsg_names
   byo_service_nsg_names = var.byo_service_nsg_names
-  byo_nsg_rg = var.byo_nsg_rg
   # optional inputs. only required if byo_nsg set to true
 }
 
