@@ -142,7 +142,7 @@
 
 
 #####################################################################################################################
-##### Custom BYO variables. Only applicable for "cc_lb_custom" deployment without "base" resource requirements  #####
+##### Custom BYO variables. Only applicable for "cc_lb" deployment without "base" resource requirements  #####
 #####################################################################################################################
 
 ## 16. By default, this script will create a new Resource Group and place all resources in this group.
