@@ -16,6 +16,7 @@
 * workload and bastion hosts changed from ubuntu to centos
 * added TF_DATA_DIR to zsec and backend.tf to each deployment type to maintain root path as "examples/" directory for all deployments
 * dropped "custom" from deployment types as brownfield is implicit
+* vm_count replaced with workload_count for clarity
 
 
 previous changelog would all disappear

@@ -1,5 +1,5 @@
 resource "azurerm_network_security_group" "server-nsg" {
-  count               = var.vm_count
+  count               = var.workload_count
   name                = "${var.name_prefix}-server-${count.index + 1}-nsg-${var.resource_tag}"
   location            = var.location
   resource_group_name = var.resource_group
@@ -44,7 +44,7 @@ resource "azurerm_network_security_group" "server-nsg" {
 }
 
 resource "azurerm_network_interface" "server-nic" {
-  count               = var.vm_count
+  count               = var.workload_count
   name                = "${var.name_prefix}-server-${count.index + 1}-nic-${var.resource_tag}"
   location            = var.location
   resource_group_name = var.resource_group
@@ -61,13 +61,13 @@ resource "azurerm_network_interface" "server-nic" {
 }
 
 resource "azurerm_network_interface_security_group_association" "server-nic-association" {
-  count                     = var.vm_count
+  count                     = var.workload_count
   network_interface_id      = azurerm_network_interface.server-nic[count.index].id
   network_security_group_id = azurerm_network_security_group.server-nsg[count.index].id
 }
 
 resource "azurerm_linux_virtual_machine" "server-vm" {
-  count               = var.vm_count
+  count               = var.workload_count
   name                = "${var.name_prefix}-server-vm-${count.index + 1}-${var.resource_tag}"
   location            = var.location
   resource_group_name = var.resource_group

@@ -32,13 +32,13 @@ variable "tls_key_algorithm" {
   type    = string
 }
 
-variable "vm_count" {
+variable "workload_count" {
   description = "number of Workload VMs to deploy"
   type        = number
   default     = 1
   validation {
-    condition     = var.vm_count >= 1 && var.vm_count <= 250
-    error_message = "Input vm_count must be a whole number between 1 and 250."
+    condition     = var.workload_count >= 1 && var.workload_count <= 250
+    error_message = "Input workload_count must be a whole number between 1 and 250."
   }
 }
 

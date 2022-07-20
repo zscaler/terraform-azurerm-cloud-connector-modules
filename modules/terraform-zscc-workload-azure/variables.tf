@@ -55,8 +55,14 @@ variable "instance_image_version" {
   default     = "latest"
 }
 
-variable "vm_count" {
-  description = "number of Cloud Connectors to deploy"
+variable "workload_count" {
+  description = "number of Workload VMs to deploy"
+  type        = number
+  default     = 1
+  validation {
+    condition     = var.workload_count >= 1 && var.workload_count <= 250
+    error_message = "Input workload_count must be a whole number between 1 and 250."
+  }
 }
 
 variable "global_tags" {
