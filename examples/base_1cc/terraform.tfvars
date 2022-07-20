@@ -140,7 +140,7 @@
 ## 15. Number of Workload VMs to be provisioned in the workload subnet. Only limitation is available IP space
 ##    in subnet configuration. Only applicable for "base" deployment types. Default workload subnet is /24 so 250 max
 
-#vm_count                               = 2
+#workload_count                               = 2
 
 
 ## 16. Tag attribute "Owner" assigned to all resoure creation. (Default: "zscc-admin")

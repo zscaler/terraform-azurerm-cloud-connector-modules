@@ -155,7 +155,7 @@ module "bastion" {
 # 3. Create Workloads
 module "workload" {
   source         = "../../modules/terraform-zscc-workload-azure"
-  vm_count       = var.vm_count
+  workload_count = var.workload_count
   location       = var.arm_location
   name_prefix    = var.name_prefix
   resource_tag   = random_string.suffix.result
