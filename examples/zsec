@@ -44,7 +44,7 @@ if [[ "$oper" == "up" || "destroy" ]]; then
      read -r -p "Deployment Type: ( base | base_1cc | base_cc_lb ) : " dtype
 
     case $dtype in
-      base|base_1cc|base_cc_lb|cc_lb_custom)
+      base|base_1cc|base_cc_lb|cc_lb)
           echo "Deployment Type: ${dtype}"
           break
       ;;
@@ -55,10 +55,10 @@ if [[ "$oper" == "up" || "destroy" ]]; then
   done
     
     while [ "$deploy" == "brownfield" ]; do
-     read -r -p "Deployment Type: ( cc_lb_custom ) : " dtype
+     read -r -p "Deployment Type: ( cc_lb ) : " dtype
 
     case $dtype in
-      cc_lb_custom)
+      cc_lb)
           echo "Deployment Type: ${dtype}"
           break
       ;;
