@@ -1,7 +1,7 @@
 ## This is only a sample terraform.tfvars file.
 ## Uncomment and change the below variables according to your specific environment
 #####################################################################################################################
-##### Variables 1-12 are populated automically if terraform is ran via ZSEC bash script.   ##### 
+##### Variables 1-17 are populated automically if terraform is ran via ZSEC bash script.   ##### 
 ##### Modifying the variables in this file will override any inputs from ZSEC              #####
 #####################################################################################################################
 
@@ -146,3 +146,9 @@
 ## 16. Tag attribute "Owner" assigned to all resoure creation. (Default: "zscc-admin")
 
 #owner_tag                              = "username@company.com"
+
+
+## 17. By default, this script will apply 1 Network Security Group per Cloud Connector instance. 
+##     Uncomment if you want to use the same Network Security Group for ALL Cloud Connectors (true or false. Default: false)
+
+#reuse_nsg                               = true
