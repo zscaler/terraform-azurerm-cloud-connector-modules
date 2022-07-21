@@ -83,14 +83,14 @@ resource "azurerm_subnet" "workload-subnet" {
 
 # 2. Create Bastion Host
 module "bastion" {
-  source           = "../../modules/terraform-zscc-bastion-azure"
-  location         = var.arm_location
-  name_prefix      = var.name_prefix
-  resource_tag     = random_string.suffix.result
-  global_tags      = local.global_tags
-  resource_group   = azurerm_resource_group.main.name
-  public_subnet_id = azurerm_subnet.bastion-subnet.id
-  ssh_key          = tls_private_key.key.public_key_openssh
+  source                    = "../../modules/terraform-zscc-bastion-azure"
+  location                  = var.arm_location
+  name_prefix               = var.name_prefix
+  resource_tag              = random_string.suffix.result
+  global_tags               = local.global_tags
+  resource_group            = azurerm_resource_group.main.name
+  public_subnet_id          = azurerm_subnet.bastion-subnet.id
+  ssh_key                   = tls_private_key.key.public_key_openssh
   bastion_nsg_source_prefix = var.bastion_nsg_source_prefix
 }
 

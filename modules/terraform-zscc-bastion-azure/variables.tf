@@ -62,3 +62,8 @@ variable "global_tags" {
 variable "location" {
   description = "Azure Region"
 }
+
+variable "bastion_nsg_source_prefix" {
+  description = "user input for locking down SSH access to bastion to a specific IP or CIDR range"
+  default     = "*"
+}

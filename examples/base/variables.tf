@@ -76,5 +76,5 @@ variable "owner_tag" {
 
 variable "bastion_nsg_source_prefix" {
   description = "user input for locking down SSH access to bastion to a specific IP or CIDR range"
-  default = "*"
+  default     = "*"
 }
