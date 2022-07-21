@@ -218,3 +218,8 @@ variable "load_distribution" {
     error_message = "Input load_distribution must be set to either SourceIP, SourceIPProtocol, or Default."
   }
 }
+
+variable "bastion_nsg_source_prefix" {
+  description = "user input for locking down SSH access to bastion to a specific IP or CIDR range"
+  default = "*"
+}

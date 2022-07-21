@@ -91,6 +91,7 @@ module "bastion" {
   resource_group   = azurerm_resource_group.main.name
   public_subnet_id = azurerm_subnet.bastion-subnet.id
   ssh_key          = tls_private_key.key.public_key_openssh
+  bastion_nsg_source_prefix = var.bastion_nsg_source_prefix
 }
 
 # 3. Create Workloads

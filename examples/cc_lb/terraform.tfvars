@@ -1,7 +1,7 @@
 ## This is only a sample terraform.tfvars file.
 ## Uncomment and change the below variables according to your specific environment
 #####################################################################################################################
-##### Variables 1-12 are populated automically if terraform is ran via ZSEC bash script.   ##### 
+##### Variables 1-16 are populated automically if terraform is ran via ZSEC bash script.   ##### 
 ##### Modifying the variables in this file will override any inputs from ZSEC              #####
 #####################################################################################################################
 
@@ -141,39 +141,44 @@
 #owner_tag                              = "username@company.com"
 
 
+## 16. By default, this script will apply 1 Network Security Group per Cloud Connector instance. 
+##     Uncomment if you want to use the same Network Security Group for ALL Cloud Connectors (true or false. Default: false)
+
+#reuse_nsg                               = true
+
 #####################################################################################################################
 ##### Custom BYO variables. Only applicable for "cc_lb" deployment without "base" resource requirements  #####
 #####################################################################################################################
 
-## 16. By default, this script will create a new Resource Group and place all resources in this group.
+## 17. By default, this script will create a new Resource Group and place all resources in this group.
 ##     Uncomment if you want to deploy all resources in an existing Resource Group? (true or false. Default: false)
 
 #byo_rg                                 = true
 
 
-## 17. Provide your existing Resource Group name. Only uncomment and modify if you set byo_rg to true
+## 18. Provide your existing Resource Group name. Only uncomment and modify if you set byo_rg to true
 
 #byo_rg_name                            = "existing-rg"
 
 
-## 18. By default, this script will create a new Azure Virtual Network in the default resource group.
+## 19. By default, this script will create a new Azure Virtual Network in the default resource group.
 ##     Uncomment if you want to deploy all resources to a VNet that already exists (true or false. Default: false)
 
 #byo_vnet                               = true
 
 
-## 19. Provide your existing VNet name. Only uncomment and modify if you set byo_vnet to true
+## 20. Provide your existing VNet name. Only uncomment and modify if you set byo_vnet to true
 
 #byo_vnet_name                          = "existing-vnet"
 
 
-## 20. Provide the existing Resource Group name of your VNet. Only uncomment and modify if you set byo_vnet to true
+## 21. Provide the existing Resource Group name of your VNet. Only uncomment and modify if you set byo_vnet to true
 ##     Subnets depend on VNet so the same resource group is implied for subnets
 
 #byo_vnet_subnets_rg_name               = "existing-vnet-rg"
 
 
-## 21. By default, this script will create 1 new Azure subnet in the default resource group unles the zones variable
+## 22. By default, this script will create 1 new Azure subnet in the default resource group unles the zones variable
 ##     specifies multiple zonal deployments in which case subnet 1 would logically map to resources in zone "1", etc.
 ##     Uncomment if you want to deploy all resources in subnets that already exist (true or false. Default: false)
 ##     Dependencies require in order to reference existing subnets, the corresponding VNet must also already exist.
@@ -182,7 +187,7 @@
 #byo_subnets                            = true
 
 
-## 22. Provide your existing Cloud Connector subnet names. Only uncomment and modify if you set byo_subnets to true
+## 23. Provide your existing Cloud Connector subnet names. Only uncomment and modify if you set byo_subnets to true
 ##     By default, management and service interfaces reside in a single subnet. Therefore, specifying multiple subnets
 ##     implies only that you are doing a zonal deployment with resources in separate AZs and corresponding zonal NAT
 ##     Gateway resources associated with the CC subnets mapped to the same respective zones.
@@ -192,13 +197,13 @@
 #byo_subnet_names                       = ["existing-cc-subnet"]
 
 
-## 23. By default, this script will create new Public IP resources to be associated with CC NAT Gateways.
-##    Uncomment if you want to use your own public IP for the NAT GW (true or false. Default: false)
+## 24. By default, this script will create new Public IP resources to be associated with CC NAT Gateways.
+##     Uncomment if you want to use your own public IP for the NAT GW (true or false. Default: false)
 
 #byo_pips                               = true
 
 
-## 24. Provide your existing Azure Public IP resource names. Only uncomment and modify if you set byo_pips to true
+## 25. Provide your existing Azure Public IP resource names. Only uncomment and modify if you set byo_pips to true
 ##     Existing Public IP resource cannot be associated with any resource other than an existing NAT Gateway in which
 ##     case existing_pip_association and existing_nat_gw_association need both set to true
 ##
@@ -210,18 +215,18 @@
 #byo_pip_names                          = ["pip-az1","pip-az2"]
 
 
-## 25. Provide the existing Resource Group name of your Azure public IPs.  Only uncomment and modify if you set byo_pips to true
+## 26. Provide the existing Resource Group name of your Azure public IPs.  Only uncomment and modify if you set byo_pips to true
 
 #byo_pip_rg                             = "existing-pip-rg"
 
 
-## 26. By default, this script will create new NAT Gateway resources for the Cloud Connector subnets to be associated
+## 27. By default, this script will create new NAT Gateway resources for the Cloud Connector subnets to be associated
 ##    Uncomment if you want to use your own NAT Gateway (true or false. Default: false)
 
 #byo_nat_gws                            = true
 
 
-## 27. Provide your existing Azure NAT Gateway resource names. Only uncomment and modify if you set byo_nat_gws to true
+## 28. Provide your existing Azure NAT Gateway resource names. Only uncomment and modify if you set byo_nat_gws to true
 ##    ***** Note *****
 ##    If you already have existing NAT Gateways AND set zone_enabled to true these resource should be configured as zonal and
 ##    be added here to this variable list in order of the zones specified in the "zones" variable. 
@@ -230,12 +235,12 @@
 #byo_nat_gw_names                       = ["natgw-az1","natgw-az2"]
 
 
-## 28. Provide the existing Resource Group name of your NAT Gateway.  Only uncomment and modify if you set byo_nat_gws to true
+## 29. Provide the existing Resource Group name of your NAT Gateway.  Only uncomment and modify if you set byo_nat_gws to true
 
 #byo_nat_gw_rg                          = "existing-nat-gw-rg"
 
 
-## 29.  By default, this script will create a new Azure Public IP and associate it with new/existing NAT Gateways.
+## 30.  By default, this script will create a new Azure Public IP and associate it with new/existing NAT Gateways.
 ##      Uncomment if you are deploying cloud connector to an environment where the PIP already exists AND is already asssociated to
 ##      an existing NAT Gateway. (true or false. Default: false). 
 ##      Setting existing_pip_association to true means byo_nat_gws and byo_pips must ALSO be set to true.
@@ -243,7 +248,7 @@
 #existing_nat_gw_pip_association        = true
 
 
-## 30.  By default this script will create a new Azure NAT Gateway and associate it with new or existing CC subnets.
+## 31.  By default this script will create a new Azure NAT Gateway and associate it with new or existing CC subnets.
 ##      Uncomment if you are deploying cloud connector to an environment where the subnet already exists AND is already asssociated to
 ##      an existing NAT Gateway. (true or false. Default: false). 
 ##      Setting existing_nat_gw_association to true means byo_subnets AND byo_nat_gws must also be set to true.
@@ -251,14 +256,14 @@
 #existing_nat_gw_subnet_association     = true
 
 
-## 31. By default, this script will create new Network Security Groups for the Cloud Connector mgmt and service interfaces
-##    Uncomment if you want to use your own NSGs (true or false. Default: false)
+## 32. By default, this script will create new Network Security Groups for the Cloud Connector mgmt and service interfaces
+##     Uncomment if you want to use your own NSGs (true or false. Default: false)
 
 #byo_nsg                                = true
 
 
-## 32. Provide your existing Network Security Group resource names. Only uncomment and modify if you set byo_nsg to true
-##    ***** Note *****
+## 33. Provide your existing Network Security Group resource names. Only uncomment and modify if you set byo_nsg to true
+##     ***** Note *****
 
 ##    Example: byo_mgmt_nsg_names  = ["mgmt-nsg-1","mgmt-nsg-2"]
 ##    Example: byo_service_nsg_names  = ["service-nsg-1","service-nsg-2"]
@@ -267,6 +272,6 @@
 #byo_service_nsg_names                  = ["service-nsg-1","service-nsg-2"]
 
 
-## 33. Provide the existing Resource Group name of your Network Security Groups.  Only uncomment and modify if you set byo_nsg to true
+## 34. Provide the existing Resource Group name of your Network Security Groups.  Only uncomment and modify if you set byo_nsg to true
 
 #byo_nsg_rg                             = "existing-nsg-rg"

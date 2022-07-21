@@ -132,6 +132,56 @@ if [[ $dtype == "base" && ! -e ./.zsecrc ]]; then
     echo "Delete .zsecrc file and re-run zsec up..."
     exit 1
     fi
+    while [[ "$dtype" == "base" && "$oper" == "up" ]]; do
+clientpublicip=$(curl -s ifconfig.me)
+    echo "greenfield deployments include a publicly accessible ssh bastion host.."
+    read -r -p "Your current public IP is ${clientpublicip}. Lock SSH access to this IP? [yes/no] " bastion_response
+case $bastion_response in 
+	yes|y ) 
+    echo "Updating Bastion NSG to permit SSH only from ${clientpublicip}: "
+    echo "export TF_VAR_bastion_nsg_source_prefix=${clientpublicip}" >> .zsecrc
+    useclientip=true
+    break
+    ;;
+	no|n )
+    read -r -p "Lock SSH access to a different IP address or range? Default is open [yes/no]: " changebastionip
+    useclientip=false
+    break
+    ;;
+	* ) echo "invalid response. Please enter yes or no";;
+    esac
+done
+
+if [[ "$useclientip" == "false" ]]; then
+while true; do
+case $changebastionip in 
+	yes|y ) 
+    read -r -p "Enter new IP Address or CIDR range (e.g. 2.2.2.2/32): " bastionipinput
+    echo "export TF_VAR_bastion_nsg_source_prefix=${bastionipinput}" >> .zsecrc
+
+   
+if [[ $bastionipinput =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3} ]]
+then
+if [[ $bastionipinput =~ /[0-9]{1,2}$ ]]; then
+echo "$bastionipinput - IP/Netmask valid"
+else
+echo "netmask not present or invalid"
+exit
+fi
+else
+echo "$bastionipinput is not valid"
+exit 1
+fi
+    break
+    ;;
+	no|n )
+    echo "SSH access permitted for all IP addresses..." 
+    break
+    ;;
+	* ) echo "invalid response. Please enter yes or no";;
+    esac
+done
+fi
 fi
 
 echo "Checking Azure Environment Variables and Cloud Connector bootstrap requirements... For ZPA or custom/byo deployments, please stop and refer to the README and terraform.tfvars file instructions"
@@ -154,6 +204,58 @@ if [[ ! -e ./.zsecrc ]]; then
     echo "Delete .zsecrc file and re-run zsec up..."
     exit 1
     fi
+
+    while [[ "$dtype" == "base"* && "$oper" == "up" ]]; do
+clientpublicip=$(curl -s ifconfig.me)
+    echo "greenfield deployments include a publicly accessible ssh bastion host.."
+    read -r -p "Your current public IP is ${clientpublicip}. Lock SSH access to this IP? [yes/no] " bastion_response
+case $bastion_response in 
+	yes|y ) 
+    echo "Updating Bastion NSG to permit SSH only from ${clientpublicip}: "
+    echo "export TF_VAR_bastion_nsg_source_prefix=${clientpublicip}" >> .zsecrc
+    useclientip=true
+    break
+    ;;
+	no|n )
+    read -r -p "Lock SSH access to a different IP address or range? Default is open [yes/no]: " changebastionip
+    useclientip=false
+    break
+    ;;
+	* ) echo "invalid response. Please enter yes or no";;
+    esac
+done
+
+if [[ "$useclientip" == "false" ]]; then
+while true; do
+case $changebastionip in 
+	yes|y ) 
+    read -r -p "Enter new IP Address or CIDR range (e.g. 2.2.2.2/32): " bastionipinput
+    echo "export TF_VAR_bastion_nsg_source_prefix=${bastionipinput}" >> .zsecrc
+
+   
+if [[ $bastionipinput =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3} ]]
+then
+if [[ $bastionipinput =~ /[0-9]{1,2}$ ]]; then
+echo "$bastionipinput - IP/Netmask valid"
+else
+echo "netmask not present or invalid"
+exit
+fi
+else
+echo "$bastionipinput is not valid"
+exit 1
+fi
+    break
+    ;;
+	no|n )
+    echo "SSH access permitted for all IP addresses..." 
+    break
+    ;;
+	* ) echo "invalid response. Please enter yes or no";;
+    esac
+done
+fi
+
     cc_instance_size_default=small
     read -r -p "Enter CC Instance Size. Valid input = small, medium, or large. This needs to match the size chosen in the CC provisioning template [Default=$cc_instance_size_default]: " cc_instance_size_input
 cc_instance_size=${cc_instance_size_input:-$cc_instance_size_default}
@@ -259,13 +361,28 @@ fi
 az_supported_regions=["australiaeast","brazilsouth","canadacentral","centralindia","centralus","eastasia","eastus","eastus2","francecentral","germanywestcentral","japaneast","koreacentral","northeurope","norwayeast","southafricanorth","southcentralus","southeastasia","swedencentral","uksouth","westeurope","westus2"]
 if [[ ${az_supported_regions[*]} =~ $azure_location ]]; then
 echo "Azure region ${azure_location} supports Zones..."
-zones_enabled_default=false
-    read -r -p "Deploy Cloud Connectors in dedicated Availability Zones/subnets? (Enter true or false) [Default=$zones_enabled_default]: " zones_enabled_input
-zones_enabled=${zones_enabled_input:-$zones_enabled_default}
-if [[ "$zones_enabled" == "true" ]]; then
-    echo "export TF_VAR_zones_enabled=${zones_enabled}" >> .zsecrc
-    echo "Choose zones [1-3] to deploy in. ${azure_location} must also support zones for this to work"
+zones_enabled_default=no
+    while true; do
+    read -r -p "Deploy Cloud Connectors in dedicated Availability Zones/subnets? (Enter yes or no) [Default=$zones_enabled_default]: " zones_enabled_input
+    zones_enabled=${zones_enabled_input:-$zones_enabled_default}
+case $zones_enabled in 
+	yes|y )
+    echo "export TF_VAR_zones_enabled=true" >> .zsecrc
+    break
+    ;;
+	no|n )
+    echo "export TF_VAR_zones_enabled=false" >> .zsecrc
+    echo "No zones defined. Proceeding with availability sets fault tolerance..."
+    break
+    ;;
+	* ) echo "invalid response. Please enter yes or no";;
+    esac
+done  
 
+
+if [[ "$zones_enabled" == "yes" || "$zones_enabled" == "y" ]]; then
+    echo "Choose zones [1-3] to deploy in... "
+    echo "If deploying only one Cloud Connector, enter yes or only one Zone (1, 2, or 3)"
     while true; do
     read -r -p "Zone 1 (yes/no): " zone1_response
 case $zone1_response in 
@@ -336,14 +453,7 @@ else
     echo "Invalid Zones selection. exiting..."
     echo "Delete .zsecrc file and re-run zsec up..."
     exit 1
-fi 
-elif [[ "$zones_enabled" == "false" ]]; then
-    echo "export TF_VAR_zones_enabled=${zones_enabled}" >> .zsecrc
-    echo "No zones defined"
-else
-    echo "Invalid Zones selection. exiting..."
-    echo "Delete .zsecrc file and re-run zsec up..."
-    exit 1
+  fi 
 fi
 else
 echo "Azure region ${azure_location} does not support Zones. Proceeding..."
