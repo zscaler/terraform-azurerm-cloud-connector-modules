@@ -1,66 +1,75 @@
 variable "name_prefix" {
-  description = "A prefix to associate to all the module resources"
-  default     = "zs"
+  type        = string
+  description = "A prefix to associate to all the Bastion Host module resources"
+  default     = null
 }
 
 variable "resource_tag" {
-  description = "A tag to associate to all the module resources"
-  default     = "cloud-connector"
+  type        = string
+  description = "A tag to associate to all the Bastion Host module resources"
+  default     = null
 }
 
-variable "deployment_tag" {
-  description = "A deployment tag to associate to all the module resources"
-  default     = "development"
+variable "global_tags" {
+  type        = map(string)
+  description = "Populate any custom user defined tags from a map"
+  default     = {}
 }
 
 variable "resource_group" {
+  type        = string
   description = "Main Resource Group Name"
 }
 
+variable "location" {
+  type        = string
+  description = "Cloud Connector Azure Region"
+}
+
 variable "public_subnet_id" {
+  type        = string
   description = "The id of public subnet where the bastion host has to be attached"
 }
 
 variable "server_admin_username" {
-  default = "centos"
-  type    = string
+  type        = string
+  description = "Username configured for the Bastion Host root/admin account"
+  default     = "centos"
 }
 
 variable "ssh_key" {
+  type        = string
   description = "SSH Key for instances"
 }
 
 variable "instance_size" {
-  description = "The image size"
+  type        = string
+  description = "The Azure image type/size"
   default     = "Standard_B1s"
 }
 
 variable "instance_image_publisher" {
-  description = "The image publisher"
+  type        = string
+  description = "The Bastion Host CentOS image publisher"
   default     = "OpenLogic"
 }
 
 variable "instance_image_offer" {
-  description = "The image offer"
+  type        = string
+  description = "The Bastion Host CentOS image offer"
   default     = "CentOS"
 }
 
 variable "instance_image_sku" {
-  description = "The image sku"
+  type        = string
+  description = "The Bastion Host CentOS image sku"
   default     = "7.5"
 }
 
 variable "instance_image_version" {
-  description = "The image version"
+  type        = string
+  description = "The Bastion Host CentOS image version"
   default     = "latest"
-}
-
-variable "global_tags" {
-  description = "populate custom user provided tags"
-}
-
-variable "location" {
-  description = "Azure Region"
 }
 
 variable "bastion_nsg_source_prefix" {
