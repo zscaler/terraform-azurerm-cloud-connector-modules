@@ -1,6 +1,19 @@
 # Zscaler Cloud Connector / Azure VM (Cloud Connector) Module
 
-This module creates all the necessary VM, Network Interface, and NSG/LB associations for a successful Cloud Connector deployment
+This module creates all the necessary VM, Network Interface, and NSG/LB associations for a successful Cloud Connector deployment. This module is for standalone VMs that can be deployed as a cluster behind an internal Standard Load Balancer. This resource is not intended for Azure automatic scaling (Scale Sets).
+
+## Accept Azure Marketplace Terms
+
+Accept the Cloud Connector VM image terms for the Subscription(s) where Cloud Connector is to be deployed. This can be done via the Azure Portal, Cloud Shell or az cli / powershell with a valid admin user/service principal:
+
+```sh
+az vm image terms accept --urn zscaler1579058425289:zia_cloud_connector:zs_ser_gen1_cc_01:latest
+```
+
+## Considerations
+* DO NOT modify the NIC ordering per this reference module for deployments. Cloud Connector explicitly requires that the ordering of network_interface_ids associated to the azurerm_linux_virtual_machine are #1/first "Management". Any number of "Service" interfaces associated are read sequentially thereafter. Cloud Connector associates the first interface with its management services. The "Service" interfaces require IP_Forwarding enabled for traffic processing which is not enabled on the "Management" interface.
+
+
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
