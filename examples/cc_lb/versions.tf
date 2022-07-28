@@ -6,16 +6,22 @@ terraform {
     }
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.3.2"
+      version = "~> 3.3.0"
     }
     local = {
-      source = "hashicorp/local"
+      source  = "hashicorp/local"
+      version = "~> 2.2.0"
     }
     null = {
-      source = "hashicorp/null"
+      source  = "hashicorp/null"
+      version = "~> 3.1.0"
+    }
+    tls = {
+      source  = "hashicorp/tls"
+      version = "~> 3.4.0"
     }
   }
-  required_version = ">= 0.13"
+  required_version = ">= 0.13.7, < 2.0.0"
 }
 
 provider "azurerm" {
@@ -26,4 +32,5 @@ provider "azurerm" {
   alias           = "managed_identity_sub"
   subscription_id = var.managed_identity_subscription_id == null ? var.env_subscription_id : var.managed_identity_subscription_id
   features {}
+  skip_provider_registration = true
 }

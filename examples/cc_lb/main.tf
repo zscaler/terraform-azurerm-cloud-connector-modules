@@ -18,7 +18,7 @@ locals {
 
 ############################################################################################################################
 #### The following lines generates a new SSH key pair and stores the PEM file locally. The public key output is used    ####
-#### as the ssh_key passed variable to the cc_vm module for admin_ssh_key public_key authentication                     ####
+#### as the ssh_key passed variable to the cc-vm module for admin_ssh_key public_key authentication                     ####
 #### This is not recommended for production deployments. Please consider modifying to pass your own custom              ####
 #### public key file located in a secure location                                                                       ####
 ############################################################################################################################
