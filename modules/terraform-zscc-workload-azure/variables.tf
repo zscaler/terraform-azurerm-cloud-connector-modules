@@ -1,63 +1,80 @@
 variable "name_prefix" {
-  description = "A prefix to associate to all the module resources"
-  default     = "zs"
+  type        = string
+  description = "A prefix to associate to all the workload module resources"
+  default     = null
 }
 
 variable "resource_tag" {
-  description = "A tag to associate to all the module resources"
-  default     = "cloud-connector"
+  type        = string
+  description = "A tag to associate to all the workload module resources"
+  default     = null
 }
 
-variable "deployment_tag" {
-  description = "A deployment tag to associate to all the module resources"
-  default     = "development"
+variable "global_tags" {
+  type        = map(string)
+  description = "Populate any custom user defined tags from a map"
+  default     = {}
 }
 
 variable "resource_group" {
+  type        = string
   description = "Main Resource Group Name"
 }
 
+variable "location" {
+  type        = string
+  description = "Cloud Connector Azure Region"
+}
+
 variable "subnet_id" {
+  type        = string
   description = "The id of subnet where the workload host has to be attached"
 }
 
 variable "server_admin_username" {
-  default = "centos"
-  type    = string
+  type        = string
+  description = "Username configured for the workload root/admin account"
+  default     = "centos"
 }
 
 variable "ssh_key" {
+  type        = string
   description = "SSH Key for instances"
 }
 
 variable "instance_size" {
-  description = "The image size"
+  type        = string
+  description = "The Azure image type/size"
   default     = "Standard_B1s"
 }
 
 variable "instance_image_publisher" {
-  description = "The image publisher"
+  type        = string
+  description = "The workload CentOS image publisher"
   default     = "OpenLogic"
 }
 
 variable "instance_image_offer" {
-  description = "The image offer"
+  type        = string
+  description = "The workload CentOS image offer"
   default     = "CentOS"
 }
 
 variable "instance_image_sku" {
-  description = "The image sku"
+  type        = string
+  description = "The workload CentOS image sku"
   default     = "7.5"
 }
 
 variable "instance_image_version" {
-  description = "The image version"
+  type        = string
+  description = "The workload CentOS image version"
   default     = "latest"
 }
 
 variable "workload_count" {
-  description = "number of Workload VMs to deploy"
   type        = number
+  description = "The number of Workload VMs to deploy"
   default     = 1
   validation {
     condition     = var.workload_count >= 1 && var.workload_count <= 250
@@ -65,17 +82,9 @@ variable "workload_count" {
   }
 }
 
-variable "global_tags" {
-  description = "populate custom user provided tags"
-}
-
-variable "location" {
-  description = "Azure Region"
-}
-
 # If no values specified, this defaults to Azure DNS 
 variable "dns_servers" {
-  description = "The DNS servers configured for workload VMs."
   type        = list(string)
+  description = "The DNS servers configured for workload VMs."
   default     = []
 }
