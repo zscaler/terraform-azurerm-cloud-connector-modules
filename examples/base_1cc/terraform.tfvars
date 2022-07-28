@@ -9,7 +9,7 @@
 ##    ** Note ** This will be auto populated for you via ZSEC bash script, so only uncomment if running Terraform manually.
 ##    E.g "abc12345-6789-0123-a456-bc1234567de8"
 
-#env_subscription_id           = "abc12345-6789-0123-a456-bc1234567de8"
+#env_subscription_id                        = "abc12345-6789-0123-a456-bc1234567de8"
 
 #####################################################################################################################
 ##### Cloud Init Provisioning variables for userdata file  #####
