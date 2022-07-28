@@ -5,6 +5,11 @@
 ##### Modifying the variables in this file will override any inputs from ZSEC              #####
 #####################################################################################################################
 
+##    Provide the Azure Subscription ID where Terraform will authenticate to via the azurerm provider.
+##    ** Note ** This will be auto populated for you via ZSEC bash script, so only uncomment if running Terraform manually.
+##    E.g "abc12345-6789-0123-a456-bc1234567de8"
+
+#env_subscription_id           = "abc12345-6789-0123-a456-bc1234567de8"
 
 #####################################################################################################################
 ##### Cloud Init Provisioning variables for userdata file  #####

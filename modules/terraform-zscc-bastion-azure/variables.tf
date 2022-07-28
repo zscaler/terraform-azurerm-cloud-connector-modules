@@ -73,6 +73,7 @@ variable "instance_image_version" {
 }
 
 variable "bastion_nsg_source_prefix" {
+  type        = string
   description = "user input for locking down SSH access to bastion to a specific IP or CIDR range"
   default     = "*"
 }
