@@ -1,5 +1,3 @@
-# azure variables
-
 variable "env_subscription_id" {
   type        = string
   description = "Azure Subscription ID where resources are to be deployed in"
@@ -7,85 +5,76 @@ variable "env_subscription_id" {
 }
 
 variable "arm_location" {
-  description = "The Azure location."
+  type        = string
+  description = "The Azure Region where resources are to be deployed"
   default     = "westus2"
 }
 
 variable "name_prefix" {
-  description = "The name prefix for all your resources"
-  default     = "zs"
   type        = string
+  description = "The name prefix for all your resources"
+  default     = "zsdemo"
 }
 
 variable "network_address_space" {
-  description = "VNET CIDR"
+  type        = string
+  description = "VNET CIDR / address prefix"
   default     = "10.1.0.0/16"
 }
 
+variable "environment" {
+  type        = string
+  description = "Customer defined environment tag. ie: Dev, QA, Prod, etc."
+  default     = "Development"
+}
+
+variable "owner_tag" {
+  description = "Customer defined owner tag value. ie: Org, Dept, username, etc."
+  type        = string
+  default     = "zscc-admin"
+}
+
+variable "tls_key_algorithm" {
+  type        = string
+  description = "algorithm for tls_private_key resource"
+  default     = "RSA"
+}
+
 variable "cc_subnets" {
-  description = "Cloud Connector Subnets"
+  description = "Cloud Connector Subnets to create in VNet. This is only required if you want to override the default subnets that this code creates"
   default     = null
   type        = list(string)
 }
 
-variable "environment" {
-  description = "Environment"
-  default     = "Development"
-}
-
-variable "tls_key_algorithm" {
-  default = "RSA"
-  type    = string
-}
-
 variable "managed_identity_subscription_id" {
-  default     = null
   type        = string
-  description = "Azure Subscription ID where the User Managed Identity resource exists"
+  description = "Azure Subscription ID where the User Managed Identity resource exists. Only required if this Subscription ID is different than env_subscription_id"
+  default     = null
   sensitive   = true
 }
 
 variable "cc_vm_managed_identity_name" {
-  description = "Azure Managed Identity name to attach to the CC VM. E.g zspreview-66117-mi"
   type        = string
+  description = "Azure Managed Identity name to attach to the CC VM. E.g zspreview-66117-mi"
 }
 
 variable "cc_vm_managed_identity_rg" {
-  description = "Resource Group of the Azure Managed Identity name to attach to the CC VM. E.g. edgeconnector_rg_1"
   type        = string
+  description = "Resource Group of the Azure Managed Identity name to attach to the CC VM. E.g. edgeconnector_rg_1"
 }
 
 variable "cc_vm_prov_url" {
-  description = "Zscaler Cloud Connector Provisioning URL"
   type        = string
+  description = "Zscaler Cloud Connector Provisioning URL"
 }
 
 variable "azure_vault_url" {
-  description = "Azure Vault URL"
   type        = string
-}
-
-variable "ccvm_image_publisher" {
-  description = "Azure Marketplace Cloud Connector Image Publisher"
-  default     = "zscaler1579058425289"
-}
-
-variable "ccvm_image_offer" {
-  description = "Azure Marketplace Cloud Connector Image Offer"
-  default     = "zia_cloud_connector"
-}
-
-variable "ccvm_image_sku" {
-  description = "Azure Marketplace Cloud Connector Image SKU"
-  default     = "zs_ser_gen1_cc_01"
-}
-
-variable "ccvm_image_version" {
-  description = "Azure Marketplace Cloud Connector Image Version"
-  default     = "latest"
+  description = "Azure Vault URL"
 }
 
 variable "ccvm_instance_type" {
+  type        = string
   description = "Cloud Connector Image size"
   default     = "Standard_D2s_v3"
   validation {
@@ -100,76 +89,8 @@ variable "ccvm_instance_type" {
   }
 }
 
-variable "http_probe_port" {
-  description = "port for Cloud Connector cloud init to enable listener port for HTTP probe from LB"
-  default     = 0
-  validation {
-    condition = (
-      var.http_probe_port == 0 ||
-      var.http_probe_port == 80 ||
-      (var.http_probe_port >= 1024 && var.http_probe_port <= 65535)
-    )
-    error_message = "Input http_probe_port must be set to a single value of 80 or any number between 1024-65535."
-  }
-}
-
-variable "workload_count" {
-  description = "number of Workload VMs to deploy"
-  type        = number
-  default     = 1
-  validation {
-    condition     = var.workload_count >= 1 && var.workload_count <= 250
-    error_message = "Input workload_count must be a whole number between 1 and 250."
-  }
-}
-
-variable "cc_count" {
-  description = "number of Cloud Connectors to deploy. Validation assumes max for /24 subnet but could be smaller or larger as long as subnet can accommodate"
-  type        = number
-  default     = 1
-  validation {
-    condition     = var.cc_count > 0 && var.cc_count < 2
-    error_message = "Input cc_count must be equal to 1 for this base_1cc deployment type."
-  }
-}
-
-# Validation to determine if Azure Region selected supports availabilty zones if desired
-locals {
-  az_supported_regions = ["australiaeast", "brazilsouth", "canadacentral", "centralindia", "centralus", "eastasia", "eastus", "eastus2", "francecentral", "germanywestcentral", "japaneast", "koreacentral", "northeurope", "norwayeast", "southafricanorth", "southcentralus", "southeastasia", "swedencentral", "uksouth", "westeurope", "westus2"]
-  zones_supported = (
-    contains(local.az_supported_regions, var.arm_location) && var.zones_enabled == true
-  )
-  pip_zones = (
-    contains(local.az_supported_regions, var.arm_location) ? "Zone-Redundant" : "No-Zone"
-  )
-}
-
-variable "zones_enabled" {
-  type        = bool
-  default     = false
-  description = "Azure Region"
-}
-
-variable "zones" {
-  type        = list(string)
-  default     = ["1"]
-  description = "Azure Region"
-  validation {
-    condition = (
-      length(var.zones) == 1 &&
-      !contains([for zones in var.zones : contains(["1", "2", "3"], zones)], false)
-    )
-    error_message = "Input zones variable must be exactly one number between 1-3."
-  }
-}
-
-variable "owner_tag" {
-  description = "populate custom owner tag attribute"
-  type        = string
-  default     = "zscc-admin"
-}
-
 variable "cc_instance_size" {
+  type    = string
   default = "small"
   validation {
     condition = (
@@ -194,10 +115,93 @@ locals {
   )
 }
 
+variable "ccvm_image_publisher" {
+  type        = string
+  description = "Azure Marketplace Cloud Connector Image Publisher"
+  default     = "zscaler1579058425289"
+}
+
+variable "ccvm_image_offer" {
+  type        = string
+  description = "Azure Marketplace Cloud Connector Image Offer"
+  default     = "zia_cloud_connector"
+}
+
+variable "ccvm_image_sku" {
+  type        = string
+  description = "Azure Marketplace Cloud Connector Image SKU"
+  default     = "zs_ser_gen1_cc_01"
+}
+
+variable "ccvm_image_version" {
+  type        = string
+  description = "Azure Marketplace Cloud Connector Image Version"
+  default     = "latest"
+}
+
+variable "http_probe_port" {
+  description = "TCP port number for Cloud Connector cloud init to enable listener port for HTTP probe from LB"
+  default     = 0
+  validation {
+    condition = (
+      var.http_probe_port == 0 ||
+      var.http_probe_port == 80 ||
+      (var.http_probe_port >= 1024 && var.http_probe_port <= 65535)
+    )
+    error_message = "Input http_probe_port must be set to a single value of 80 or any number between 1024-65535."
+  }
+}
+
+variable "workload_count" {
+  type        = number
+  description = "The number of Workload VMs to deploy"
+  default     = 1
+  validation {
+    condition     = var.workload_count >= 1 && var.workload_count <= 250
+    error_message = "Input workload_count must be a whole number between 1 and 250."
+  }
+}
+
+variable "cc_count" {
+  type        = number
+  description = "The number of Cloud Connectors to deploy.  Validation assumes max for /24 subnet but could be smaller or larger as long as subnet can accommodate"
+  default     = 1
+  validation {
+    condition     = var.cc_count >= 1 && var.cc_count <= 250
+    error_message = "Input cc_count must be a whole number between 1 and 250."
+  }
+}
+
+# Validation to determine if Azure Region selected supports availabilty zones if desired
+locals {
+  az_supported_regions = ["australiaeast", "brazilsouth", "canadacentral", "centralindia", "centralus", "eastasia", "eastus", "francecentral", "germanywestcentral", "japaneast", "koreacentral", "northeurope", "norwayeast", "southafricanorth", "southcentralus", "southeastasia", "swedencentral", "uksouth", "westeurope", "westus2"]
+  zones_supported = (
+    contains(local.az_supported_regions, var.location) && var.zones_enabled == true
+  )
+}
+
+variable "zones_enabled" {
+  type        = bool
+  description = "Determine whether to provision Cloud Connector VMs explicitly in defined zones (if supported by the Azure region provided in the location variable). If left false, Azure will automatically choose a zone and module will create an availability set resource instead for VM fault tolerance"
+  default     = false
+}
+
+variable "zones" {
+  type        = list(string)
+  default     = ["1"]
+  description = "Specify which availability zone(s) to deploy VM resources in if zones_enabled variable is set to true"
+  validation {
+    condition = (
+      !contains([for zones in var.zones : contains(["1", "2", "3"], zones)], false)
+    )
+    error_message = "Input zones variable must be a number 1-3."
+  }
+}
+
 variable "reuse_nsg" {
+  type        = bool
   description = "Specifies whether the NSG module should create 1:1 network security groups per instance or 1 network security group for all instances"
   default     = "false"
-  type        = bool
 }
 
 variable "accelerated_networking_enabled" {
@@ -207,6 +211,7 @@ variable "accelerated_networking_enabled" {
 }
 
 variable "bastion_nsg_source_prefix" {
+  type        = string
   description = "user input for locking down SSH access to bastion to a specific IP or CIDR range"
   default     = "*"
 }
