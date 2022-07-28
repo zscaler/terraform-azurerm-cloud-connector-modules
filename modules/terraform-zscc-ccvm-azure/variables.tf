@@ -1,38 +1,57 @@
 variable "name_prefix" {
-  description = "A prefix to associate to all the module resources"
-  default     = "zs"
+  type        = string
+  description = "A prefix to associate to all the Bastion Host module resources"
+  default     = null
 }
 
 variable "resource_tag" {
-  description = "A tag to associate to all the module resources"
-  default     = "cloud-connector"
+  type        = string
+  description = "A tag to associate to all the Bastion Host module resources"
+  default     = null
+}
+
+variable "global_tags" {
+  type        = map(string)
+  description = "Populate any custom user defined tags from a map"
+  default     = {}
 }
 
 variable "resource_group" {
+  type        = string
   description = "Main Resource Group Name"
+}
+
+variable "location" {
+  type        = string
+  description = "Cloud Connector Azure Region"
 }
 
 #### module by default pushes the same single subnet ID for both mgmt_subnet_id and service_subnet_id, so they are effectively the same variable
 #### leaving each as unique values should customer choose to deploy mgmt and service as individual subnets for additional isolation
 variable "mgmt_subnet_id" {
+  type        = string
   description = "Cloud Connector management subnet id. "
 }
 
 variable "service_subnet_id" {
+  type        = string
   description = "Cloud Connector service subnet id"
 }
 
 variable "cc_username" {
+  type        = string
   description = "Default Cloud Connector admin/root username"
   default     = "zsroot"
-  type        = string
+
 }
 
 variable "ssh_key" {
+  type        = string
   description = "SSH Key for instances"
 }
 
 variable "ccvm_instance_type" {
+  type        = string
   description = "Cloud Connector Image size"
   default     = "Standard_D2s_v3"
   validation {
@@ -47,91 +66,8 @@ variable "ccvm_instance_type" {
   }
 }
 
-variable "user_data" {
-  description = "Cloud Init data"
-}
-
-variable "ccvm_image_publisher" {
-  description = "Azure Marketplace Cloud Connector Image Publisher"
-  default     = "zscaler1579058425289"
-}
-
-variable "ccvm_image_offer" {
-  description = "Azure Marketplace Cloud Connector Image Offer"
-  default     = "zia_cloud_connector"
-}
-
-variable "ccvm_image_sku" {
-  description = "Azure Marketplace Cloud Connector Image SKU"
-  default     = "zs_ser_gen1_cc_01"
-}
-
-variable "ccvm_image_version" {
-  description = "Azure Marketplace Cloud Connector Image Version"
-  default     = "latest"
-}
-
-variable "cc_count" {
-  description = "number of Cloud Connectors to deploy.  Validation assumes max for /24 subnet but could be smaller or larger as long as subnet can accommodate"
-  type        = number
-  default     = 1
-  validation {
-    condition     = var.cc_count >= 1 && var.cc_count <= 250
-    error_message = "Input cc_count must be a whole number between 1 and 250."
-  }
-}
-
-variable "http_probe_port" {
-  description = "port for Cloud Connector cloud init to enable listener port for HTTP probe from LB"
-  default     = 0
-  validation {
-    condition = (
-      var.http_probe_port == 0 ||
-      var.http_probe_port == 80 ||
-      (var.http_probe_port >= 1024 && var.http_probe_port <= 65535)
-    )
-    error_message = "Input http_probe_port must be set to a single value of 80 or any number between 1024-65535."
-  }
-}
-
-variable "backend_address_pool" {
-  default     = null
-  description = "Azure LB Backend Address Pool ID"
-}
-
-variable "location" {
-  description = "Azure Region"
-}
-
-variable "zones_enabled" {
-  type        = bool
-  default     = false
-  description = "Azure Region"
-}
-
-variable "zones" {
-  type        = list(string)
-  default     = ["1"]
-  description = "Azure Region"
-  validation {
-    condition = (
-      !contains([for zones in var.zones : contains(["1", "2", "3"], zones)], false)
-    )
-    error_message = "Input zones variable must be a number 1-3."
-  }
-}
-
-variable "lb_association_enabled" {
-  type        = bool
-  default     = false
-  description = "Determines whether or not to create a nic backend pool assocation to the service nic(s) or not"
-}
-
-variable "global_tags" {
-  description = "populate custom user provided tags"
-}
-
 variable "cc_instance_size" {
+  type    = string
   default = "small"
   validation {
     condition = (
@@ -141,22 +77,6 @@ variable "cc_instance_size" {
     )
     error_message = "Input cc_instance_size must be set to an approved cc instance type."
   }
-}
-
-# Validation to determine if Azure Region selected supports availabilty zones if desired
-locals {
-  az_supported_regions = ["australiaeast", "brazilsouth", "canadacentral", "centralindia", "centralus", "eastasia", "eastus", "francecentral", "germanywestcentral", "japaneast", "koreacentral", "northeurope", "norwayeast", "southafricanorth", "southcentralus", "southeastasia", "swedencentral", "uksouth", "westeurope", "westus2"]
-  zones_supported = (
-    contains(local.az_supported_regions, var.location) && var.zones_enabled == true
-  )
-}
-
-# Validation to determine if Azure Region selected supports 3 Fault Domain or just 2
-locals {
-  max_fd_supported_regions = ["eastus", "eastus2", "westus", "centralus", "northcentralus", "southcentralus", "canadacentral", "northeurope", "westeurope"]
-  max_fd_supported = (
-    contains(local.max_fd_supported_regions, var.location) && var.zones_enabled == false
-  )
 }
 
 # Validation to determine if the selected Azure VM type and CC VM size is compatible 
@@ -172,23 +92,123 @@ locals {
   )
 }
 
+variable "user_data" {
+  type        = string
+  description = "Cloud Init data"
+}
+
+variable "ccvm_image_publisher" {
+  type        = string
+  description = "Azure Marketplace Cloud Connector Image Publisher"
+  default     = "zscaler1579058425289"
+}
+
+variable "ccvm_image_offer" {
+  type        = string
+  description = "Azure Marketplace Cloud Connector Image Offer"
+  default     = "zia_cloud_connector"
+}
+
+variable "ccvm_image_sku" {
+  type        = string
+  description = "Azure Marketplace Cloud Connector Image SKU"
+  default     = "zs_ser_gen1_cc_01"
+}
+
+variable "ccvm_image_version" {
+  type        = string
+  description = "Azure Marketplace Cloud Connector Image Version"
+  default     = "latest"
+}
+
+variable "cc_count" {
+  type        = number
+  description = "The number of Cloud Connectors to deploy.  Validation assumes max for /24 subnet but could be smaller or larger as long as subnet can accommodate"
+  default     = 1
+  validation {
+    condition     = var.cc_count >= 1 && var.cc_count <= 250
+    error_message = "Input cc_count must be a whole number between 1 and 250."
+  }
+}
+
+variable "http_probe_port" {
+  type        = number
+  description = "TCP Port number for Cloud Connector cloud init to enable listener port for HTTP probe from LB. Default is 0 which effectively disables the listener service so customer must specify a valid number to enable"
+  default     = 0
+  validation {
+    condition = (
+      var.http_probe_port == 0 ||
+      var.http_probe_port == 80 ||
+      (var.http_probe_port >= 1024 && var.http_probe_port <= 65535)
+    )
+    error_message = "Input http_probe_port must be set to a single value of 80 or any number between 1024-65535."
+  }
+}
+
+variable "lb_association_enabled" {
+  type        = bool
+  description = "Determines whether or not to create a nic backend pool assocation to the service nic(s)"
+  default     = false
+}
+
+variable "backend_address_pool" {
+  type        = string
+  description = "Azure LB Backend Address Pool ID for NIC association"
+  default     = null
+}
+
+# Validation to determine if Azure Region selected supports availabilty zones if desired
+locals {
+  az_supported_regions = ["australiaeast", "brazilsouth", "canadacentral", "centralindia", "centralus", "eastasia", "eastus", "francecentral", "germanywestcentral", "japaneast", "koreacentral", "northeurope", "norwayeast", "southafricanorth", "southcentralus", "southeastasia", "swedencentral", "uksouth", "westeurope", "westus2"]
+  zones_supported = (
+    contains(local.az_supported_regions, var.location) && var.zones_enabled == true
+  )
+}
+
+variable "zones_enabled" {
+  type        = bool
+  description = "Determine whether to provision Cloud Connector VMs explicitly in defined zones (if supported by the Azure region provided in the location variable). If left false, Azure will automatically choose a zone and module will create an availability set resource instead for VM fault tolerance"
+  default     = false
+}
+
+variable "zones" {
+  type        = list(string)
+  default     = ["1"]
+  description = "Specify which availability zone(s) to deploy VM resources in if zones_enabled variable is set to true"
+  validation {
+    condition = (
+      !contains([for zones in var.zones : contains(["1", "2", "3"], zones)], false)
+    )
+    error_message = "Input zones variable must be a number 1-3."
+  }
+}
+
 variable "managed_identity_id" {
   type        = string
   description = "ID of the User Managed Identity assigned to Cloud Connector VM"
 }
 
 variable "mgmt_nsg_id" {
-  description = "Cloud Connector management nsg id"
   type        = list(string)
+  description = "Cloud Connector management interface nsg id"
 }
 
 variable "service_nsg_id" {
-  description = "Cloud Connector service nsg id"
   type        = list(string)
+  description = "Cloud Connector service interface(s) nsg id"
 }
 
 variable "accelerated_networking_enabled" {
   type        = bool
-  default     = false
   description = "Enable/Disable accelerated networking support on all Cloud Connector service interfaces"
+  default     = false
+}
+
+# Validation to determine if Azure Region selected supports 3 Fault Domain or just 2.
+# This validation is only relevant if zones_enabled is set to false.
+locals {
+  max_fd_supported_regions = ["eastus", "eastus2", "westus", "centralus", "northcentralus", "southcentralus", "canadacentral", "northeurope", "westeurope"]
+  max_fd_supported = (
+    contains(local.max_fd_supported_regions, var.location) && var.zones_enabled == false
+  )
 }

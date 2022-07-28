@@ -264,7 +264,7 @@ resource "azurerm_linux_virtual_machine" "cc-vm" {
   ]
 
   lifecycle {
-    ignore_changes = [network_interface_ids]
+    ignore_changes = [network_interface_ids] #ignore the fallback network interface association for small/medium CCs so terraform doesn't think it needs to update them on subsequent applies
   }
 }
 
