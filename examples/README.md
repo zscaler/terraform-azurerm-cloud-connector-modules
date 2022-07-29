@@ -64,8 +64,7 @@ Deployment Type: (base | base_cc | base_cc_lb ):
 
 **2. Brownfield Deployments**
 
-(Use this if you are building an entire cluster from ground up.
- Particularly useful for a Customer Demo/PoC or dev-test environment)
+(These templates would be most applicable for production deployments and have more customization options than a "base" deployments)
 
 ```
 bash
