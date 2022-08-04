@@ -176,8 +176,9 @@ variable "cc_count" {
 locals {
   az_supported_regions = ["australiaeast", "brazilsouth", "canadacentral", "centralindia", "centralus", "eastasia", "eastus", "francecentral", "germanywestcentral", "japaneast", "koreacentral", "northeurope", "norwayeast", "southafricanorth", "southcentralus", "southeastasia", "swedencentral", "uksouth", "westeurope", "westus2"]
   zones_supported = (
-    contains(local.az_supported_regions, var.location) && var.zones_enabled == true
+    contains(local.az_supported_regions, var.arm_location) && var.zones_enabled == true
   )
+  pip_zones = contains(local.az_supported_regions, var.arm_location) ? "Zone-Redundant" : "No-Zone"
 }
 
 variable "zones_enabled" {
