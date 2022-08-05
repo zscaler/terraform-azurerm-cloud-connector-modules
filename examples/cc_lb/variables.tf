@@ -29,8 +29,8 @@ variable "environment" {
 }
 
 variable "owner_tag" {
-  description = "Customer defined owner tag value. ie: Org, Dept, username, etc."
   type        = string
+  description = "Customer defined owner tag value. ie: Org, Dept, username, etc."
   default     = "zscc-admin"
 }
 
@@ -41,9 +41,9 @@ variable "tls_key_algorithm" {
 }
 
 variable "cc_subnets" {
+  type        = list(string)
   description = "Cloud Connector Subnets to create in VNet. This is only required if you want to override the default subnets that this code creates"
   default     = null
-  type        = list(string)
 }
 
 variable "managed_identity_subscription_id" {
@@ -90,8 +90,9 @@ variable "ccvm_instance_type" {
 }
 
 variable "cc_instance_size" {
-  type    = string
-  default = "small"
+  type        = string
+  description = "Cloud Connector Instance size. Determined by and needs to match the Cloud Connector Portal provisioning template configuration"
+  default     = "small"
   validation {
     condition = (
       var.cc_instance_size == "small" ||
@@ -152,16 +153,6 @@ variable "http_probe_port" {
   }
 }
 
-variable "workload_count" {
-  type        = number
-  description = "The number of Workload VMs to deploy"
-  default     = 1
-  validation {
-    condition     = var.workload_count >= 1 && var.workload_count <= 250
-    error_message = "Input workload_count must be a whole number between 1 and 250."
-  }
-}
-
 variable "cc_count" {
   type        = number
   description = "The number of Cloud Connectors to deploy.  Validation assumes max for /24 subnet but could be smaller or larger as long as subnet can accommodate"
@@ -189,8 +180,8 @@ variable "zones_enabled" {
 
 variable "zones" {
   type        = list(string)
-  default     = ["1"]
   description = "Specify which availability zone(s) to deploy VM resources in if zones_enabled variable is set to true"
+  default     = ["1"]
   validation {
     condition = (
       !contains([for zones in var.zones : contains(["1", "2", "3"], zones)], false)
@@ -207,8 +198,8 @@ variable "reuse_nsg" {
 
 variable "accelerated_networking_enabled" {
   type        = bool
-  default     = false
   description = "Enable/Disable accelerated networking support on all Cloud Connector service interfaces"
+  default     = false
 }
 
 variable "bastion_nsg_source_prefix" {
@@ -232,8 +223,9 @@ variable "load_distribution" {
 }
 
 
+################################################################################
 # BYO (Bring-your-own) variables list
-
+################################################################################
 variable "byo_rg" {
   type        = bool
   description = "Bring your own Azure Resource Group. If false, a new resource group will be created automatically"

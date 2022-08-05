@@ -1,8 +1,12 @@
-#-----------------------------------------------------------------------------------------------------------------
-# Create internal load balancer. Load balancer uses cloud connector service interfaces as its backend pool
-# and configured HTTP Probe Port for health checking
+################################################################################
+# Create internal load balancer. Load balancer uses Cloud Connector service 
+# interfaces as its backend pool and configured HTTP Probe Port for health checking
+################################################################################
 
+
+################################################################################
 # Create Standard Load Balancer
+################################################################################
 resource "azurerm_lb" "cc-lb" {
   name                = "${var.name_prefix}-cc-lb-${var.resource_tag}"
   location            = var.location
@@ -26,14 +30,18 @@ resource "azurerm_lb" "cc-lb" {
 }
 
 
+################################################################################
 # Create backend address pool for load balancer
+################################################################################
 resource "azurerm_lb_backend_address_pool" "cc-lb-backend-pool" {
   name            = "${var.name_prefix}-cc-lb-backend-${var.resource_tag}"
   loadbalancer_id = azurerm_lb.cc-lb.id
 }
 
 
+################################################################################
 # Define load balancer health probe parameters
+################################################################################
 resource "azurerm_lb_probe" "cc-lb-probe" {
   name                = "${var.name_prefix}-cc-lb-probe-${var.resource_tag}"
   resource_group_name = var.resource_group
@@ -44,7 +52,9 @@ resource "azurerm_lb_probe" "cc-lb-probe" {
 }
 
 
+################################################################################
 # Create load balancer rule
+################################################################################
 resource "azurerm_lb_rule" "cc-lb-rule" {
   name                           = "${var.name_prefix}-cc-lb-rule-${var.resource_tag}"
   resource_group_name            = var.resource_group

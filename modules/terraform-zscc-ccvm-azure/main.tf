@@ -1,16 +1,12 @@
-# Validation for Cloud Connector instance size and VM Instance Type compatibilty. A file will get generated in root path if this error gets triggered.
-resource "null_resource" "error-checker" {
-  count = local.valid_cc_create ? 0 : 1 # 0 means no error is thrown, else throw error
-  provisioner "local-exec" {
-    command = <<EOF
-      echo "Cloud Connector parameters were invalid. No appliances were created. Please check the documentation and cc_instance_size / ccvm_instance_type values that were chosen" >> ${path.root}/errorlog.txt
-EOF
-  }
-}
-
+################################################################################
+# Pull current subscription info
+################################################################################
 data "azurerm_subscription" "current-subscription" {}
 
 
+################################################################################
+# Create Cloud Connector Management Interfaces and associate NSG
+################################################################################
 # Create CC Management interfaces
 resource "azurerm_network_interface" "cc-mgmt-nic" {
   count               = local.valid_cc_create ? var.cc_count : 0
@@ -29,7 +25,9 @@ resource "azurerm_network_interface" "cc-mgmt-nic" {
 }
 
 
+################################################################################
 # Associate CC Management interface to Management NSG
+################################################################################
 resource "azurerm_network_interface_security_group_association" "cc-mgmt-nic-association" {
   count                     = var.cc_count
   network_interface_id      = azurerm_network_interface.cc-mgmt-nic[count.index].id
@@ -39,7 +37,10 @@ resource "azurerm_network_interface_security_group_association" "cc-mgmt-nic-ass
 }
 
 
-# Create Cloud Connector Service Interface for Small CC. This interface becomes LB0 interface for Medium/Large CC
+################################################################################
+# Create Cloud Connector Service Interfaces for Small Cloud Connector sizes.
+# This interface becomes LB0 interface for Medium/Large Cloud Connector sizes
+################################################################################
 resource "azurerm_network_interface" "cc-service-nic" {
   count                         = local.valid_cc_create ? var.cc_count : 0
   name                          = var.cc_instance_size == "small" ? "${var.name_prefix}-ccvm-${count.index + 1}-service-nic-${var.resource_tag}" : "${var.name_prefix}-ccvm-${count.index + 1}-lb-nic-${var.resource_tag}"
@@ -60,7 +61,10 @@ resource "azurerm_network_interface" "cc-service-nic" {
   depends_on = [azurerm_network_interface.cc-mgmt-nic]
 }
 
+
+################################################################################
 # Associate CC Service/LB NIC to Service NSG
+################################################################################
 resource "azurerm_network_interface_security_group_association" "cc-service-nic-association" {
   count                     = local.valid_cc_create ? var.cc_count : 0
   network_interface_id      = azurerm_network_interface.cc-service-nic[count.index].id
@@ -70,7 +74,10 @@ resource "azurerm_network_interface_security_group_association" "cc-service-nic-
 }
 
 
-# Create Cloud Connector Service Interface #1 for Medium/Large CC. This resource will not be created for "small" CC instances
+################################################################################
+# Create Cloud Connector Service Interface #1 for Medium/Large CC. 
+# This resource will not be created for "small" CC instances
+################################################################################
 resource "azurerm_network_interface" "cc-service-nic-1" {
   count                         = local.valid_cc_create && var.cc_instance_size != "small" ? var.cc_count : 0
   name                          = "${var.name_prefix}-ccvm-${count.index + 1}-service-nic-1-${var.resource_tag}"
@@ -91,7 +98,10 @@ resource "azurerm_network_interface" "cc-service-nic-1" {
   depends_on = [azurerm_network_interface.cc-service-nic]
 }
 
+
+################################################################################
 # Associate CC Service-1 NIC to Service NSG
+################################################################################
 resource "azurerm_network_interface_security_group_association" "cc-service-nic-1-association" {
   count                     = var.cc_instance_size != "small" ? length(azurerm_network_interface.cc-service-nic-1) : 0
   network_interface_id      = azurerm_network_interface.cc-service-nic-1[count.index].id
@@ -101,7 +111,10 @@ resource "azurerm_network_interface_security_group_association" "cc-service-nic-
 }
 
 
-# Create Cloud Connector Service Interface #2 for Medium/Large CC. This resource will not be created for "small" CC instances
+################################################################################
+# Create Cloud Connector Service Interface #2 for Medium/Large CC. 
+# This resource will not be created for "small" CC instances
+################################################################################
 resource "azurerm_network_interface" "cc-service-nic-2" {
   count                         = local.valid_cc_create && var.cc_instance_size != "small" ? var.cc_count : 0
   name                          = "${var.name_prefix}-ccvm-${count.index + 1}-service-nic-2-${var.resource_tag}"
@@ -122,7 +135,10 @@ resource "azurerm_network_interface" "cc-service-nic-2" {
   depends_on = [azurerm_network_interface.cc-service-nic]
 }
 
+
+################################################################################
 # Associate CC Service-2 NIC to Service NSG
+################################################################################
 resource "azurerm_network_interface_security_group_association" "cc-service-nic-2-association" {
   count                     = var.cc_instance_size != "small" ? length(azurerm_network_interface.cc-service-nic-2) : 0
   network_interface_id      = azurerm_network_interface.cc-service-nic-2[count.index].id
@@ -132,7 +148,10 @@ resource "azurerm_network_interface_security_group_association" "cc-service-nic-
 }
 
 
-# Create Cloud Connector Service Interface #3 for Large CC. This resource will not be created for "small" or "medium" CC instances
+################################################################################
+# Create Cloud Connector Service Interface #3 for Large CC. 
+# This resource will not be created for "small" or "medium" CC instances
+################################################################################
 resource "azurerm_network_interface" "cc-service-nic-3" {
   count                         = local.valid_cc_create && var.cc_instance_size == "large" ? var.cc_count : 0
   name                          = "${var.name_prefix}-ccvm-${count.index + 1}-service-nic-3-${var.resource_tag}"
@@ -153,7 +172,10 @@ resource "azurerm_network_interface" "cc-service-nic-3" {
   depends_on = [azurerm_network_interface.cc-service-nic]
 }
 
+
+################################################################################
 # Associate CC Service-3 NIC to Service NSG
+################################################################################
 resource "azurerm_network_interface_security_group_association" "cc-service-nic-3-association" {
   count                     = var.cc_instance_size == "large" ? length(azurerm_network_interface.cc-service-nic-3) : 0
   network_interface_id      = azurerm_network_interface.cc-service-nic-3[count.index].id
@@ -163,6 +185,9 @@ resource "azurerm_network_interface_security_group_association" "cc-service-nic-
 }
 
 
+################################################################################
+# Create Cloud Connector Network Interface to Load Balancer associations
+################################################################################
 # Associate "small" CC service interface to Azure LB backend pool. This resource will not be created for "medium" or "large" CC instances
 resource "azurerm_network_interface_backend_address_pool_association" "cc-vm-service-nic-lb-association" {
   count                   = var.lb_association_enabled == true && var.cc_instance_size == "small" ? var.cc_count : 0
@@ -203,7 +228,10 @@ resource "azurerm_network_interface_backend_address_pool_association" "cc-vm-ser
   depends_on = [var.backend_address_pool]
 }
 
+
+################################################################################
 # Create Cloud Connector VM
+################################################################################
 resource "azurerm_linux_virtual_machine" "cc-vm" {
   count               = local.valid_cc_create ? var.cc_count : 0
   name                = "${var.name_prefix}-ccvm-${count.index + 1}-${var.resource_tag}"
@@ -269,7 +297,11 @@ resource "azurerm_linux_virtual_machine" "cc-vm" {
 }
 
 
-# If CC zones are not manually defined, create availability set
+################################################################################
+# If CC zones are not manually defined, create availability set.
+# If zones_enabled is set to true and the Azure region supports zones, this
+# resource will not be created.
+################################################################################
 resource "azurerm_availability_set" "cc-availability-set" {
   count                       = local.zones_supported == false ? 1 : 0
   name                        = "${var.name_prefix}-ccvm-availability-set-${var.resource_tag}"
@@ -278,4 +310,19 @@ resource "azurerm_availability_set" "cc-availability-set" {
   platform_fault_domain_count = local.max_fd_supported == true ? 3 : 2
 
   tags = var.global_tags
+}
+
+
+################################################################################
+# Validation for Cloud Connector instance size and VM Instance Type 
+# compatibilty. A file will get generated in the terraform working/root path 
+# if this error gets triggered.
+################################################################################
+resource "null_resource" "error-checker" {
+  count = local.valid_cc_create ? 0 : 1 # 0 means no error is thrown, else throw error
+  provisioner "local-exec" {
+    command = <<EOF
+      echo "Cloud Connector parameters were invalid. No appliances were created. Please check the documentation and cc_instance_size / ccvm_instance_type values that were chosen" >> ${path.root}/errorlog.txt
+EOF
+  }
 }

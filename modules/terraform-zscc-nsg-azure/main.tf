@@ -1,4 +1,6 @@
-# Create NSG for CC Management interfaces
+################################################################################
+# Create NSG and Rules for CC Management interfaces
+################################################################################
 resource "azurerm_network_security_group" "cc-mgmt-nsg" {
   count               = var.byo_nsg == false ? var.nsg_count : 0
   name                = "${var.name_prefix}-cc-mgmt-nsg-${count.index + 1}-${var.resource_tag}"
@@ -52,7 +54,9 @@ data "azurerm_network_security_group" "mgt-nsg-selected" {
 }
 
 
-# Create NSG for CC service interfaces
+################################################################################
+# Create NSG and Rules for CC Service interfaces
+################################################################################
 resource "azurerm_network_security_group" "cc-service-nsg" {
   count               = var.byo_nsg == false ? var.nsg_count : 0
   name                = "${var.name_prefix}-cc-service-nsg-${count.index + 1}-${var.resource_tag}"
