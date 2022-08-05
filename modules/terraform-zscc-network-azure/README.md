@@ -1,19 +1,6 @@
-# Zscaler Cloud Connector / Azure VM (Cloud Connector) Module
+# Zscaler Cloud Connector / Azure Network Infrastructure Module
 
-This module creates all the necessary VM, Network Interface, and NSG/LB associations for a successful Cloud Connector deployment. This module is for standalone VMs that can be deployed as a cluster behind an internal Standard Load Balancer. This resource is not intended for Azure automatic scaling (Scale Sets).
-
-## Accept Azure Marketplace Terms
-
-Accept the Cloud Connector VM image terms for the Subscription(s) where Cloud Connector is to be deployed. This can be done via the Azure Portal, Cloud Shell or az cli / powershell with a valid admin user/service principal:
-
-```sh
-az vm image terms accept --urn zscaler1579058425289:zia_cloud_connector:zs_ser_gen1_cc_01:latest
-```
-
-## Considerations
-* DO NOT modify the NIC ordering per this reference module for deployments. Cloud Connector explicitly requires that the ordering of network_interface_ids associated to the azurerm_linux_virtual_machine are #1/first "Management". Any number of "Service" interfaces associated are read sequentially thereafter. Cloud Connector associates the first interface with its management services. The "Service" interfaces require IP_Forwarding enabled for traffic processing which is not enabled on the "Management" interface.
-
-
+This module has multi-purpose use and is leveraged by all other Zscaler Cloud Connector child modules in some capacity. All network infrastructure resources pertaining to connectivity dependencies for a successful Cloud Connector deployment in a private subnet are referenced here. Full list of resources can be found below, but in general this module will handle all Resource Group, VNet, Subnets, NAT Gateways, Public IP, and Route Table creations to build out a resilient Azure network architecture. Most resources also have "conditional create" capabilities where, by default, they will all be created unless instructed not to with various "byo" and "enabled" variables. Use cases are documented in more detail in each description in variables.tf as well as the terraform.tfvars example file for all non-base deployment types (ie: cc_lb, etc.).
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
