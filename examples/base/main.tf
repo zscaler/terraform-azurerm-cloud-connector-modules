@@ -59,10 +59,13 @@ module "network" {
   global_tags           = local.global_tags
   location              = var.arm_location
   network_address_space = var.network_address_space
+  workloads_subnets     = var.workloads_subnets
+  public_subnets        = var.public_subnets
   zones_enabled         = var.zones_enabled
   zones                 = var.zones
   workloads_enabled     = true
   base_only             = true
+  bastion_enabled       = true
 }
 
 

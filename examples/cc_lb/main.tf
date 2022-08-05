@@ -59,9 +59,10 @@ module "network" {
   global_tags           = local.global_tags
   location              = var.arm_location
   network_address_space = var.network_address_space
+  cc_subnets            = var.cc_subnets
   zones_enabled         = var.zones_enabled
   zones                 = var.zones
-
+  #bring-your-own variables
   byo_rg                             = var.byo_rg
   byo_rg_name                        = var.byo_rg_name
   byo_vnet                           = var.byo_vnet

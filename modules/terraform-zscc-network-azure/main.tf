@@ -137,16 +137,16 @@ resource "azurerm_subnet_nat_gateway_association" "cc-subnet-nat-association" {
 ################################################################################
 # Create Workload Subnet
 resource "azurerm_subnet" "workload-subnet" {
-  count = var.workloads_enabled == true ? 1 : 0
+  count                = var.workloads_enabled == true ? 1 : 0
   name                 = "${var.name_prefix}-workload-subnet-${var.resource_tag}"
   resource_group_name  = data.azurerm_resource_group.rg-selected.name
   virtual_network_name = data.azurerm_virtual_network.vnet-selected.name
-  address_prefixes     = [cidrsubnet(var.network_address_space, 8, 1)]
+  address_prefixes     = var.workloads_subnets != null ? [element(var.workloads_subnets, count.index)] : [cidrsubnet(var.network_address_space, 8, count.index + 1)]
 }
 
 # Create Workload Route Table to send to Cloud Connector
 resource "azurerm_route_table" "workload-rt" {
-  count = var.workloads_enabled == true ? 1 : 0
+  count               = var.workloads_enabled == true ? 1 : 0
   name                = "${var.name_prefix}-workload-rt-${var.resource_tag}"
   location            = var.location
   resource_group_name = data.azurerm_resource_group.rg-selected.name
@@ -163,7 +163,7 @@ resource "azurerm_route_table" "workload-rt" {
 
 # Associate Route Table with Workload Subnet
 resource "azurerm_subnet_route_table_association" "workload-rt-association" {
-  count = length(azurerm_route_table.workload-rt.*.id)
+  count          = length(azurerm_route_table.workload-rt.*.id)
   subnet_id      = azurerm_subnet.workload-subnet.*.id[count.index]
   route_table_id = azurerm_route_table.workload-rt.*.id[count.index]
 }
@@ -174,9 +174,9 @@ resource "azurerm_subnet_route_table_association" "workload-rt-association" {
 ################################################################################
 # Create Bastion Host public subnet
 resource "azurerm_subnet" "bastion-subnet" {
-  count = var.workloads_enabled == true ? 1 : 0
+  count                = var.bastion_enabled == true ? 1 : 0
   name                 = "${var.name_prefix}-bastion-subnet-${var.resource_tag}"
   resource_group_name  = data.azurerm_resource_group.rg-selected.name
   virtual_network_name = data.azurerm_virtual_network.vnet-selected.name
-  address_prefixes     = [cidrsubnet(var.network_address_space, 8, 101)]
+  address_prefixes     = var.public_subnets != null ? [element(var.public_subnets, count.index)] : [cidrsubnet(var.network_address_space, 8, 101)]
 }
