@@ -29,8 +29,8 @@ variable "environment" {
 }
 
 variable "owner_tag" {
-  description = "Customer defined owner tag value. ie: Org, Dept, username, etc."
   type        = string
+  description = "Customer defined owner tag value. ie: Org, Dept, username, etc."
   default     = "zscc-admin"
 }
 
@@ -41,9 +41,9 @@ variable "tls_key_algorithm" {
 }
 
 variable "cc_subnets" {
+  type        = list(string)
   description = "Cloud Connector Subnets to create in VNet. This is only required if you want to override the default subnets that this code creates"
   default     = null
-  type        = list(string)
 }
 
 variable "managed_identity_subscription_id" {
@@ -90,8 +90,9 @@ variable "ccvm_instance_type" {
 }
 
 variable "cc_instance_size" {
-  type    = string
-  default = "small"
+  type        = string
+  description = "Cloud Connector Instance size. Determined by and needs to match the Cloud Connector Portal provisioning template configuration"
+  default     = "small"
   validation {
     condition = (
       var.cc_instance_size == "small" ||
@@ -189,8 +190,8 @@ variable "zones_enabled" {
 
 variable "zones" {
   type        = list(string)
-  default     = ["1"]
   description = "Specify which availability zone(s) to deploy VM resources in if zones_enabled variable is set to true"
+  default     = ["1"]
   validation {
     condition = (
       !contains([for zones in var.zones : contains(["1", "2", "3"], zones)], false)
@@ -207,8 +208,8 @@ variable "reuse_nsg" {
 
 variable "accelerated_networking_enabled" {
   type        = bool
-  default     = false
   description = "Enable/Disable accelerated networking support on all Cloud Connector service interfaces"
+  default     = false
 }
 
 variable "bastion_nsg_source_prefix" {
@@ -229,4 +230,10 @@ variable "load_distribution" {
     )
     error_message = "Input load_distribution must be set to either SourceIP, SourceIPProtocol, or Default."
   }
+}
+
+variable "lb_enabled" {
+  type        = bool
+  description = "Default true. Only relevant for 'base' deployments. Configure Workload Route Table to default route next hop to the CC Load Balancer IP passed from var.lb_frontend_ip. If false, default route next hop directly to the CC Service IP passed from var.cc_service_ip"
+  default     = true
 }

@@ -22,7 +22,7 @@ ${join("\n", module.workload.private_ip)}
 
 
 Resource Group: 
-${azurerm_resource_group.main.name}
+${module.network.resource_group_name}
 
 All CC Primary Service IPs:
 ${join("\n", module.cc-vm.service_ip)}
@@ -31,7 +31,7 @@ LB IP:
 ${module.cc-lb.lb_ip}
 
 All NAT GW IPs:
-${join("\n", azurerm_public_ip.nat-pip.*.ip_address)}
+${join("\n", module.network.public_ip_address)}
 
 Bastion Public IP: 
 ${module.bastion.public_ip}

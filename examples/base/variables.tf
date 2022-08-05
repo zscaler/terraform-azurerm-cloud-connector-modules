@@ -23,8 +23,8 @@ variable "environment" {
 }
 
 variable "owner_tag" {
-  description = "Customer defined owner tag value. ie: Org, Dept, username, etc."
   type        = string
+  description = "Customer defined owner tag value. ie: Org, Dept, username, etc."
   default     = "zscc-admin"
 }
 
@@ -60,8 +60,8 @@ variable "zones_enabled" {
 
 variable "zones" {
   type        = list(string)
-  default     = ["1"]
   description = "Specify which availability zone(s) to deploy VM resources in if zones_enabled variable is set to true"
+  default     = ["1"]
   validation {
     condition = (
       !contains([for zones in var.zones : contains(["1", "2", "3"], zones)], false)

@@ -1,4 +1,6 @@
-# generate a random string
+################################################################################
+# Generate a unique random string for resource name assignment and key pair
+################################################################################
 resource "random_string" "suffix" {
   length  = 8
   upper   = false
@@ -6,7 +8,9 @@ resource "random_string" "suffix" {
 }
 
 
+################################################################################
 # Map default tags with values to be assigned to all tagged resources
+################################################################################
 locals {
   global_tags = {
     Owner       = var.owner_tag
@@ -16,24 +20,25 @@ locals {
   }
 }
 
-############################################################################################################################
-#### The following lines generates a new SSH key pair and stores the PEM file locally. The public key output is used    ####
-#### as the ssh_key passed variable to the cc-vm module for admin_ssh_key public_key authentication                     ####
-#### This is not recommended for production deployments. Please consider modifying to pass your own custom              ####
-#### public key file located in a secure location                                                                       ####
-############################################################################################################################
-# Generate a new private key for ssh login to Cloud Connector
+
+################################################################################
+# The following lines generates a new SSH key pair and stores the PEM file 
+# locally. The public key output is used as the instance_key passed variable 
+# to the vm modules for admin_ssh_key public_key authentication.
+# This is not recommended for production deployments. Please consider modifying 
+# to pass your own custom public key file located in a secure location.   
+################################################################################
+# private key for login
 resource "tls_private_key" "key" {
   algorithm = var.tls_key_algorithm
 }
 
-# save the private key locally
+# save the private key
 resource "null_resource" "save-key" {
   triggers = {
     key = tls_private_key.key.private_key_pem
   }
 
-  # set key file to appropriate execution permissions
   provisioner "local-exec" {
     command = <<EOF
       echo "${tls_private_key.key.private_key_pem}" > ../${var.name_prefix}-key-${random_string.suffix.result}.pem
@@ -42,10 +47,47 @@ EOF
   }
 }
 
-###########################################################################################################################
-###########################################################################################################################
 
-## Create the user_data file
+################################################################################
+# 1. Create/reference all network infrastructure resource dependencies for all 
+#    child modules (Resource Group, VNet, Subnets, NAT Gateway, Route Tables)
+################################################################################
+module "network" {
+  source                = "../../modules/terraform-zscc-network-azure"
+  name_prefix           = var.name_prefix
+  resource_tag          = random_string.suffix.result
+  global_tags           = local.global_tags
+  location              = var.arm_location
+  network_address_space = var.network_address_space
+  zones_enabled         = var.zones_enabled
+  zones                 = var.zones
+
+  byo_rg                             = var.byo_rg
+  byo_rg_name                        = var.byo_rg_name
+  byo_vnet                           = var.byo_vnet
+  byo_vnet_name                      = var.byo_vnet_name
+  byo_subnets                        = var.byo_subnets
+  byo_subnet_names                   = var.byo_subnet_names
+  byo_vnet_subnets_rg_name           = var.byo_vnet_subnets_rg_name
+  byo_pips                           = var.byo_pips
+  byo_pip_names                      = var.byo_pip_names
+  byo_pip_rg                         = var.byo_pip_rg
+  byo_nat_gws                        = var.byo_nat_gws
+  byo_nat_gw_names                   = var.byo_nat_gw_names
+  byo_nat_gw_rg                      = var.byo_nat_gw_rg
+  existing_nat_gw_pip_association    = var.existing_nat_gw_pip_association
+  existing_nat_gw_subnet_association = var.existing_nat_gw_subnet_association
+}
+
+
+################################################################################
+# 2. Create specified number of CC VMs per cc_count by default in an
+#    availability set for Azure Data Center fault tolerance. Optionally, deployed
+#    CCs can automatically span equally across designated availabilty zones 
+#    if enabled via "zones_enabled" and "zones" variables. E.g. cc_count set to 
+#    4 and 2 zones ['1","2"] will create 2x CCs in AZ1 and 2x CCs in AZ2
+################################################################################
+# Create the user_data file with necessary bootstrap variables for Cloud Connector registration
 locals {
   userdata = <<USERDATA
 [ZSCALER]
@@ -55,155 +97,22 @@ HTTP_PROBE_PORT=${var.http_probe_port}
 USERDATA
 }
 
+# Write the file to local filesystem for storage/reference
 resource "local_file" "user-data-file" {
   content  = local.userdata
   filename = "../user_data"
 }
 
-
-# 1. Network Infra
-# Create Resource Group or reference existing
-resource "azurerm_resource_group" "main" {
-  count    = var.byo_rg == false ? 1 : 0
-  name     = "${var.name_prefix}-rg-${random_string.suffix.result}"
-  location = var.arm_location
-
-  tags = local.global_tags
-}
-
-data "azurerm_resource_group" "selected" {
-  name = var.byo_rg == false ? azurerm_resource_group.main.*.name[0] : var.byo_rg_name
-}
-
-
-# Create Virtual Network or reference existing
-resource "azurerm_virtual_network" "vnet" {
-  count               = var.byo_vnet == false ? 1 : 0
-  name                = "${var.name_prefix}-vnet-${random_string.suffix.result}"
-  address_space       = [var.network_address_space]
-  location            = var.arm_location
-  resource_group_name = data.azurerm_resource_group.selected.name
-
-  tags = local.global_tags
-}
-
-data "azurerm_virtual_network" "selected" {
-  name                = var.byo_vnet == false ? azurerm_virtual_network.vnet.*.name[0] : var.byo_vnet_name
-  resource_group_name = var.byo_vnet == false ? azurerm_virtual_network.vnet.*.resource_group_name[0] : var.byo_vnet_subnets_rg_name
-}
-
-
-
-# Create Public IP for NAT Gateway or reference existing
-resource "azurerm_public_ip" "nat-pip" {
-  count                   = var.byo_pips == false ? length(distinct(var.zones)) : 0
-  name                    = "${var.name_prefix}-nat-gw-public-ip-${count.index + 1}-${random_string.suffix.result}"
-  location                = var.arm_location
-  resource_group_name     = data.azurerm_resource_group.selected.name
-  allocation_method       = "Static"
-  sku                     = "Standard"
-  idle_timeout_in_minutes = 30
-  availability_zone       = local.zones_supported ? element(var.zones, count.index) : local.pip_zones
-
-  tags = local.global_tags
-}
-
-data "azurerm_public_ip" "selected" {
-  count               = var.byo_pips == false ? length(azurerm_public_ip.nat-pip.*.id) : length(var.byo_pip_names)
-  name                = var.byo_pips == false ? azurerm_public_ip.nat-pip.*.name[count.index] : element(var.byo_pip_names, count.index)
-  resource_group_name = var.byo_pips == false ? data.azurerm_resource_group.selected.name : var.byo_pip_rg
-}
-
-
-# Create NAT Gateway or reference an existing
-resource "azurerm_nat_gateway" "nat-gw" {
-  count                   = var.byo_nat_gws == false ? length(distinct(var.zones)) : 0
-  name                    = "${var.name_prefix}-nat-gw-${count.index + 1}-${random_string.suffix.result}"
-  location                = var.arm_location
-  resource_group_name     = data.azurerm_resource_group.selected.name
-  idle_timeout_in_minutes = 10
-  zones                   = local.zones_supported ? [element(var.zones, count.index)] : null
-
-  tags = local.global_tags
-}
-
-data "azurerm_nat_gateway" "selected" {
-  count               = var.byo_nat_gws == false ? length(azurerm_nat_gateway.nat-gw.*.id) : length(var.byo_nat_gw_names)
-  name                = var.byo_nat_gws == false ? azurerm_nat_gateway.nat-gw.*.name[count.index] : element(var.byo_nat_gw_names, count.index)
-  resource_group_name = var.byo_nat_gws == false ? data.azurerm_resource_group.selected.name : var.byo_nat_gw_rg
-}
-
-# Associate Public IP to NAT Gateway
-resource "azurerm_nat_gateway_public_ip_association" "nat-gw-association1" {
-  count                = var.existing_nat_gw_pip_association == false ? length(data.azurerm_nat_gateway.selected.*.id) : 0
-  nat_gateway_id       = data.azurerm_nat_gateway.selected.*.id[count.index]
-  public_ip_address_id = data.azurerm_public_ip.selected.*.id[count.index]
-
-  depends_on = [
-    data.azurerm_public_ip.selected,
-    data.azurerm_nat_gateway.selected
-  ]
-}
-
-
-
-# 2. Create CC network, routing, and appliance
-# Create Cloud Connector Subnet
-resource "azurerm_subnet" "cc-subnet" {
-  count                = var.byo_subnets == false ? length(distinct(var.zones)) : 0
-  name                 = "${var.name_prefix}-cc-subnet-${count.index + 1}-${random_string.suffix.result}"
-  resource_group_name  = var.byo_vnet == false ? data.azurerm_virtual_network.selected.resource_group_name : var.byo_vnet_subnets_rg_name
-  virtual_network_name = var.byo_vnet == false ? data.azurerm_virtual_network.selected.name : var.byo_vnet_name
-  address_prefixes     = var.cc_subnets != null ? [element(var.cc_subnets, count.index)] : [cidrsubnet(var.network_address_space, 8, count.index + 200)]
-}
-
-# Or reference an existing subnet
-data "azurerm_subnet" "cc-selected" {
-  count                = var.byo_subnets == false ? length(azurerm_subnet.cc-subnet.*.id) : length(var.byo_subnet_names)
-  name                 = var.byo_subnets == false ? azurerm_subnet.cc-subnet.*.name[count.index] : element(var.byo_subnet_names, count.index)
-  resource_group_name  = var.byo_vnet == false ? data.azurerm_virtual_network.selected.resource_group_name : var.byo_vnet_subnets_rg_name
-  virtual_network_name = var.byo_vnet == false ? data.azurerm_virtual_network.selected.name : var.byo_vnet_name
-}
-
-
-
-# Associate Cloud Connector Subnet to NAT Gateway
-resource "azurerm_subnet_nat_gateway_association" "subnet-nat-association-ec" {
-  count          = var.existing_nat_gw_subnet_association == false ? length(data.azurerm_subnet.cc-selected.*.id) : 0
-  subnet_id      = data.azurerm_subnet.cc-selected.*.id[count.index]
-  nat_gateway_id = data.azurerm_nat_gateway.selected.*.id[count.index]
-
-  depends_on = [
-    data.azurerm_subnet.cc-selected,
-    data.azurerm_nat_gateway.selected
-  ]
-}
-
-
-# Validation for Cloud Connector instance size and Azure VM Instance Type compatibilty. A file will get generated in root path if this error gets triggered.
-resource "null_resource" "cc-error-checker" {
-  count = local.valid_cc_create ? 0 : 1 # 0 means no error is thrown, else throw error
-  provisioner "local-exec" {
-    command = <<EOF
-      echo "Cloud Connector parameters were invalid. No appliances were created. Please check the documentation and cc_instance_size / ccvm_instance_type values that were chosen" >> ./errorlog.txt
-EOF
-  }
-}
-
-# Cloud Connector Module variables
-# Create X CC VMs per cc_count by default in an availability set for Azure data center fault tolerance.
-# Optionally create X CC VMs per cc_count which will span equally across designated availability zones specified in zones_enables
-# zones variables.
-# E.g. cc_count set to 4 and 2 zones ['1","2"] will create 2x CCs in AZ1 and 2x CCs in AZ2
+# Create specified number of CC appliances
 module "cc-vm" {
   cc_count               = var.cc_count
   source                 = "../../modules/terraform-zscc-ccvm-azure"
   name_prefix            = var.name_prefix
   resource_tag           = random_string.suffix.result
   global_tags            = local.global_tags
-  resource_group         = data.azurerm_resource_group.selected.name
-  mgmt_subnet_id         = data.azurerm_subnet.cc-selected.*.id
-  service_subnet_id      = data.azurerm_subnet.cc-selected.*.id
+  resource_group         = module.network.resource_group_name
+  mgmt_subnet_id         = module.network.cc_subnet_ids
+  service_subnet_id      = module.network.cc_subnet_ids
   ssh_key                = tls_private_key.key.public_key_openssh
   managed_identity_id    = module.cc-identity.managed_identity_id
   user_data              = local.userdata
@@ -227,14 +136,18 @@ module "cc-vm" {
 }
 
 
-# Create Network Security Group and rules to be assigned to CC mgmt and and service interface(s). Default behavior will create 1 of each resource per CC VM. Set variable reuse_nsg
-# to true if you would like a single security group created and assigned to ALL Cloud Connectors
+################################################################################
+# 3. Create Network Security Group and rules to be assigned to CC mgmt and 
+#    service interface(s). Default behavior will create 1 of each resource per
+#    CC VM. Set variable "reuse_nsg" to true if you would like a single NSG 
+#    created and assigned to ALL Cloud Connectors
+################################################################################
 module "cc-nsg" {
   source         = "../../modules/terraform-zscc-nsg-azure"
   nsg_count      = var.reuse_nsg == false ? var.cc_count : 1
   name_prefix    = var.name_prefix
   resource_tag   = random_string.suffix.result
-  resource_group = var.byo_nsg == false ? data.azurerm_resource_group.selected.name : var.byo_nsg_rg
+  resource_group = var.byo_nsg == false ? module.network.resource_group_name : var.byo_nsg_rg
   location       = var.arm_location
   global_tags    = local.global_tags
 
@@ -246,7 +159,10 @@ module "cc-nsg" {
 }
 
 
-# Reference User Managed Identity resource to obtain ID to be assigned to all Cloud Connectors
+################################################################################
+# 4. Reference User Managed Identity resource to obtain ID to be assigned to 
+#    all Cloud Connectors 
+################################################################################
 module "cc-identity" {
   source                      = "../../modules/terraform-zscc-identity-azure"
   cc_vm_managed_identity_name = var.cc_vm_managed_identity_name
@@ -259,15 +175,33 @@ module "cc-identity" {
 }
 
 
-# Azure Load Balancer Module variables
+################################################################################
+# 5. Create Azure Load Balancer in CC VNet with all Backend Pools, Rules, and 
+#    Health Probes
+################################################################################
 module "cc-lb" {
   source            = "../../modules/terraform-zscc-lb-azure"
   name_prefix       = var.name_prefix
   resource_tag      = random_string.suffix.result
   global_tags       = local.global_tags
-  resource_group    = data.azurerm_resource_group.selected.name
+  resource_group    = module.network.resource_group_name
   location          = var.arm_location
-  subnet_id         = data.azurerm_subnet.cc-selected.*.id[0]
+  subnet_id         = module.network.cc_subnet_ids[0]
   http_probe_port   = var.http_probe_port
   load_distribution = var.load_distribution
+}
+
+
+################################################################################
+# Validation for Cloud Connector instance size and VM Instance Type 
+# compatibilty. A file will get generated in the terraform working/root path 
+# if this error gets triggered.
+################################################################################
+resource "null_resource" "cc-error-checker" {
+  count = local.valid_cc_create ? 0 : 1 # 0 means no error is thrown, else throw error
+  provisioner "local-exec" {
+    command = <<EOF
+      echo "Cloud Connector parameters were invalid. No appliances were created. Please check the documentation and cc_instance_size / ccvm_instance_type values that were chosen" >> ./errorlog.txt
+EOF
+  }
 }

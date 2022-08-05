@@ -16,7 +16,7 @@ ${join("\n", module.workload.private_ip)}
 
 
 Resource Group: 
-${azurerm_resource_group.main.name}
+${module.network.resource_group_name}
 
 Bastion Public IP: 
 ${module.bastion.public_ip}

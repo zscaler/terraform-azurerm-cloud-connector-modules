@@ -42,7 +42,6 @@ variable "cc_username" {
   type        = string
   description = "Default Cloud Connector admin/root username"
   default     = "zsroot"
-
 }
 
 variable "ssh_key" {
@@ -67,8 +66,9 @@ variable "ccvm_instance_type" {
 }
 
 variable "cc_instance_size" {
-  type    = string
-  default = "small"
+  type        = string
+  description = "Cloud Connector Instance size. Determined by and needs to match the Cloud Connector Portal provisioning template configuration"
+  default     = "small"
   validation {
     condition = (
       var.cc_instance_size == "small" ||
@@ -173,8 +173,8 @@ variable "zones_enabled" {
 
 variable "zones" {
   type        = list(string)
-  default     = ["1"]
   description = "Specify which availability zone(s) to deploy VM resources in if zones_enabled variable is set to true"
+  default     = ["1"]
   validation {
     condition = (
       !contains([for zones in var.zones : contains(["1", "2", "3"], zones)], false)
