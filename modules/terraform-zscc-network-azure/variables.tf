@@ -23,13 +23,25 @@ variable "location" {
 
 variable "network_address_space" {
   type        = string
-  description = "VNET CIDR / address prefix"
+  description = "VNet IP CIDR Range. All subnet resources that might get created (public, workload, cloud connector) are derived from this /16 CIDR. If you require creating a VNet smaller than /16, you may need to explicitly define all other subnets via public_subnets, workload_subnets, cc_subnets, and route53_subnets variables"
   default     = "10.1.0.0/16"
 }
 
 variable "cc_subnets" {
   type        = list(string)
-  description = "Cloud Connector Subnets to create in VNet. This is only required if you want to override the default subnets that this code creates"
+  description = "Cloud Connector Subnets to create in VNet. This is only required if you want to override the default subnets that this code creates via network_address_space variable."
+  default     = null
+}
+
+variable "workloads_subnets" {
+  type        = list(string)
+  description = "Workload Subnets to create in VNet. This is only required if you want to override the default subnets that this code creates via network_address_space variable."
+  default     = null
+}
+
+variable "public_subnets" {
+  type        = list(string)
+  description = "Public/Bastion Subnets to create in VNet. This is only required if you want to override the default subnets that this code creates via network_address_space variable."
   default     = null
 }
 
@@ -66,6 +78,12 @@ variable "workloads_enabled" {
   default     = false
 }
 
+variable "bastion_enabled" {
+  type        = bool
+  description = "Configure Bastion/Public Subnet if set to true"
+  default     = false
+}
+
 variable "base_only" {
   type        = bool
   description = "Default is falase. Only applicable for base deployment type resulting in workload and bastion hosts, but no Cloud Connector resources. Setting this to true will point workload route able to Internet"
@@ -79,15 +97,15 @@ variable "lb_enabled" {
 }
 
 variable "lb_frontend_ip" {
-  type = string
+  type        = string
   description = "IP address of Cloud Connector Load Balancer frontend. Used for greenfield deployment types like base_cc_lb so workload subnets automatically default route to this IP as next hop"
-  default = null
+  default     = null
 }
 
 variable "cc_service_ip" {
-  type = list(string)
+  type        = list(string)
   description = "IP address of Cloud Connector Service IP. Used for non-ha greenfield deployment types like base_cc so workload subnets automatically default route to this IP as next hop"
-  default = [""]
+  default     = [""]
 }
 
 # BYO (Bring-your-own) variables list

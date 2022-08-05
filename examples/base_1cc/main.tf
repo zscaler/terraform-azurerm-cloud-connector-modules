@@ -59,10 +59,14 @@ module "network" {
   global_tags           = local.global_tags
   location              = var.arm_location
   network_address_space = var.network_address_space
+  cc_subnets            = var.cc_subnets
+  workloads_subnets     = var.workloads_subnets
+  public_subnets        = var.public_subnets
   zones_enabled         = var.zones_enabled
   zones                 = var.zones
   cc_service_ip         = module.cc-vm.service_ip
   workloads_enabled     = true
+  bastion_enabled       = true
   lb_enabled            = var.lb_enabled
 }
 

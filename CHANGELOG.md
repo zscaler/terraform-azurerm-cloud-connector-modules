@@ -18,3 +18,4 @@
 * dropped "custom" from deployment types as brownfield is implicit
 * vm_count replaced with workload_count for clarity
 * network infrastructure resources consolidated to terraform-zscc-network-azure module. Inputs refactored.
+* added custom subnet definition capabilities via variables cc_subnets, public_subnets, and workloads_subnets should customer try to override network_address_space and the auto cidrsubnet selection becomes incompatible
