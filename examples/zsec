@@ -144,7 +144,6 @@ case $bastion_response in
     break
     ;;
 	no|n )
-    read -r -p "Lock SSH access to a different IP address or range? Default is open [yes/no]: " changebastionip
     useclientip=false
     break
     ;;
@@ -154,6 +153,7 @@ done
 
 if [[ "$useclientip" == "false" ]]; then
 while true; do
+read -r -p "Lock SSH access to a different IP address or range? Default is open [yes/no]: " changebastionip
 case $changebastionip in 
 	yes|y ) 
     read -r -p "Enter new IP Address or CIDR range (e.g. 2.2.2.2/32): " bastionipinput
@@ -217,7 +217,6 @@ case $bastion_response in
     break
     ;;
 	no|n )
-    read -r -p "Lock SSH access to a different IP address or range? Default is open [yes/no]: " changebastionip
     useclientip=false
     break
     ;;
@@ -227,6 +226,7 @@ done
 
 if [[ "$useclientip" == "false" ]]; then
 while true; do
+read -r -p "Lock SSH access to a different IP address or range? Default is open [yes/no]: " changebastionip
 case $changebastionip in 
 	yes|y ) 
     read -r -p "Enter new IP Address or CIDR range (e.g. 2.2.2.2/32): " bastionipinput
