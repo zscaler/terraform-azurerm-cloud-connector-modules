@@ -153,6 +153,7 @@ module "cc-vm" {
 
   depends_on = [
     local_file.user-data-file,
+    null_resource.cc-error-checker,
   ]
 }
 
@@ -192,11 +193,12 @@ module "cc-identity" {
 
 ################################################################################
 # Validation for Cloud Connector instance size and VM Instance Type 
-# compatibilty. A file will get generated in the terraform working/root path 
-# if this error gets triggered.
+# compatibilty. Terraform does not have a good/native way to raise an error at 
+# the moment, so this will trigger off an invalid count value if there is an 
+# improper deployment configuration.
 ################################################################################
 resource "null_resource" "cc-error-checker" {
-  count = local.valid_cc_create ? 0 : 1 # 0 means no error is thrown, else throw error
+  count = local.valid_cc_create ? 0 : "Cloud Connector parameters were invalid. No appliances were created. Please check the documentation and cc_instance_size / ccvm_instance_type values that were chosen" # 0 means no error is thrown, else throw error
   provisioner "local-exec" {
     command = <<EOF
       echo "Cloud Connector parameters were invalid. No appliances were created. Please check the documentation and cc_instance_size / ccvm_instance_type values that were chosen" >> ../errorlog.txt

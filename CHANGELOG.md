@@ -1,10 +1,11 @@
 ## 0.1.0 (July 13, 2022)
+
 * github release refactor
 * zsec update for terraform support up to 1.1.9
 * zsec updated with mac m1 option for terraform arm64 version download
 * azurerm provider updated to 2.99.0 for all module support and deployment types
 * modules renamed for granularity and consistency
-* azurerm_public_ip resource updated per Network API version 2020-08-01 (https://azure.microsoft.com/en-us/updates/zone-behavior-change/)
+* azurerm_public_ip resource updated per Network API version 2020-08-01 (<https://azure.microsoft.com/en-us/updates/zone-behavior-change/>)
 * NSG resources broken out into individual child module with reuse and byo nsg added
 * zsec enhancement inputs
 * ZS-17339 - support for Managed Identities in different Azure Subsciptions
@@ -19,3 +20,4 @@
 * vm_count replaced with workload_count for clarity
 * network infrastructure resources consolidated to terraform-zscc-network-azure module. Inputs refactored.
 * added custom subnet definition capabilities via variables cc_subnets, public_subnets, and workloads_subnets should customer try to override network_address_space and the auto cidrsubnet selection becomes incompatible
+* cc-error-checker changes to run first so errors thrown are less and clearer in the event of a CC deployment configuration error
