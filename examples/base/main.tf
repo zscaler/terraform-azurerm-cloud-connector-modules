@@ -73,14 +73,15 @@ module "network" {
 # 2. Create Bastion Host for workload and CC SSH jump access
 ################################################################################
 module "bastion" {
-  source           = "../../modules/terraform-zscc-bastion-azure"
-  location         = var.arm_location
-  name_prefix      = var.name_prefix
-  resource_tag     = random_string.suffix.result
-  global_tags      = local.global_tags
-  resource_group   = module.network.resource_group_name
-  public_subnet_id = module.network.bastion_subnet_ids[0]
-  ssh_key          = tls_private_key.key.public_key_openssh
+  source                    = "../../modules/terraform-zscc-bastion-azure"
+  location                  = var.arm_location
+  name_prefix               = var.name_prefix
+  resource_tag              = random_string.suffix.result
+  global_tags               = local.global_tags
+  resource_group            = module.network.resource_group_name
+  public_subnet_id          = module.network.bastion_subnet_ids[0]
+  ssh_key                   = tls_private_key.key.public_key_openssh
+  bastion_nsg_source_prefix = var.bastion_nsg_source_prefix
 }
 
 
