@@ -4,7 +4,8 @@ This deployment type is intended for greenfield/pov/lab purposes. It will deploy
 
 Additionally: Creates 1 Cloud Connector private subnet associated to a NAT Gateway; 1 Cloud Connector VM; and workload private subnet UDR repointed to service interface IP of Cloud Connector.
 
-
+## Caveats/Considerations
+- WSL2 DNS bug: If you are trying to run these Azure terraform deployments specifically from a Windows WSL2 instance like Ubuntu and receive an error containing a message similar to this "dial tcp: lookup management.azure.com on 172.21.240.1:53: cannot unmarshal DNS message" please refer here for a WSL2 resolv.conf fix. https://github.com/microsoft/WSL/issues/5420#issuecomment-646479747.
 ## How to deploy:
 
 ### Option 1 (guided):
