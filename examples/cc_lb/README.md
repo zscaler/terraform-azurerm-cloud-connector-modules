@@ -33,8 +33,6 @@ From cc_lb directory execute:
 ### Option 1 (guided):
 From the examples directory, run the zsec bash script that walks to all required inputs.
 - ./zsec destroy
-- enter "brownfield"
-- enter "cc_lb"
 
 ### Option 2 (manual):
 From cc_lb directory execute:
