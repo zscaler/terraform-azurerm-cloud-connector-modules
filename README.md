@@ -1,6 +1,6 @@
 # Zscaler Cloud Connector Azure Terraform Modules
 
-## Description:
+## Description
 This repository contains various modules and deployment configurations that can be used to deploy Zscaler Cloud Connector appliances to securely connect Workload to Internet and Workload to Workload communication within Microsoft Azure. The examples directory contains complete automation scripts for both greenfield/POV and brownfield/production use.
 
 These deployment templates are intended to be fully functional and self service for both greenfield/pov as well as production use. All modules may also be utilized as design recommendation based on Zscaler's Official [Zero Trust Security for Azure Workloads Reference Architecture](https://help.zscaler.com/cloud-connector/zero-trust-security-azure-workloads-zscaler-cloud-connector).
@@ -38,6 +38,9 @@ Our Deployment scripts are leveraging Terraform v1.1.9 that includes full binary
 8. Zscaler Cloud Connector Credentials (api key, username, password) are stored in Azure Key Vault from step 5.
 
 See: [Zscaler Cloud Cloud Connector Azure Deployment Guide](https://help.zscaler.com/cloud-connector/deploying-cloud-connector-microsoft-azure) for additional prerequisite provisioning steps.
+
+## How to deploy
+Provisioning templates are available for customer use/reference to successfully deploy fully operational Cloud Connector appliances once the prerequisites have been completed. Please follow the instructions located in [examples](examples/README.md).
 
 ## Format
 
