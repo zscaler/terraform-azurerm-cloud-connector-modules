@@ -78,9 +78,9 @@ No modules.
 | <a name="input_managed_identity_id"></a> [managed\_identity\_id](#input\_managed\_identity\_id) | ID of the User Managed Identity assigned to Cloud Connector VM | `string` | n/a | yes |
 | <a name="input_mgmt_nsg_id"></a> [mgmt\_nsg\_id](#input\_mgmt\_nsg\_id) | Cloud Connector management interface nsg id | `list(string)` | n/a | yes |
 | <a name="input_mgmt_subnet_id"></a> [mgmt\_subnet\_id](#input\_mgmt\_subnet\_id) | Cloud Connector management subnet id. | `list(string)` | n/a | yes |
-| <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | A prefix to associate to all the Bastion Host module resources | `string` | `null` | no |
+| <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | A prefix to associate to all the CC VM module resources | `string` | `null` | no |
 | <a name="input_resource_group"></a> [resource\_group](#input\_resource\_group) | Main Resource Group Name | `string` | n/a | yes |
-| <a name="input_resource_tag"></a> [resource\_tag](#input\_resource\_tag) | A tag to associate to all the Bastion Host module resources | `string` | `null` | no |
+| <a name="input_resource_tag"></a> [resource\_tag](#input\_resource\_tag) | A tag to associate to all the CC VM module resources | `string` | `null` | no |
 | <a name="input_service_nsg_id"></a> [service\_nsg\_id](#input\_service\_nsg\_id) | Cloud Connector service interface(s) nsg id | `list(string)` | n/a | yes |
 | <a name="input_service_subnet_id"></a> [service\_subnet\_id](#input\_service\_subnet\_id) | Cloud Connector service subnet id | `list(string)` | n/a | yes |
 | <a name="input_ssh_key"></a> [ssh\_key](#input\_ssh\_key) | SSH Key for instances | `string` | n/a | yes |

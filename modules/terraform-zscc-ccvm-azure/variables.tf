@@ -1,12 +1,12 @@
 variable "name_prefix" {
   type        = string
-  description = "A prefix to associate to all the Bastion Host module resources"
+  description = "A prefix to associate to all the CC VM module resources"
   default     = null
 }
 
 variable "resource_tag" {
   type        = string
-  description = "A tag to associate to all the Bastion Host module resources"
+  description = "A tag to associate to all the CC VM module resources"
   default     = null
 }
 
