@@ -11,7 +11,7 @@ ssh -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module
 3) SSH to the CC
 ssh -i ${var.name_prefix}-key-${random_string.suffix.result}.pem zsroot@${module.cc-vm.private_ip[0]} -o "proxycommand ssh -W %h:%p -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}"
 
-4) SSH to the server host
+4) SSH to the workload host
 ssh -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.workload.private_ip[0]} -o "proxycommand ssh -W %h:%p -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}"
 
 All Workload IPs. Replace private IP below with centos@"ip address" in ssh example command above.
