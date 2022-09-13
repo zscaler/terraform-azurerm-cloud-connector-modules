@@ -111,7 +111,7 @@ elif [[ ! -d $dir ]]; then
     exit 1
 fi
 
-az_regions=["westus","westus2","eastus","centralus","centraluseuap","southcentralus","northcentralus","westcentralus","eastus2","eastus2euap","brazilsouth","brazilus","northeurope","westeurope","eastasia","southeastasia","japanwest","japaneast","koreacentral","koreasouth","southindia","westindia","centralindia","australiaeast","australiasoutheast","canadacentral","canadaeast","uksouth","ukwest","francecentral","francesouth","australiacentral","australiacentral2","uaecentral","uaenorth","southafricanorth","southafricawest","switzerlandnorth","switzerlandwest","germanynorth","germanywestcentral","norwayeast","norwaywest","brazilsoutheast","westus3","swedencentral","swedensouth"] 
+az_regions=["westus","West US","westus2","West US 2","eastus","East US","centralus","Central US","centraluseuap","Central US EUAP","southcentralus","South Central US","northcentralus","North Central US","westcentralus","West Central US","eastus2","East US 2","eastus2euap","East US 2 EUAP","brazilsouth","Brazil South","northeurope","North Europe","westeurope","West Europe","eastasia","East Asia","southeastasia","Southeast Asia","japanwest","Japan West","japaneast","Japan East","koreacentral","Korea Central","koreasouth","Korea South","southindia","South India","westindia","West India","centralindia","Central India","australiaeast","Australia East","australiasoutheast","Australia Southeast","canadacentral","Canada Central","canadaeast","Canada East","uksouth","UK South","ukwest","UK West","francecentral","France Central","francesouth","France South","australiacentral","Australia Central","australiacentral2","Australia Central 2","uaecentral","UAE Central","uaenorth","UAE North","southafricanorth","	South Africa North","southafricawest","South Africa West","switzerlandnorth","Switzerland North","switzerlandwest","Switzerland West","germanynorth","Germany North","germanywestcentral","Germany West Central","norwayeast","Norway East","norwaywest","Norway West","brazilsoutheast","Brazil Southeast","westus3","West US 3","swedencentral","Sweden Central","swedensouth","Sweden South"] 
 # if .zsecrc is not present we'll assume that Azure env was never set
 if [[ $dtype == "base" && ! -e ./.zsecrc ]]; then
     echo "Checking Azure Environment Variables..."
@@ -193,7 +193,7 @@ if [[ ! -e ./.zsecrc ]]; then
     echo "export ARM_CLIENT_SECRET=${azure_client_secret}" >> .zsecrc
     read -r -p "Enter Azure Region (e.g. westus2): " azure_location
     if [[ ${az_regions[*]} =~ $azure_location ]]; then
-    echo "export TF_VAR_arm_location=${azure_location}" >> .zsecrc
+    echo "export TF_VAR_arm_location='${azure_location}'" >> .zsecrc
     else
     echo "Invalid Azure region name entered."
     echo "Delete .zsecrc file and re-run zsec up..."
@@ -347,8 +347,7 @@ elif [[ "$dtype" == "base_1cc" ]]; then
     echo "${dtype} will deploy one Cloud Connector in ${azure_location}"   
 fi
 
-
-az_supported_regions=["australiaeast","brazilsouth","canadacentral","centralindia","centralus","eastasia","eastus","eastus2","francecentral","germanywestcentral","japaneast","koreacentral","northeurope","norwayeast","southafricanorth","southcentralus","southeastasia","swedencentral","uksouth","westeurope","westus2"]
+az_supported_regions=["australiaeast","Australia East","brazilsouth","Brazil South","canadacentral","Canada Central","centralindia","Central India","centralus","Central US","eastasia","East Asia","eastus","East US","francecentral","France Central","germanywestcentral","Germany West Central","japaneast","Japan East","koreacentral","Korea Central","northeurope","North Europe","norwayeast","Norway East","southafricanorth","South Africa North","southcentralus","South Central US","southeastasia","Southeast Asia","swedencentral","Sweden Central","uksouth","UK South","westeurope","West Europe","westus2","West US 2"]
 if [[ ${az_supported_regions[*]} =~ $azure_location ]]; then
 echo "Azure region ${azure_location} supports Zones..."
 zones_enabled_default=no
