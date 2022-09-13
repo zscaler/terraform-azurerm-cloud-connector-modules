@@ -33,20 +33,12 @@ resource "tls_private_key" "key" {
   algorithm = var.tls_key_algorithm
 }
 
-# save the private key
-resource "null_resource" "save-key" {
-  triggers = {
-    key = tls_private_key.key.private_key_pem
-  }
-
-  provisioner "local-exec" {
-    command = <<EOF
-      echo "${tls_private_key.key.private_key_pem}" > ../${var.name_prefix}-key-${random_string.suffix.result}.pem
-      chmod 0600 ../${var.name_prefix}-key-${random_string.suffix.result}.pem
-EOF
-  }
+# write private key to local pem file
+resource "local_file" "private_key" {
+  content         = tls_private_key.key.private_key_pem
+  filename        = "../${var.name_prefix}-key-${random_string.suffix.result}.pem"
+  file_permission = "0600"
 }
-
 
 ################################################################################
 # 1. Create/reference all network infrastructure resource dependencies for all 
