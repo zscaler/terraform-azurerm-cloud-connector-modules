@@ -159,7 +159,7 @@ variable "backend_address_pool" {
 
 # Validation to determine if Azure Region selected supports availabilty zones if desired
 locals {
-  az_supported_regions = ["australiaeast", "brazilsouth", "canadacentral", "centralindia", "centralus", "eastasia", "eastus", "francecentral", "germanywestcentral", "japaneast", "koreacentral", "northeurope", "norwayeast", "southafricanorth", "southcentralus", "southeastasia", "swedencentral", "uksouth", "westeurope", "westus2"]
+  az_supported_regions = ["australiaeast", "Australia East", "brazilsouth", "Brazil South", "canadacentral", "Canada Central", "centralindia", "Central India", "centralus", "Central US", "eastasia", "East Asia", "eastus", "East US", "francecentral", "France Central", "germanywestcentral", "Germany West Central", "japaneast", "Japan East", "koreacentral", "Korea Central", "northeurope", "North Europe", "norwayeast", "Norway East", "southafricanorth", "South Africa North", "southcentralus", "South Central US", "southeastasia", "Southeast Asia", "swedencentral", "Sweden Central", "uksouth", "UK South", "westeurope", "West Europe", "westus2", "West US 2"]
   zones_supported = (
     contains(local.az_supported_regions, var.location) && var.zones_enabled == true
   )
@@ -207,7 +207,7 @@ variable "accelerated_networking_enabled" {
 # Validation to determine if Azure Region selected supports 3 Fault Domain or just 2.
 # This validation is only relevant if zones_enabled is set to false.
 locals {
-  max_fd_supported_regions = ["eastus", "eastus2", "westus", "centralus", "northcentralus", "southcentralus", "canadacentral", "northeurope", "westeurope"]
+  max_fd_supported_regions = ["eastus", "East US", "eastus2", "East US 2", "westus", "West US", "centralus", "Central US", "northcentralus", "North Central US", "southcentralus", "South Central US", "canadacentral", "Canada Central", "northeurope", "North Europe", "westeurope", "West Europe"]
   max_fd_supported = (
     contains(local.max_fd_supported_regions, var.location) && var.zones_enabled == false
   )
