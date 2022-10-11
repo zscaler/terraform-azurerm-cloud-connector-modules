@@ -9,7 +9,7 @@ scp -i ${var.name_prefix}-key-${random_string.suffix.result}.pem ${var.name_pref
 ssh -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}
 
 3) SSH to the CC
-ssh -i ${var.name_prefix}-key-${random_string.suffix.result}.pem zsroot@${module.cc-vm.private_ip[0]} -o "proxycommand ssh -W %h:%p -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}"
+ssh -i ${var.name_prefix}-key-${random_string.suffix.result}.pem zsroot@${module.cc_vm.private_ip[0]} -o "proxycommand ssh -W %h:%p -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}"
 
 4) SSH to the workload host
 ssh -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.workload.private_ip[0]} -o "proxycommand ssh -W %h:%p -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}"
@@ -22,7 +22,7 @@ Resource Group:
 ${module.network.resource_group_name}
 
 All CC Primary Service IPs:
-${join("\n", module.cc-vm.service_ip)}
+${join("\n", module.cc_vm.service_ip)}
 
 All NAT GW IPs:
 ${join("\n", module.network.public_ip_address)}
@@ -34,7 +34,8 @@ TB
 }
 
 output "testbedconfig" {
-  value = local.testbedconfig
+  description = "Azure Testbed results"
+  value       = local.testbedconfig
 }
 
 resource "local_file" "testbed" {

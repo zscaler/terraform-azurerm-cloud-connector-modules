@@ -1,7 +1,7 @@
 ################################################################################
 # Create NSG and Rules for worload VMs
 ################################################################################
-resource "azurerm_network_security_group" "workload-nsg" {
+resource "azurerm_network_security_group" "workload_nsg" {
   count               = var.workload_count
   name                = "${var.name_prefix}-workload-${count.index + 1}-nsg-${var.resource_tag}"
   location            = var.location
@@ -50,7 +50,7 @@ resource "azurerm_network_security_group" "workload-nsg" {
 ################################################################################
 # Create Network Interface and association NSG
 ################################################################################
-resource "azurerm_network_interface" "workload-nic" {
+resource "azurerm_network_interface" "workload_nic" {
   count               = var.workload_count
   name                = "${var.name_prefix}-workload-${count.index + 1}-nic-${var.resource_tag}"
   location            = var.location
@@ -67,23 +67,23 @@ resource "azurerm_network_interface" "workload-nic" {
   tags = var.global_tags
 }
 
-resource "azurerm_network_interface_security_group_association" "workload-nic-association" {
+resource "azurerm_network_interface_security_group_association" "workload_nic_association" {
   count                     = var.workload_count
-  network_interface_id      = azurerm_network_interface.workload-nic[count.index].id
-  network_security_group_id = azurerm_network_security_group.workload-nsg[count.index].id
+  network_interface_id      = azurerm_network_interface.workload_nic[count.index].id
+  network_security_group_id = azurerm_network_security_group.workload_nsg[count.index].id
 }
 
 
 ################################################################################
 # Create Workload VMs
 ################################################################################
-resource "azurerm_linux_virtual_machine" "workload-vm" {
+resource "azurerm_linux_virtual_machine" "workload_vm" {
   count               = var.workload_count
   name                = "${var.name_prefix}-workload-vm-${count.index + 1}-${var.resource_tag}"
   location            = var.location
   resource_group_name = var.resource_group
 
-  network_interface_ids = [azurerm_network_interface.workload-nic[count.index].id]
+  network_interface_ids = [azurerm_network_interface.workload_nic[count.index].id]
   size                  = var.instance_size
   admin_username        = var.server_admin_username
   computer_name         = "${var.name_prefix}-workload-${count.index + 1}-${var.resource_tag}"
@@ -107,7 +107,7 @@ resource "azurerm_linux_virtual_machine" "workload-vm" {
   tags = var.global_tags
 
   depends_on = [
-    azurerm_network_interface.workload-nic,
-    azurerm_network_interface_security_group_association.workload-nic-association
+    azurerm_network_interface.workload_nic,
+    azurerm_network_interface_security_group_association.workload_nic_association
   ]
 }

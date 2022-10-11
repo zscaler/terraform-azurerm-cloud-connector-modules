@@ -1,7 +1,7 @@
 ################################################################################
 # Create NSG and Rules for CC Management interfaces
 ################################################################################
-resource "azurerm_network_security_group" "cc-mgmt-nsg" {
+resource "azurerm_network_security_group" "cc_mgmt_nsg" {
   count               = var.byo_nsg == false ? var.nsg_count : 0
   name                = "${var.name_prefix}-cc-mgmt-nsg-${count.index + 1}-${var.resource_tag}"
   location            = var.location
@@ -47,8 +47,8 @@ resource "azurerm_network_security_group" "cc-mgmt-nsg" {
 }
 
 # Or use existing Mgmt NSG
-data "azurerm_network_security_group" "mgt-nsg-selected" {
-  count               = var.byo_nsg == false ? length(azurerm_network_security_group.cc-mgmt-nsg.*.id) : length(var.byo_mgmt_nsg_names)
+data "azurerm_network_security_group" "mgt_nsg_selected" {
+  count               = var.byo_nsg == false ? length(azurerm_network_security_group.cc_mgmt_nsg.*.id) : length(var.byo_mgmt_nsg_names)
   name                = var.byo_nsg == false ? "${var.name_prefix}-cc-mgmt-nsg-${count.index + 1}-${var.resource_tag}" : element(var.byo_mgmt_nsg_names, count.index)
   resource_group_name = var.resource_group
 }
@@ -57,7 +57,7 @@ data "azurerm_network_security_group" "mgt-nsg-selected" {
 ################################################################################
 # Create NSG and Rules for CC Service interfaces
 ################################################################################
-resource "azurerm_network_security_group" "cc-service-nsg" {
+resource "azurerm_network_security_group" "cc_service_nsg" {
   count               = var.byo_nsg == false ? var.nsg_count : 0
   name                = "${var.name_prefix}-cc-service-nsg-${count.index + 1}-${var.resource_tag}"
   location            = var.location
@@ -91,8 +91,8 @@ resource "azurerm_network_security_group" "cc-service-nsg" {
 }
 
 # Or use existing Service NSG
-data "azurerm_network_security_group" "service-nsg-selected" {
-  count               = var.byo_nsg == false ? length(azurerm_network_security_group.cc-service-nsg.*.id) : length(var.byo_mgmt_nsg_names)
-  name                = var.byo_nsg == false ? "${var.name_prefix}-cc-service-nsg-${count.index + 1}-${var.resource_tag}" : element(var.byo_mgmt_nsg_names, count.index)
+data "azurerm_network_security_group" "service_nsg_selected" {
+  count               = var.byo_nsg == false ? length(azurerm_network_security_group.cc_service_nsg.*.id) : length(var.byo_service_nsg_names)
+  name                = var.byo_nsg == false ? "${var.name_prefix}-cc-service-nsg-${count.index + 1}-${var.resource_tag}" : element(var.byo_service_nsg_names, count.index)
   resource_group_name = var.resource_group
 }

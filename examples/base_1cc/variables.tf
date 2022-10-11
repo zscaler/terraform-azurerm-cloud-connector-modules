@@ -153,6 +153,7 @@ variable "ccvm_image_version" {
 }
 
 variable "http_probe_port" {
+  type        = number
   description = "TCP port number for Cloud Connector cloud init to enable listener port for HTTP probe from LB"
   default     = 0
   validation {
@@ -183,15 +184,6 @@ variable "cc_count" {
     condition     = var.cc_count >= 1 && var.cc_count <= 250
     error_message = "Input cc_count must be a whole number between 1 and 250."
   }
-}
-
-# Validation to determine if Azure Region selected supports availabilty zones if desired
-locals {
-  az_supported_regions = ["australiaeast", "Australia East", "brazilsouth", "Brazil South", "canadacentral", "Canada Central", "centralindia", "Central India", "centralus", "Central US", "eastasia", "East Asia", "eastus", "East US", "francecentral", "France Central", "germanywestcentral", "Germany West Central", "japaneast", "Japan East", "koreacentral", "Korea Central", "northeurope", "North Europe", "norwayeast", "Norway East", "southafricanorth", "South Africa North", "southcentralus", "South Central US", "southeastasia", "Southeast Asia", "swedencentral", "Sweden Central", "uksouth", "UK South", "westeurope", "West Europe", "westus2", "West US 2"]
-  zones_supported = (
-    contains(local.az_supported_regions, var.arm_location) && var.zones_enabled == true
-  )
-  pip_zones = contains(local.az_supported_regions, var.arm_location) ? "Zone-Redundant" : "No-Zone"
 }
 
 variable "zones_enabled" {
