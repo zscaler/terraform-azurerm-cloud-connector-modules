@@ -37,5 +37,5 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_managed_identity_id"></a> [managed\_identity\_id](#output\_managed\_identity\_id) | n/a |
+| <a name="output_managed_identity_id"></a> [managed\_identity\_id](#output\_managed\_identity\_id) | User Managed Identity ID |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

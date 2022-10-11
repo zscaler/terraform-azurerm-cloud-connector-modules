@@ -7,7 +7,7 @@
 ################################################################################
 # Create Standard Load Balancer
 ################################################################################
-resource "azurerm_lb" "cc-lb" {
+resource "azurerm_lb" "cc_lb" {
   name                = "${var.name_prefix}-cc-lb-${var.resource_tag}"
   location            = var.location
   resource_group_name = var.resource_group
@@ -33,19 +33,19 @@ resource "azurerm_lb" "cc-lb" {
 ################################################################################
 # Create backend address pool for load balancer
 ################################################################################
-resource "azurerm_lb_backend_address_pool" "cc-lb-backend-pool" {
+resource "azurerm_lb_backend_address_pool" "cc_lb_backend_pool" {
   name            = "${var.name_prefix}-cc-lb-backend-${var.resource_tag}"
-  loadbalancer_id = azurerm_lb.cc-lb.id
+  loadbalancer_id = azurerm_lb.cc_lb.id
 }
 
 
 ################################################################################
 # Define load balancer health probe parameters
 ################################################################################
-resource "azurerm_lb_probe" "cc-lb-probe" {
+resource "azurerm_lb_probe" "cc_lb_probe" {
   name                = "${var.name_prefix}-cc-lb-probe-${var.resource_tag}"
   resource_group_name = var.resource_group
-  loadbalancer_id     = azurerm_lb.cc-lb.id
+  loadbalancer_id     = azurerm_lb.cc_lb.id
   protocol            = "Http"
   port                = var.http_probe_port
   request_path        = "/?cchealth"
@@ -55,15 +55,15 @@ resource "azurerm_lb_probe" "cc-lb-probe" {
 ################################################################################
 # Create load balancer rule
 ################################################################################
-resource "azurerm_lb_rule" "cc-lb-rule" {
+resource "azurerm_lb_rule" "cc_lb_rule" {
   name                           = "${var.name_prefix}-cc-lb-rule-${var.resource_tag}"
   resource_group_name            = var.resource_group
-  loadbalancer_id                = azurerm_lb.cc-lb.id
+  loadbalancer_id                = azurerm_lb.cc_lb.id
   protocol                       = "All"
   frontend_port                  = 0
   backend_port                   = 0
-  frontend_ip_configuration_name = azurerm_lb.cc-lb.frontend_ip_configuration[0].name
-  probe_id                       = azurerm_lb_probe.cc-lb-probe.id
+  frontend_ip_configuration_name = azurerm_lb.cc_lb.frontend_ip_configuration[0].name
+  probe_id                       = azurerm_lb_probe.cc_lb_probe.id
   load_distribution              = var.load_distribution
-  backend_address_pool_ids       = [azurerm_lb_backend_address_pool.cc-lb-backend-pool.id]
+  backend_address_pool_ids       = [azurerm_lb_backend_address_pool.cc_lb_backend_pool.id]
 }

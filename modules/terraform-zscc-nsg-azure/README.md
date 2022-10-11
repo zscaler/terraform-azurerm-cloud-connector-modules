@@ -24,10 +24,10 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_network_security_group.cc-mgmt-nsg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) | resource |
-| [azurerm_network_security_group.cc-service-nsg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) | resource |
-| [azurerm_network_security_group.mgt-nsg-selected](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/network_security_group) | data source |
-| [azurerm_network_security_group.service-nsg-selected](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/network_security_group) | data source |
+| [azurerm_network_security_group.cc_mgmt_nsg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) | resource |
+| [azurerm_network_security_group.cc_service_nsg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) | resource |
+| [azurerm_network_security_group.mgt_nsg_selected](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/network_security_group) | data source |
+| [azurerm_network_security_group.service_nsg_selected](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/network_security_group) | data source |
 
 ## Inputs
 
@@ -47,6 +47,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_mgmt_nsg_id"></a> [mgmt\_nsg\_id](#output\_mgmt\_nsg\_id) | n/a |
-| <a name="output_service_nsg_id"></a> [service\_nsg\_id](#output\_service\_nsg\_id) | n/a |
+| <a name="output_mgmt_nsg_id"></a> [mgmt\_nsg\_id](#output\_mgmt\_nsg\_id) | Management Network Security Group ID |
+| <a name="output_service_nsg_id"></a> [service\_nsg\_id](#output\_service\_nsg\_id) | Service Network Security Group ID |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

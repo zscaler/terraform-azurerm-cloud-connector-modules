@@ -24,10 +24,10 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_lb.cc-lb](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb) | resource |
-| [azurerm_lb_backend_address_pool.cc-lb-backend-pool](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_backend_address_pool) | resource |
-| [azurerm_lb_probe.cc-lb-probe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_probe) | resource |
-| [azurerm_lb_rule.cc-lb-rule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_rule) | resource |
+| [azurerm_lb.cc_lb](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb) | resource |
+| [azurerm_lb_backend_address_pool.cc_lb_backend_pool](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_backend_address_pool) | resource |
+| [azurerm_lb_probe.cc_lb_probe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_probe) | resource |
+| [azurerm_lb_rule.cc_lb_rule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_rule) | resource |
 
 ## Inputs
 
@@ -46,6 +46,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_lb_backend_address_pool"></a> [lb\_backend\_address\_pool](#output\_lb\_backend\_address\_pool) | n/a |
-| <a name="output_lb_ip"></a> [lb\_ip](#output\_lb\_ip) | n/a |
+| <a name="output_lb_backend_address_pool"></a> [lb\_backend\_address\_pool](#output\_lb\_backend\_address\_pool) | Azure Load Balancer Backend Pool ID |
+| <a name="output_lb_ip"></a> [lb\_ip](#output\_lb\_ip) | Azure Load Balancer Frontend IP |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

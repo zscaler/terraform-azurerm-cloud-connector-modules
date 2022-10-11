@@ -1,7 +1,7 @@
 ################################################################################
 # Create Bastion Host NSG and pre-defined rules
 ################################################################################
-resource "azurerm_network_security_group" "bastion-nsg" {
+resource "azurerm_network_security_group" "bastion_nsg" {
   name                = "${var.name_prefix}-bastion-nsg-${var.resource_tag}"
   location            = var.location
   resource_group_name = var.resource_group
@@ -25,7 +25,7 @@ resource "azurerm_network_security_group" "bastion-nsg" {
 ################################################################################
 # Create Public IP to assign to Bastion Host
 ################################################################################
-resource "azurerm_public_ip" "bastion-pip" {
+resource "azurerm_public_ip" "bastion_pip" {
   name                    = "${var.name_prefix}-bastion-public-ip-${var.resource_tag}"
   location                = var.location
   resource_group_name     = var.resource_group
@@ -39,7 +39,7 @@ resource "azurerm_public_ip" "bastion-pip" {
 ################################################################################
 # Create Network Interface and association NSG
 ################################################################################
-resource "azurerm_network_interface" "bastion-nic" {
+resource "azurerm_network_interface" "bastion_nic" {
   name                = "${var.name_prefix}-bastion-nic-${var.resource_tag}"
   location            = var.location
   resource_group_name = var.resource_group
@@ -48,26 +48,26 @@ resource "azurerm_network_interface" "bastion-nic" {
     name                          = "${var.name_prefix}-bastion-nic-conf-${var.resource_tag}"
     subnet_id                     = var.public_subnet_id
     private_ip_address_allocation = "dynamic"
-    public_ip_address_id          = azurerm_public_ip.bastion-pip.id
+    public_ip_address_id          = azurerm_public_ip.bastion_pip.id
   }
 
   tags = var.global_tags
 }
 
-resource "azurerm_network_interface_security_group_association" "bastion-nic-association" {
-  network_interface_id      = azurerm_network_interface.bastion-nic.id
-  network_security_group_id = azurerm_network_security_group.bastion-nsg.id
+resource "azurerm_network_interface_security_group_association" "bastion_nic_association" {
+  network_interface_id      = azurerm_network_interface.bastion_nic.id
+  network_security_group_id = azurerm_network_security_group.bastion_nsg.id
 }
 
 
 ################################################################################
 # Create Bastion Host VM
 ################################################################################
-resource "azurerm_linux_virtual_machine" "bastion-vm" {
+resource "azurerm_linux_virtual_machine" "bastion_vm" {
   name                  = "${var.name_prefix}-bastion-vm-${var.resource_tag}"
   location              = var.location
   resource_group_name   = var.resource_group
-  network_interface_ids = [azurerm_network_interface.bastion-nic.id]
+  network_interface_ids = [azurerm_network_interface.bastion_nic.id]
   size                  = var.instance_size
   admin_username        = var.server_admin_username
   computer_name         = "${var.name_prefix}-bastion-${var.resource_tag}"
@@ -91,7 +91,7 @@ resource "azurerm_linux_virtual_machine" "bastion-vm" {
   tags = var.global_tags
 
   depends_on = [
-    azurerm_network_interface.bastion-nic,
-    azurerm_network_interface_security_group_association.bastion-nic-association
+    azurerm_network_interface.bastion_nic,
+    azurerm_network_interface_security_group_association.bastion_nic_association
   ]
 }

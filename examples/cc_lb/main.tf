@@ -92,41 +92,42 @@ USERDATA
 }
 
 # Write the file to local filesystem for storage/reference
-resource "local_file" "user-data-file" {
+resource "local_file" "user_data_file" {
   content  = local.userdata
   filename = "../user_data"
 }
 
 # Create specified number of CC appliances
-module "cc-vm" {
-  cc_count               = var.cc_count
-  source                 = "../../modules/terraform-zscc-ccvm-azure"
-  name_prefix            = var.name_prefix
-  resource_tag           = random_string.suffix.result
-  global_tags            = local.global_tags
-  resource_group         = module.network.resource_group_name
-  mgmt_subnet_id         = module.network.cc_subnet_ids
-  service_subnet_id      = module.network.cc_subnet_ids
-  ssh_key                = tls_private_key.key.public_key_openssh
-  managed_identity_id    = module.cc-identity.managed_identity_id
-  user_data              = local.userdata
-  backend_address_pool   = module.cc-lb.lb_backend_address_pool
-  lb_association_enabled = true
-  location               = var.arm_location
-  zones_enabled          = var.zones_enabled
-  zones                  = var.zones
-  ccvm_instance_type     = var.ccvm_instance_type
-  ccvm_image_publisher   = var.ccvm_image_publisher
-  ccvm_image_offer       = var.ccvm_image_offer
-  ccvm_image_sku         = var.ccvm_image_sku
-  ccvm_image_version     = var.ccvm_image_version
-  cc_instance_size       = var.cc_instance_size
-  mgmt_nsg_id            = module.cc-nsg.mgmt_nsg_id
-  service_nsg_id         = module.cc-nsg.service_nsg_id
+module "cc_vm" {
+  cc_count                       = var.cc_count
+  source                         = "../../modules/terraform-zscc-ccvm-azure"
+  name_prefix                    = var.name_prefix
+  resource_tag                   = random_string.suffix.result
+  global_tags                    = local.global_tags
+  resource_group                 = module.network.resource_group_name
+  mgmt_subnet_id                 = module.network.cc_subnet_ids
+  service_subnet_id              = module.network.cc_subnet_ids
+  ssh_key                        = tls_private_key.key.public_key_openssh
+  managed_identity_id            = module.cc_identity.managed_identity_id
+  user_data                      = local.userdata
+  backend_address_pool           = module.cc_lb.lb_backend_address_pool
+  lb_association_enabled         = true
+  location                       = var.arm_location
+  zones_enabled                  = var.zones_enabled
+  zones                          = var.zones
+  ccvm_instance_type             = var.ccvm_instance_type
+  ccvm_image_publisher           = var.ccvm_image_publisher
+  ccvm_image_offer               = var.ccvm_image_offer
+  ccvm_image_sku                 = var.ccvm_image_sku
+  ccvm_image_version             = var.ccvm_image_version
+  cc_instance_size               = var.cc_instance_size
+  mgmt_nsg_id                    = module.cc_nsg.mgmt_nsg_id
+  service_nsg_id                 = module.cc_nsg.service_nsg_id
+  accelerated_networking_enabled = var.accelerated_networking_enabled
 
   depends_on = [
-    local_file.user-data-file,
-    null_resource.cc-error-checker,
+    local_file.user_data_file,
+    null_resource.cc_error_checker,
   ]
 }
 
@@ -137,7 +138,7 @@ module "cc-vm" {
 #    CC VM. Set variable "reuse_nsg" to true if you would like a single NSG 
 #    created and assigned to ALL Cloud Connectors
 ################################################################################
-module "cc-nsg" {
+module "cc_nsg" {
   source         = "../../modules/terraform-zscc-nsg-azure"
   nsg_count      = var.reuse_nsg == false ? var.cc_count : 1
   name_prefix    = var.name_prefix
@@ -158,7 +159,7 @@ module "cc-nsg" {
 # 4. Reference User Managed Identity resource to obtain ID to be assigned to 
 #    all Cloud Connectors 
 ################################################################################
-module "cc-identity" {
+module "cc_identity" {
   source                      = "../../modules/terraform-zscc-identity-azure"
   cc_vm_managed_identity_name = var.cc_vm_managed_identity_name
   cc_vm_managed_identity_rg   = var.cc_vm_managed_identity_rg
@@ -174,7 +175,7 @@ module "cc-identity" {
 # 5. Create Azure Load Balancer in CC VNet with all Backend Pools, Rules, and 
 #    Health Probes
 ################################################################################
-module "cc-lb" {
+module "cc_lb" {
   source            = "../../modules/terraform-zscc-lb-azure"
   name_prefix       = var.name_prefix
   resource_tag      = random_string.suffix.result
@@ -193,7 +194,7 @@ module "cc-lb" {
 # the moment, so this will trigger off an invalid count value if there is an 
 # improper deployment configuration.
 ################################################################################
-resource "null_resource" "cc-error-checker" {
+resource "null_resource" "cc_error_checker" {
   count = local.valid_cc_create ? 0 : "Cloud Connector parameters were invalid. No appliances were created. Please check the documentation and cc_instance_size / ccvm_instance_type values that were chosen" # 0 means no error is thrown, else throw error
   provisioner "local-exec" {
     command = <<EOF
