@@ -201,7 +201,7 @@ variable "service_nsg_id" {
 variable "accelerated_networking_enabled" {
   type        = bool
   description = "Enable/Disable accelerated networking support on all Cloud Connector service interfaces"
-  default     = false
+  default     = true
 }
 
 # Validation to determine if Azure Region selected supports 3 Fault Domain or just 2.

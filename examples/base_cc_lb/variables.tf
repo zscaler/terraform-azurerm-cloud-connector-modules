@@ -213,7 +213,7 @@ variable "reuse_nsg" {
 variable "accelerated_networking_enabled" {
   type        = bool
   description = "Enable/Disable accelerated networking support on all Cloud Connector service interfaces"
-  default     = false
+  default     = true
 }
 
 variable "bastion_nsg_source_prefix" {
