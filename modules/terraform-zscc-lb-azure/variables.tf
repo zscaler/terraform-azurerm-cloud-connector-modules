@@ -33,7 +33,7 @@ variable "subnet_id" {
 
 variable "http_probe_port" {
   type        = number
-  description = "port for Cloud Connector cloud init to enable listener port for HTTP probe from LB"
+  description = "Port number for Cloud Connector cloud init to enable listener port for HTTP probe from Azure LB"
   default     = 50000
   validation {
     condition = (

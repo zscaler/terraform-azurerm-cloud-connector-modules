@@ -142,11 +142,10 @@ variable "ccvm_image_version" {
 
 variable "http_probe_port" {
   type        = number
-  description = "TCP port number for Cloud Connector cloud init to enable listener port for HTTP probe from LB"
-  default     = 0
+  description = "Port number for Cloud Connector cloud init to enable listener port for HTTP probe from Azure LB"
+  default     = 50000
   validation {
     condition = (
-      var.http_probe_port == 0 ||
       var.http_probe_port == 80 ||
       (var.http_probe_port >= 1024 && var.http_probe_port <= 65535)
     )
