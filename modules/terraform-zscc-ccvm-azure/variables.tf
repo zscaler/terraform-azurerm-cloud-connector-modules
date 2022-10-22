@@ -131,20 +131,6 @@ variable "cc_count" {
   }
 }
 
-variable "http_probe_port" {
-  type        = number
-  description = "TCP Port number for Cloud Connector cloud init to enable listener port for HTTP probe from LB. Default is 0 which effectively disables the listener service so customer must specify a valid number to enable"
-  default     = 0
-  validation {
-    condition = (
-      var.http_probe_port == 0 ||
-      var.http_probe_port == 80 ||
-      (var.http_probe_port >= 1024 && var.http_probe_port <= 65535)
-    )
-    error_message = "Input http_probe_port must be set to a single value of 80 or any number between 1024-65535."
-  }
-}
-
 variable "lb_association_enabled" {
   type        = bool
   description = "Determines whether or not to create a nic backend pool assocation to the service nic(s)"

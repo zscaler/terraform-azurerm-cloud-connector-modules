@@ -73,7 +73,6 @@ No modules.
 | <a name="input_ccvm_image_version"></a> [ccvm\_image\_version](#input\_ccvm\_image\_version) | Azure Marketplace Cloud Connector Image Version | `string` | `"latest"` | no |
 | <a name="input_ccvm_instance_type"></a> [ccvm\_instance\_type](#input\_ccvm\_instance\_type) | Cloud Connector Image size | `string` | `"Standard_D2s_v3"` | no |
 | <a name="input_global_tags"></a> [global\_tags](#input\_global\_tags) | Populate any custom user defined tags from a map | `map(string)` | `{}` | no |
-| <a name="input_http_probe_port"></a> [http\_probe\_port](#input\_http\_probe\_port) | TCP Port number for Cloud Connector cloud init to enable listener port for HTTP probe from LB. Default is 0 which effectively disables the listener service so customer must specify a valid number to enable | `number` | `0` | no |
 | <a name="input_lb_association_enabled"></a> [lb\_association\_enabled](#input\_lb\_association\_enabled) | Determines whether or not to create a nic backend pool assocation to the service nic(s) | `bool` | `false` | no |
 | <a name="input_location"></a> [location](#input\_location) | Cloud Connector Azure Region | `string` | n/a | yes |
 | <a name="input_managed_identity_id"></a> [managed\_identity\_id](#input\_managed\_identity\_id) | ID of the User Managed Identity assigned to Cloud Connector VM | `string` | n/a | yes |
