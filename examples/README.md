@@ -54,7 +54,7 @@ Optional: Edit the terraform.tfvars file under your desired deployment type (ie:
 
 ```
 Deployment Type: (base | base_cc | base_cc_lb ):
-**base** - Creates: 1 Resource Group containing; 1 VNet w/ 2 subnets (bastion + workload); 1 Ubuntu server workload w/ 1 Network Interface + NSG; 1 Ubuntu Bastion Host w/ 1 PIP + 1 Network Interface + NSG; generates local key pair .pem file for ssh access
+**base** - Creates: 1 Resource Group containing; 1 VNet w/ 2 subnets (bastion + workload); 1 Ubuntu server workload w/ 1 Network Interface + NSG; 1 Ubuntu Bastion Host w/ 1 PIP + 1 Network Interface + NSG; generates local key pair .pem file for ssh access. This does NOT deploy any actual Cloud Connectors.
 
 **base_cc** - Base deployment + Creates 1 Cloud Connector private subnet; 1 Cloud Connector VM in availability set routing to NAT Gateway; workload private subnet route repointed to the service interface IP of Cloud Connector
 
