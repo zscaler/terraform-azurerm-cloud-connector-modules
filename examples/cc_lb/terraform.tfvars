@@ -23,7 +23,7 @@
 #azure_vault_url                            =  "https://zscaler-cc-demo.vault.azure.net"
 
 ## 3. Cloud Connector cloud init provisioning listener port. This is required for Azure LB Health Probe deployments. 
-## Uncomment and set custom probe port to a single value of 80 or any number between 1024-65535. Default is 0/null.
+## Uncomment and set custom probe port to a single value of 80 or any number between 1024-65535. Default is 50000.
 
 #http_probe_port                            = 50000
 
