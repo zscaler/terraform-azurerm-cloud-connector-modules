@@ -17,85 +17,85 @@ jobs:
         run: terraform fmt -check -recursive
 
       - name: Terraform Init
-        id: init
+        id: init-bastion
         run: |
           cd modules/terraform-zscc-bastion-azure
           terraform init   
 
       - name: Terraform Validate
-        id: validate
+        id: validate-bastion
         run: |
           cd modules/terraform-zscc-bastion-azure
           terraform validate -no-color
 
       - name: Terraform Init
-        id: init
+        id: init-zscc-ccvm
         run: |
           cd modules/terraform-zscc-ccvm-azure
           terraform init   
 
       - name: Terraform Validate
-        id: validate
+        id: validate-zscc-ccvm
         run: |
           cd modules/terraform-zscc-ccvm-azure
           terraform validate -no-color
 
       - name: Terraform Init
-        id: init
+        id: init-zscc-identity
         run: |
           cd modules/terraform-zscc-identity-azure
           terraform init   
 
       - name: Terraform Validate
-        id: validate
+        id: validate-zscc-identity
         run: |
           cd modules/terraform-zscc-identity-azure
           terraform validate -no-color
 
       - name: Terraform Init
-        id: init
+        id: init-zscc-lb
         run: |
           cd modules/terraform-zscc-lb-azure
           terraform init   
 
       - name: Terraform Validate
-        id: validate
+        id: validate-zscc-lb
         run: |
           cd modules/terraform-zscc-lb-azure
           terraform validate -no-color
 
       - name: Terraform Init
-        id: init
+        id: init-zscc-network
         run: |
           cd modules/terraform-zscc-network-azure
           terraform init   
 
       - name: Terraform Validate
-        id: validate
+        id: validate-zscc-network
         run: |
           cd modules/terraform-zscc-network-azure
           terraform validate -no-color
 
       - name: Terraform Init
-        id: init
+        id: init-zscc-nsg
         run: |
           cd modules/terraform-zscc-nsg-azure
           terraform init   
 
       - name: Terraform Validate
-        id: validate
+        id: validate-zscc-nsg
         run: |
           cd modules/terraform-zscc-nsg-azure
           terraform validate -no-color
 
       - name: Terraform Init
-        id: init
+        id: init-zscc-workload
         run: |
           cd modules/terraform-zscc-workload-azure
           terraform init   
 
       - name: Terraform Validate
-        id: validate
+        id: validate-zscc-workload
         run: |
           cd modules/terraform-zscc-workload-azure
           terraform validate -no-color
