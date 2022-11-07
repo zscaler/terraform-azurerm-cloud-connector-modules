@@ -59,7 +59,7 @@ resource "azurerm_network_interface" "workload_nic" {
   ip_configuration {
     name                          = "${var.name_prefix}-workload-${count.index + 1}-nic-conf-${var.resource_tag}"
     subnet_id                     = var.subnet_id
-    private_ip_address_allocation = "dynamic"
+    private_ip_address_allocation = "Dynamic"
   }
 
   dns_servers = var.dns_servers

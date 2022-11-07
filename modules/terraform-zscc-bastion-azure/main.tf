@@ -47,7 +47,7 @@ resource "azurerm_network_interface" "bastion_nic" {
   ip_configuration {
     name                          = "${var.name_prefix}-bastion-nic-conf-${var.resource_tag}"
     subnet_id                     = var.public_subnet_id
-    private_ip_address_allocation = "dynamic"
+    private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.bastion_pip.id
   }
 
