@@ -11,7 +11,7 @@ resource "azurerm_network_interface" "cc_mgmt_nic" {
   ip_configuration {
     name                          = "${var.name_prefix}-cc-mgmt-nic-conf-${var.resource_tag}"
     subnet_id                     = element(var.mgmt_subnet_id, count.index)
-    private_ip_address_allocation = "dynamic"
+    private_ip_address_allocation = "Dynamic"
     primary                       = true
   }
 
@@ -46,7 +46,7 @@ resource "azurerm_network_interface" "cc_service_nic" {
   ip_configuration {
     name                          = var.cc_instance_size == "small" ? "${var.name_prefix}-cc-service-nic-conf-${var.resource_tag}" : "${var.name_prefix}-cc-lb-nic-conf-${var.resource_tag}"
     subnet_id                     = element(var.service_subnet_id, count.index)
-    private_ip_address_allocation = "dynamic"
+    private_ip_address_allocation = "Dynamic"
     primary                       = true
   }
 
@@ -83,7 +83,7 @@ resource "azurerm_network_interface" "cc_service_nic_1" {
   ip_configuration {
     name                          = "${var.name_prefix}-cc-service-nic-1-conf-${var.resource_tag}"
     subnet_id                     = element(var.service_subnet_id, count.index)
-    private_ip_address_allocation = "dynamic"
+    private_ip_address_allocation = "Dynamic"
     primary                       = true
   }
 
@@ -120,7 +120,7 @@ resource "azurerm_network_interface" "cc_service_nic_2" {
   ip_configuration {
     name                          = "${var.name_prefix}-cc-service-nic-2-conf-${var.resource_tag}"
     subnet_id                     = element(var.service_subnet_id, count.index)
-    private_ip_address_allocation = "dynamic"
+    private_ip_address_allocation = "Dynamic"
     primary                       = true
   }
 
@@ -157,7 +157,7 @@ resource "azurerm_network_interface" "cc_service_nic_3" {
   ip_configuration {
     name                          = "${var.name_prefix}-cc-service-nic-3-conf-${var.resource_tag}"
     subnet_id                     = element(var.service_subnet_id, count.index)
-    private_ip_address_allocation = "dynamic"
+    private_ip_address_allocation = "Dynamic"
     primary                       = true
   }
 
