@@ -86,7 +86,7 @@ variable "bastion_enabled" {
 
 variable "base_only" {
   type        = bool
-  description = "Default is falase. Only applicable for base deployment type resulting in workload and bastion hosts, but no Cloud Connector resources. Setting this to true will point workload route able to Internet"
+  description = "Default is false. Only applicable for base deployment type resulting in workload and bastion hosts, but no Cloud Connector resources. Setting this to true will point workload route able to Internet"
   default     = false
 }
 
