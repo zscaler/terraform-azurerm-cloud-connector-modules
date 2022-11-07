@@ -45,7 +45,7 @@ data "azurerm_virtual_network" "vnet_selected" {
 ################################################################################
 # Create Public IP for NAT Gateway or reference existing
 resource "azurerm_public_ip" "pip" {
-  count                   = var.byo_pips == false || var.base_only == false ? length(distinct(var.zones)) : 0
+  count                   = var.byo_pips == false && var.base_only == false ? length(distinct(var.zones)) : 0
   name                    = "${var.name_prefix}-public-ip-${count.index + 1}-${var.resource_tag}"
   location                = var.location
   resource_group_name     = data.azurerm_resource_group.rg_selected.name
