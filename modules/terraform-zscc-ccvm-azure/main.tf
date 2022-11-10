@@ -232,7 +232,7 @@ resource "azurerm_linux_virtual_machine" "cc_vm" {
   location            = var.location
   resource_group_name = var.resource_group
   size                = var.ccvm_instance_type
-  availability_set_id = local.zones_supported == false ? azurerm_availability_set.cc_availability_set.*.id[0] : null
+  availability_set_id = local.zones_supported == false ? azurerm_availability_set.cc_availability_set[0].id : null
   zone                = local.zones_supported ? element(var.zones, count.index) : null
 
   # Cloud Connector requires that the ordering of network_interface_ids associated are #1/mgmt, #2/service (or lb for med/lrg CC), #3/service-1, #4/service-2, #5/service-3 
