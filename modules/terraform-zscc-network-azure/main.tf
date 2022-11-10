@@ -16,7 +16,7 @@ resource "azurerm_resource_group" "rg" {
 }
 
 data "azurerm_resource_group" "rg_selected" {
-  name = var.byo_rg == false ? azurerm_resource_group.rg.*.name[0] : var.byo_rg_name
+  name = var.byo_rg == false ? azurerm_resource_group.rg[0].name : var.byo_rg_name
 }
 
 
@@ -35,8 +35,8 @@ resource "azurerm_virtual_network" "vnet" {
 }
 
 data "azurerm_virtual_network" "vnet_selected" {
-  name                = var.byo_vnet == false ? azurerm_virtual_network.vnet.*.name[0] : var.byo_vnet_name
-  resource_group_name = var.byo_vnet == false ? azurerm_virtual_network.vnet.*.resource_group_name[0] : var.byo_vnet_subnets_rg_name
+  name                = var.byo_vnet == false ? azurerm_virtual_network.vnet[0].name : var.byo_vnet_name
+  resource_group_name = var.byo_vnet == false ? azurerm_virtual_network.vnet[0].resource_group_name : var.byo_vnet_subnets_rg_name
 }
 
 
@@ -62,8 +62,8 @@ resource "azurerm_public_ip" "pip" {
 }
 
 data "azurerm_public_ip" "pip_selected" {
-  count               = var.byo_pips == false ? length(azurerm_public_ip.pip.*.id) : length(var.byo_pip_names)
-  name                = var.byo_pips == false ? azurerm_public_ip.pip.*.name[count.index] : element(var.byo_pip_names, count.index)
+  count               = var.byo_pips == false ? length(azurerm_public_ip.pip[*].id) : length(var.byo_pip_names)
+  name                = var.byo_pips == false ? azurerm_public_ip.pip[count.index].name : element(var.byo_pip_names, count.index)
   resource_group_name = var.byo_pips == false ? data.azurerm_resource_group.rg_selected.name : var.byo_pip_rg
 }
 
@@ -81,16 +81,16 @@ resource "azurerm_nat_gateway" "ngw" {
 }
 
 data "azurerm_nat_gateway" "ngw_selected" {
-  count               = var.byo_nat_gws == false ? length(azurerm_nat_gateway.ngw.*.id) : length(var.byo_nat_gw_names)
-  name                = var.byo_nat_gws == false ? azurerm_nat_gateway.ngw.*.name[count.index] : element(var.byo_nat_gw_names, count.index)
+  count               = var.byo_nat_gws == false ? length(azurerm_nat_gateway.ngw[*].id) : length(var.byo_nat_gw_names)
+  name                = var.byo_nat_gws == false ? azurerm_nat_gateway.ngw[count.index].name : element(var.byo_nat_gw_names, count.index)
   resource_group_name = var.byo_nat_gws == false ? data.azurerm_resource_group.rg_selected.name : var.byo_nat_gw_rg
 }
 
 # Associate Public IP to NAT Gateway
 resource "azurerm_nat_gateway_public_ip_association" "ngw_association" {
-  count                = var.existing_nat_gw_pip_association == false ? length(data.azurerm_nat_gateway.ngw_selected.*.id) : 0
-  nat_gateway_id       = data.azurerm_nat_gateway.ngw_selected.*.id[count.index]
-  public_ip_address_id = data.azurerm_public_ip.pip_selected.*.id[count.index]
+  count                = var.existing_nat_gw_pip_association == false ? length(data.azurerm_nat_gateway.ngw_selected[*].id) : 0
+  nat_gateway_id       = data.azurerm_nat_gateway.ngw_selected[count.index].id
+  public_ip_address_id = data.azurerm_public_ip.pip_selected[count.index].id
 
   depends_on = [
     data.azurerm_public_ip.pip_selected,
@@ -113,17 +113,17 @@ resource "azurerm_subnet" "cc_subnet" {
 
 # Or reference an existing subnet
 data "azurerm_subnet" "cc_subnet_selected" {
-  count                = var.byo_subnets == false ? length(azurerm_subnet.cc_subnet.*.id) : length(var.byo_subnet_names)
-  name                 = var.byo_subnets == false ? azurerm_subnet.cc_subnet.*.name[count.index] : element(var.byo_subnet_names, count.index)
+  count                = var.byo_subnets == false ? length(azurerm_subnet.cc_subnet[*].id) : length(var.byo_subnet_names)
+  name                 = var.byo_subnets == false ? azurerm_subnet.cc_subnet[count.index].name : element(var.byo_subnet_names, count.index)
   resource_group_name  = var.byo_vnet == false ? data.azurerm_virtual_network.vnet_selected.resource_group_name : var.byo_vnet_subnets_rg_name
   virtual_network_name = var.byo_vnet == false ? data.azurerm_virtual_network.vnet_selected.name : var.byo_vnet_name
 }
 
 # Associate Cloud Connector Subnet to NAT Gateway
 resource "azurerm_subnet_nat_gateway_association" "cc_subnet_nat_association" {
-  count          = var.existing_nat_gw_subnet_association == false ? length(data.azurerm_subnet.cc_subnet_selected.*.id) : 0
-  subnet_id      = data.azurerm_subnet.cc_subnet_selected.*.id[count.index]
-  nat_gateway_id = data.azurerm_nat_gateway.ngw_selected.*.id[count.index]
+  count          = var.existing_nat_gw_subnet_association == false ? length(data.azurerm_subnet.cc_subnet_selected[*].id) : 0
+  subnet_id      = data.azurerm_subnet.cc_subnet_selected[count.index].id
+  nat_gateway_id = data.azurerm_nat_gateway.ngw_selected[count.index].id
 
   depends_on = [
     data.azurerm_subnet.cc_subnet_selected,
@@ -163,9 +163,9 @@ resource "azurerm_route_table" "workload_rt" {
 
 # Associate Route Table with Workload Subnet
 resource "azurerm_subnet_route_table_association" "workload_rt_association" {
-  count          = length(azurerm_route_table.workload_rt.*.id)
-  subnet_id      = azurerm_subnet.workload_subnet.*.id[count.index]
-  route_table_id = azurerm_route_table.workload_rt.*.id[count.index]
+  count          = length(azurerm_route_table.workload_rt[*].id)
+  subnet_id      = azurerm_subnet.workload_subnet[count.index].id
+  route_table_id = azurerm_route_table.workload_rt[count.index].id
 }
 
 
