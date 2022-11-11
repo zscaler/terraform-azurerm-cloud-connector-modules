@@ -11,7 +11,7 @@ resource "azurerm_network_interface" "cc_mgmt_nic" {
   ip_configuration {
     name                          = "${var.name_prefix}-cc-mgmt-nic-conf-${var.resource_tag}"
     subnet_id                     = element(var.mgmt_subnet_id, count.index)
-    private_ip_address_allocation = "dynamic"
+    private_ip_address_allocation = "Dynamic"
     primary                       = true
   }
 
@@ -46,7 +46,7 @@ resource "azurerm_network_interface" "cc_service_nic" {
   ip_configuration {
     name                          = var.cc_instance_size == "small" ? "${var.name_prefix}-cc-service-nic-conf-${var.resource_tag}" : "${var.name_prefix}-cc-lb-nic-conf-${var.resource_tag}"
     subnet_id                     = element(var.service_subnet_id, count.index)
-    private_ip_address_allocation = "dynamic"
+    private_ip_address_allocation = "Dynamic"
     primary                       = true
   }
 
@@ -83,7 +83,7 @@ resource "azurerm_network_interface" "cc_service_nic_1" {
   ip_configuration {
     name                          = "${var.name_prefix}-cc-service-nic-1-conf-${var.resource_tag}"
     subnet_id                     = element(var.service_subnet_id, count.index)
-    private_ip_address_allocation = "dynamic"
+    private_ip_address_allocation = "Dynamic"
     primary                       = true
   }
 
@@ -120,7 +120,7 @@ resource "azurerm_network_interface" "cc_service_nic_2" {
   ip_configuration {
     name                          = "${var.name_prefix}-cc-service-nic-2-conf-${var.resource_tag}"
     subnet_id                     = element(var.service_subnet_id, count.index)
-    private_ip_address_allocation = "dynamic"
+    private_ip_address_allocation = "Dynamic"
     primary                       = true
   }
 
@@ -157,7 +157,7 @@ resource "azurerm_network_interface" "cc_service_nic_3" {
   ip_configuration {
     name                          = "${var.name_prefix}-cc-service-nic-3-conf-${var.resource_tag}"
     subnet_id                     = element(var.service_subnet_id, count.index)
-    private_ip_address_allocation = "dynamic"
+    private_ip_address_allocation = "Dynamic"
     primary                       = true
   }
 
@@ -232,7 +232,7 @@ resource "azurerm_linux_virtual_machine" "cc_vm" {
   location            = var.location
   resource_group_name = var.resource_group
   size                = var.ccvm_instance_type
-  availability_set_id = local.zones_supported == false ? azurerm_availability_set.cc_availability_set.*.id[0] : null
+  availability_set_id = local.zones_supported == false ? azurerm_availability_set.cc_availability_set[0].id : null
   zone                = local.zones_supported ? element(var.zones, count.index) : null
 
   # Cloud Connector requires that the ordering of network_interface_ids associated are #1/mgmt, #2/service (or lb for med/lrg CC), #3/service-1, #4/service-2, #5/service-3 
