@@ -17,7 +17,7 @@ These deployment templates are intended to be fully functional and self service 
 
 Our Deployment scripts are leveraging Terraform v1.1.9 that includes full binary and provider support for MacOS M1 chips, but any Terraform version 0.13.7 should be generally supported.
 
-- provider registry.terraform.io/hashicorp/azurerm v2.99.x
+- provider registry.terraform.io/hashicorp/azurerm v3.31.x
 - provider registry.terraform.io/hashicorp/random v3.3.x
 - provider registry.terraform.io/hashicorp/local v2.2.x
 - provider registry.terraform.io/hashicorp/null v3.1.x

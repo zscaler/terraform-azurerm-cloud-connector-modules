@@ -1,3 +1,12 @@
+## v0.2.0 (November 17, 2022)
+* Azure Private DNS module (terraform-zscc-private-dns-azure)
+* azurerm provider updated to 3.31.0. Minor resource refactoring to Azure LB and Public IP
+* New greenfield deployment options (base_1cc_zpa and base_cc_lb_zpa) with Azure Private DNS module integration
+* zpa_enabled variable added to dynamically create Outbound DNS subnet and Route Table in VNet if set to true
+* zsec additions for new deployment options + domains adding to Private DNS Resolver Rule creation
+* workload VM for greenfield deployments dns_servers set to Azure DNS default
+
+
 ## 0.1.0 (July 13, 2022)
 
 * github release refactor
