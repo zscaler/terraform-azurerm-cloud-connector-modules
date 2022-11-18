@@ -52,7 +52,8 @@ resource "azurerm_public_ip" "pip" {
   allocation_method       = "Static"
   sku                     = "Standard"
   idle_timeout_in_minutes = 30
-  availability_zone       = local.zones_supported ? element(var.zones, count.index) : local.pip_zones
+  zones                   = local.zones_supported ? [element(var.zones, count.index)] : null
+
 
   tags = var.global_tags
 
@@ -179,4 +180,48 @@ resource "azurerm_subnet" "bastion_subnet" {
   resource_group_name  = data.azurerm_resource_group.rg_selected.name
   virtual_network_name = data.azurerm_virtual_network.vnet_selected.name
   address_prefixes     = var.public_subnets != null ? [element(var.public_subnets, count.index)] : [cidrsubnet(var.network_address_space, 8, 101)]
+}
+
+
+################################################################################
+# Private Outbound DNS Subnet and Route Table
+################################################################################
+resource "azurerm_subnet" "private_dns_subnet" {
+  count                = var.zpa_enabled == true ? 1 : 0
+  name                 = "${var.name_prefix}-outbound-dns-subnet-${var.resource_tag}"
+  resource_group_name  = data.azurerm_resource_group.rg_selected.name
+  virtual_network_name = data.azurerm_virtual_network.vnet_selected.name
+  address_prefixes     = var.private_dns_subnet != null ? [var.private_dns_subnet] : [cidrsubnet(var.network_address_space, 12, 2480)]
+
+  delegation {
+    name = "Microsoft.Network.dnsResolvers"
+    service_delegation {
+      actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+      name    = "Microsoft.Network/dnsResolvers"
+    }
+  }
+}
+
+# Create Outbound DNS Route Table to send to Cloud Connector
+resource "azurerm_route_table" "private_dns_rt" {
+  count               = var.zpa_enabled == true ? 1 : 0
+  name                = "${var.name_prefix}-outbound-dns-rt-${var.resource_tag}"
+  location            = var.location
+  resource_group_name = data.azurerm_resource_group.rg_selected.name
+
+  disable_bgp_route_propagation = true
+
+  route {
+    name                   = "default-route"
+    address_prefix         = "0.0.0.0/0"
+    next_hop_type          = "VirtualAppliance"
+    next_hop_in_ip_address = var.lb_enabled == true ? var.lb_frontend_ip : element(var.cc_service_ip, count.index)
+  }
+}
+
+# Associate Route Table with Outbound DNS Subnet
+resource "azurerm_subnet_route_table_association" "private_dns_rt_association" {
+  count          = length(azurerm_route_table.private_dns_rt[*].id)
+  subnet_id      = azurerm_subnet.private_dns_subnet[count.index].id
+  route_table_id = azurerm_route_table.private_dns_rt[count.index].id
 }

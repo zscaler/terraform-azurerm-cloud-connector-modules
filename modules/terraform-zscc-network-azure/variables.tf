@@ -45,13 +45,19 @@ variable "public_subnets" {
   default     = null
 }
 
+variable "private_dns_subnet" {
+  type        = string
+  description = "Private DNS Resolver Outbound Endpoint Subnet to create in VNet. This is only required if you want to override the default subnets that this code creates via network_address_space variable."
+  default     = null
+}
+
 # Validation to determine if Azure Region selected supports availabilty zones if desired
 locals {
   az_supported_regions = ["australiaeast", "Australia East", "brazilsouth", "Brazil South", "canadacentral", "Canada Central", "centralindia", "Central India", "centralus", "Central US", "eastasia", "East Asia", "eastus", "East US", "francecentral", "France Central", "germanywestcentral", "Germany West Central", "japaneast", "Japan East", "koreacentral", "Korea Central", "northeurope", "North Europe", "norwayeast", "Norway East", "southafricanorth", "South Africa North", "southcentralus", "South Central US", "southeastasia", "Southeast Asia", "swedencentral", "Sweden Central", "uksouth", "UK South", "westeurope", "West Europe", "westus2", "West US 2", "westus3", "West US 3"]
   zones_supported = (
     contains(local.az_supported_regions, var.location) && var.zones_enabled == true
   )
-  pip_zones = contains(local.az_supported_regions, var.location) ? "Zone-Redundant" : "No-Zone"
+  #pip_zones = contains(local.az_supported_regions, var.location) ? "Zone-Redundant" : "No-Zone"
 }
 
 variable "zones_enabled" {
@@ -82,6 +88,12 @@ variable "bastion_enabled" {
   type        = bool
   description = "Configure Bastion/Public Subnet if set to true"
   default     = false
+}
+
+variable "zpa_enabled" {
+  type        = bool
+  default     = false
+  description = "Configure Private DNS Resolver Outbound Endpoint Subnet for conditional forwarding to Cloud Connector"
 }
 
 variable "base_only" {
