@@ -53,8 +53,10 @@ module "network" {
   location              = var.arm_location
   network_address_space = var.network_address_space
   cc_subnets            = var.cc_subnets
+  private_dns_subnet    = var.private_dns_subnet
   zones_enabled         = var.zones_enabled
   zones                 = var.zones
+  zpa_enabled           = var.zpa_enabled
   #bring-your-own variables
   byo_rg                             = var.byo_rg
   byo_rg_name                        = var.byo_rg_name
@@ -185,6 +187,26 @@ module "cc_lb" {
   subnet_id         = module.network.cc_subnet_ids[0]
   http_probe_port   = var.http_probe_port
   load_distribution = var.load_distribution
+}
+
+
+################################################################################
+# 6. Create Azure Private DNS Resolver Ruleset, Rules, and Outbound Endpoint
+#    for utilization with DNS redirection/conditional forwarding to Cloud
+#    Connector to enabling ZPA and/or ZIA DNS control features.
+################################################################################
+module "private_dns" {
+  source                = "../../modules/terraform-zscc-private-dns-azure"
+  count                 = var.zpa_enabled == true ? 1 : 0
+  name_prefix           = var.name_prefix
+  resource_tag          = random_string.suffix.result
+  global_tags           = local.global_tags
+  resource_group        = module.network.resource_group_name
+  location              = var.arm_location
+  vnet_id               = module.network.virtual_network_id
+  private_dns_subnet_id = module.network.private_dns_subnet_id[0]
+  domain_names          = var.domain_names
+  target_address        = var.target_address
 }
 
 

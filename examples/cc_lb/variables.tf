@@ -46,6 +46,12 @@ variable "cc_subnets" {
   default     = null
 }
 
+variable "private_dns_subnet" {
+  type        = string
+  description = "Private DNS Resolver Outbound Endpoint Subnet to create in VNet. This is only required if you want to override the default subnets that this code creates via network_address_space variable."
+  default     = null
+}
+
 variable "managed_identity_subscription_id" {
   type        = string
   description = "Azure Subscription ID where the User Managed Identity resource exists. Only required if this Subscription ID is different than env_subscription_id"
@@ -207,6 +213,23 @@ variable "load_distribution" {
   }
 }
 
+# Azure Private DNS specific variables
+variable "zpa_enabled" {
+  type        = bool
+  description = "Configure Azure Private DNS Outbound subnet, Resolvers, Rulesets/Rules, and Outbound Endpoint ZPA DNS redirection"
+  default     = true
+}
+
+variable "domain_names" {
+  type        = map(any)
+  description = "Domain names fqdn/wildcard to have Azure Private DNS redirect DNS requests to Cloud Connector"
+}
+
+variable "target_address" {
+  type        = list(string)
+  description = "Route 53 DNS queries will be forwarded to these Zscaler Global VIP addresses"
+  default     = ["185.46.212.88", "185.46.212.89"]
+}
 
 ################################################################################
 # BYO (Bring-your-own) variables list
