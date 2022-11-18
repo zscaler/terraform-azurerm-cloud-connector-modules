@@ -41,10 +41,10 @@ if [[ "$oper" == "up" ]]; then
   done
     
     while [ "$deploy" == "greenfield" ]; do
-     read -r -p "Deployment Type: ( base | base_1cc | base_cc_lb ) : " dtype
+     read -r -p "Deployment Type: ( base | base_1cc | base_1cc_zpa | base_cc_lb | base_cc_lb_zpa ) : " dtype
 
     case $dtype in
-      base|base_1cc|base_cc_lb|cc_lb)
+      base|base_1cc|base_1cc_zpa|base_cc_lb|base_cc_lb_zpa)
           echo "Deployment Type: ${dtype}"
           break
       ;;
@@ -446,6 +446,71 @@ else
 fi
 else
 echo "Azure region ${azure_location} does not support Zones. Proceeding..."
+fi
+
+
+if [[ "$dtype" == "cc"* ]]; then
+   while true; do
+    read -r -p "Enable Azure Private DNS for ZPA? (yes/no): " zpa_response
+case $zpa_response in 
+	yes|y ) 
+    echo "Enabling Azure Private DNS module..."
+    zpa_enabled=true
+    echo "export TF_VAR_zpa_enabled=$zpa_enabled" >> .zsecrc
+    break
+    ;;
+	no|n )
+    echo "No ZPA enablement..."
+    zpa_enabled=false
+    echo "export TF_VAR_zpa_enabled=$zpa_enabled" >> .zsecrc
+    break
+    ;;
+	* ) echo "invalid response. Please enter yes or no";;
+    esac
+done 
+fi
+
+if [[ "$zpa_enabled" == "true" || "$dtype" == *"zpa" ]]; then
+array=()
+domain_names_map="'{ "
+counter=0
+while true; do
+read -r -p "How many Domain/FQDN application segments to add to Private DNS Resolver Rules? " domain_number
+if [[ $domain_number == 0 ]]; then
+    echo "Invalid input. Please enter a whole number for the number of domains you will be adding..."
+elif [[ $domain_number =~ ^[0-9]+$ ]]; then
+   echo "$domain_number domains to enter..."
+   break
+else
+   echo "Invalid input. Please enter a whole number for the number of domains you will be adding..."
+fi
+done
+for i in $(seq $domain_number); do
+read -r -p "Enter a single ZPA Domain/FQDN ending with a trailing dot ( e.g. azure.company.com. ): " domain_name
+    if [[ $domain_name = *" "* ]]; then
+        echo "Spaces not allowed. Please enter only one domain at a time. Delete .zsecrc file and re-run zsec up..."
+        exit 1
+    elif [[ $domain_name == '' ]]; then
+        echo "Empty entries are not allowed. Delete .zsecrc file and re-run zsec up..."
+        exit 1
+    elif [[ $domain_name == "." ]]; then
+        echo "You entered '.' dot. While AWS does support this to forward all domain requests, this could have unintended consequences/compatibility issues with AWS services"
+    elif [[ $domain_name == "."* ]]; then
+        echo "Invalid format. Domains cannot start with a dot (.). Delete .zsecrc file and re-run zsec up..."
+        exit 1
+    elif [[ $domain_name == "*"* ]]; then
+        echo "Invalid format. Domains cannot start with a star/wildcard (*). Delete .zsecrc file and re-run zsec up..."
+        exit 1
+    elif [[ $domain_name != *"." ]]; then
+        echo "Invalid format. Domains must end with a dot (.). Delete .zsecrc file and re-run zsec up..."
+        exit 1
+    fi
+array+=("$domain_name")
+    counter=$(( $counter + 1 ))
+    domain_names_map+="appseg$counter: \"$domain_name\", "
+done
+domain_names_map+="}'"
+echo "export TF_VAR_domain_names=${domain_names_map}" >> .zsecrc
 fi
 
 fi
