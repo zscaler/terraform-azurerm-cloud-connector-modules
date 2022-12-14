@@ -57,6 +57,10 @@ Use the [**Starter Deployment Template**](examples/base_1cc) to deploy your Clou
 
 Use the [**Starter Deployment Template with Load Balancer**](examples/base_cc_lb) to deploy your Cloud Connector in a new resource group and virtual network and to load balance traffic across multiple Cloud Connectors. Zscaler's recommended deployment method is Azure Standard Load Balancer. Azure Load Balancer distributes traffic across multiple Cloud Connectors and achieves high availability.
 
-## Brownfield Deployment
+## **Brownfield Deployment**
 
-Brownfield deployment templates are most applicable for production deployments and have more customization options than a "base" deployment. They also do not include a bastion or workload hosts deployed. See [Modules](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/tree/main/modules) for the Terraform configurations for brownfield deployment.
+Brownfield deployment templates are most applicable for production deployments and have more customization options than a "base" deployment. They also do not include a bastion or workload hosts deployed. See [Modules](modules/) for the Terraform configurations for brownfield deployment.
+
+### **Custom Deployment Template with Azure Load Balancer**
+
+Use the [**Custom Deployment template with Azure Load Balancer**](examples/cc_lb) to deploy your Cloud Connector in a new or existing VNet and load balance traffic across multiple Cloud Connectors. Zscaler's recommended deployment method is Azure Load Balancer. Azure Load Balancer distributes traffic across multiple Cloud Connectors and achieves high availability.
