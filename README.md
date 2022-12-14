@@ -47,7 +47,7 @@ Our Deployment scripts are leveraging Terraform v1.1.9 which includes full binar
 
 ## **Greenfield Deployments** 
 
-### Use this if you are building an entire cluster from the ground up. These templates include a bastion host and test workloads and are designed for greenfield/POV testing.
+Use this if you are building an entire cluster from the ground up. These templates include a bastion host and test workloads and are designed for greenfield/POV testing.
 
 ### **Starter Deployment Template**
 
