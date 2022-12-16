@@ -1,3 +1,13 @@
+## v0.1.1 (December 16, 2022)
+
+* comprehensive README
+* variable condition tonumber. terraform #30919
+* tflint terraform_deprecated_index
+* public ip conditional create logic
+* private_ip_address_allocation capitalize
+* add westus3 zone support
+* update codeowners
+
 ## v0.1.0 (December 15, 2022)
 
 * github release refactor from Cloud Connector Portal
