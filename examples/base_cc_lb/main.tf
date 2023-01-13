@@ -203,6 +203,8 @@ module "cc_lb" {
   subnet_id         = module.network.cc_subnet_ids[0]
   http_probe_port   = var.http_probe_port
   load_distribution = var.load_distribution
+  zones_enabled     = var.zones_enabled
+  zones             = var.zones
 }
 
 

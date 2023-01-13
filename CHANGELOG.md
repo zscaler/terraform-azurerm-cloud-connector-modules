@@ -1,3 +1,9 @@
+## v0.2.0 (January 13, 2023)
+
+* Azure Provider upgrade from 2.x to 3.x
+* refactor resources for 3.x provider: azurerm_public_ip, azurerm_lb_probe, and cc_lb_rule
+* Fix for Azure Load Balancer frontend_ip creation in Regions that do not support availability zones
+
 ## v0.1.1 (December 16, 2022)
 
 * comprehensive README
