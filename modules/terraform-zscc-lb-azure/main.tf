@@ -25,8 +25,8 @@ resource "azurerm_lb" "cc_lb" {
   frontend_ip_configuration {
     name                          = "${var.name_prefix}-cc-lb-ip-${var.resource_tag}"
     subnet_id                     = var.subnet_id
-    private_ip_address_allocation = "Dynamic"
-    zones                         = local.zones_supported ? var.zones : null
+    private_ip_address_allocation = "dynamic"
+    zones                         = local.zones_supported ? local.frontend_zone_specific : null
   }
 }
 
