@@ -64,6 +64,7 @@ locals {
   zones_supported = (
     contains(local.az_supported_regions, var.location) && var.zones_enabled == true
   )
+  frontend_zone_specific = length(var.zones) == 1 ? var.zones : ["1", "2", "3"] ##If user specifies a single zone number for a zones supported region set just that zone. Otherwise, set all 3 zones (zone-redundant)
 }
 
 variable "zones_enabled" {
