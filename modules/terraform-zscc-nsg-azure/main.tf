@@ -48,8 +48,8 @@ resource "azurerm_network_security_group" "cc_mgmt_nsg" {
 
 # Or use existing Mgmt NSG
 data "azurerm_network_security_group" "mgt_nsg_selected" {
-  count               = var.byo_nsg == false ? length(azurerm_network_security_group.cc_mgmt_nsg[*].id) : length(var.byo_mgmt_nsg_names)
-  name                = var.byo_nsg == false ? "${var.name_prefix}-cc-mgmt-nsg-${count.index + 1}-${var.resource_tag}" : element(var.byo_mgmt_nsg_names, count.index)
+  count               = var.byo_nsg ? length(var.byo_mgmt_nsg_names) : 0
+  name                = var.byo_nsg ? element(var.byo_mgmt_nsg_names, count.index) : 0
   resource_group_name = var.resource_group
 }
 
@@ -92,7 +92,7 @@ resource "azurerm_network_security_group" "cc_service_nsg" {
 
 # Or use existing Service NSG
 data "azurerm_network_security_group" "service_nsg_selected" {
-  count               = var.byo_nsg == false ? length(azurerm_network_security_group.cc_service_nsg[*].id) : length(var.byo_service_nsg_names)
-  name                = var.byo_nsg == false ? "${var.name_prefix}-cc-service-nsg-${count.index + 1}-${var.resource_tag}" : element(var.byo_service_nsg_names, count.index)
+  count               = var.byo_nsg ? length(var.byo_service_nsg_names) : 0
+  name                = var.byo_nsg ? element(var.byo_service_nsg_names, count.index) : 0
   resource_group_name = var.resource_group
 }
