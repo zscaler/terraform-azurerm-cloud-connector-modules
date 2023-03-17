@@ -25,7 +25,8 @@ resource "azurerm_lb" "cc_lb" {
   frontend_ip_configuration {
     name                          = "${var.name_prefix}-cc-lb-ip-${var.resource_tag}"
     subnet_id                     = var.subnet_id
-    private_ip_address_allocation = "Dynamic"
+    private_ip_address_allocation = "dynamic"
+    zones                         = local.zones_supported ? local.frontend_zone_specific : null
   }
 }
 
@@ -43,12 +44,11 @@ resource "azurerm_lb_backend_address_pool" "cc_lb_backend_pool" {
 # Define load balancer health probe parameters
 ################################################################################
 resource "azurerm_lb_probe" "cc_lb_probe" {
-  name                = "${var.name_prefix}-cc-lb-probe-${var.resource_tag}"
-  resource_group_name = var.resource_group
-  loadbalancer_id     = azurerm_lb.cc_lb.id
-  protocol            = "Http"
-  port                = var.http_probe_port
-  request_path        = "/?cchealth"
+  name            = "${var.name_prefix}-cc-lb-probe-${var.resource_tag}"
+  loadbalancer_id = azurerm_lb.cc_lb.id
+  protocol        = "Http"
+  port            = var.http_probe_port
+  request_path    = "/?cchealth"
 }
 
 
@@ -57,7 +57,6 @@ resource "azurerm_lb_probe" "cc_lb_probe" {
 ################################################################################
 resource "azurerm_lb_rule" "cc_lb_rule" {
   name                           = "${var.name_prefix}-cc-lb-rule-${var.resource_tag}"
-  resource_group_name            = var.resource_group
   loadbalancer_id                = azurerm_lb.cc_lb.id
   protocol                       = "All"
   frontend_port                  = 0

@@ -51,7 +51,6 @@ locals {
   zones_supported = (
     contains(local.az_supported_regions, var.location) && var.zones_enabled == true
   )
-  pip_zones = contains(local.az_supported_regions, var.location) ? "Zone-Redundant" : "No-Zone"
 }
 
 variable "zones_enabled" {

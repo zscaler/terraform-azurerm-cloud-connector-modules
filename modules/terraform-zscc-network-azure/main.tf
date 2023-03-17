@@ -52,7 +52,7 @@ resource "azurerm_public_ip" "pip" {
   allocation_method       = "Static"
   sku                     = "Standard"
   idle_timeout_in_minutes = 30
-  availability_zone       = local.zones_supported ? element(var.zones, count.index) : local.pip_zones
+  zones                   = local.zones_supported ? [element(var.zones, count.index)] : null
 
   tags = var.global_tags
 

@@ -1,3 +1,10 @@
+## v0.2.0 (March 7, 2023)
+
+* Mininum Azure Provider upgrade from 2.x to 3.x (3.46.x)
+* refactor resources for 3.x provider: azurerm_public_ip, azurerm_lb_probe, and cc_lb_rule
+* Fix for Azure Load Balancer frontend_ip creation in Regions that do not support availability zones. If a single zone is specified to variable "zones" and variable "zones_enabled" is true then the frontend_ip will be created in that single zone. If more than one zone is specified, we will default to all 3 zones (zone-redundant) to follow Azure Network API
+* Fix for NSG data source read dependency when resource orginally created (byo_nsg = false) forcing recreate on subsequent terraform applies
+
 ## v0.1.1 (December 16, 2022)
 
 * comprehensive README

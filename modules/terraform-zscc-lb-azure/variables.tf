@@ -57,3 +57,30 @@ variable "load_distribution" {
     error_message = "Input load_distribution must be set to either SourceIP, SourceIPProtocol, or Default."
   }
 }
+
+# Validation to determine if Azure Region selected supports availabilty zones if desired
+locals {
+  az_supported_regions = ["australiaeast", "Australia East", "brazilsouth", "Brazil South", "canadacentral", "Canada Central", "centralindia", "Central India", "centralus", "Central US", "eastasia", "East Asia", "eastus", "East US", "francecentral", "France Central", "germanywestcentral", "Germany West Central", "japaneast", "Japan East", "koreacentral", "Korea Central", "northeurope", "North Europe", "norwayeast", "Norway East", "southafricanorth", "South Africa North", "southcentralus", "South Central US", "southeastasia", "Southeast Asia", "swedencentral", "Sweden Central", "uksouth", "UK South", "westeurope", "West Europe", "westus2", "West US 2", "westus3", "West US 3"]
+  zones_supported = (
+    contains(local.az_supported_regions, var.location) && var.zones_enabled == true
+  )
+  frontend_zone_specific = length(var.zones) == 1 ? var.zones : ["1", "2", "3"] ##If user specifies a single zone number for a zones supported region set just that zone. Otherwise, set all 3 zones (zone-redundant)
+}
+
+variable "zones_enabled" {
+  type        = bool
+  description = "Determine whether to provision Cloud Connector VMs explicitly in defined zones (if supported by the Azure region provided in the location variable). If left false, Azure will automatically choose a zone and module will create an availability set resource instead for VM fault tolerance"
+  default     = false
+}
+
+variable "zones" {
+  type        = list(string)
+  description = "Specify which availability zone(s) to deploy VM resources in if zones_enabled variable is set to true"
+  default     = ["1"]
+  validation {
+    condition = (
+      !contains([for zones in var.zones : contains(["1", "2", "3"], zones)], false)
+    )
+    error_message = "Input zones variable must be a number 1-3."
+  }
+}
