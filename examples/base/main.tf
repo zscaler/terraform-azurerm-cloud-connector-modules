@@ -90,5 +90,5 @@ module "workload" {
   resource_group = module.network.resource_group_name
   subnet_id      = module.network.workload_subnet_ids[0]
   ssh_key        = tls_private_key.key.public_key_openssh
-  dns_servers    = ["8.8.8.8", "8.8.4.4"]
+  dns_servers    = []
 }
