@@ -89,8 +89,12 @@ data "azurerm_nat_gateway" "ngw_selected" {
 }
 
 # Associate Public IP to NAT Gateway
+locals {
+  ngw_associations_selected = var.byo_nat_gws ? data.azurerm_nat_gateway.ngw_selected[*].id : azurerm_nat_gateway.ngw[*].id
+}
+
 resource "azurerm_nat_gateway_public_ip_association" "ngw_association" {
-  count                = var.existing_nat_gw_pip_association == false ? try(length(data.azurerm_nat_gateway.ngw_selected[*].id), length(azurerm_nat_gateway.ngw[*].id)) : 0
+  count                = var.existing_nat_gw_pip_association ? 0 : length(local.ngw_associations_selected)
   nat_gateway_id       = try(data.azurerm_nat_gateway.ngw_selected[count.index].id, azurerm_nat_gateway.ngw[count.index].id)
   public_ip_address_id = try(data.azurerm_public_ip.pip_selected[count.index].id, azurerm_public_ip.pip[count.index].id)
 }
@@ -183,7 +187,7 @@ resource "azurerm_subnet" "bastion_subnet" {
 ################################################################################
 # Create private subnet for outbound private DNS and delegate to dnsResolvers service
 resource "azurerm_subnet" "private_dns_subnet" {
-  count                = var.zpa_enabled == true ? 1 : 0
+  count                = var.zpa_enabled ? 1 : 0
   name                 = "${var.name_prefix}-outbound-dns-subnet-${var.resource_tag}"
   resource_group_name  = try(data.azurerm_resource_group.rg_selected[0].name, azurerm_resource_group.rg[0].name)
   virtual_network_name = try(data.azurerm_virtual_network.vnet_selected[0].name, azurerm_virtual_network.vnet[0].name)
@@ -200,7 +204,7 @@ resource "azurerm_subnet" "private_dns_subnet" {
 
 # Create Outbound DNS Route Table to send to Cloud Connector
 resource "azurerm_route_table" "private_dns_rt" {
-  count               = var.zpa_enabled == true ? 1 : 0
+  count               = var.zpa_enabled ? 1 : 0
   name                = "${var.name_prefix}-outbound-dns-rt-${var.resource_tag}"
   location            = var.location
   resource_group_name = try(data.azurerm_resource_group.rg_selected[0].name, azurerm_resource_group.rg[0].name)

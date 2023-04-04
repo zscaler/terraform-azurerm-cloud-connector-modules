@@ -30,5 +30,5 @@ output "virtual_network_id" {
 
 output "private_dns_subnet_id" {
   description = "Private DNS Outbound Endpoint Subnet ID"
-  value       = azurerm_subnet.private_dns_subnet[*].id
+  value       = var.zpa_enabled ? azurerm_subnet.private_dns_subnet[0].id : ""
 }
