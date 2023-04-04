@@ -10,7 +10,7 @@ Zscaler Cloud Connector Azure Terraform Modules
 
 # **README for Azure Terraform**
 
-This README serves as a quick start guide to deploy Zscaler Cloud Connector resources in Microsoft Azure using Terraform. To learn more about the resources created when deploying Cloud Connector with Terraform, see [Deployment Templates for Zscaler Cloud Connector](https://help.zscaler.com/cloud-connector/about-cloud-automation-scripts).
+This README serves as a quick start guide to deploy Zscaler Cloud Connector resources in Microsoft Azure using Terraform. To learn more about the resources created when deploying Cloud Connector with Terraform, see [Deployment Templates for Zscaler Cloud Connector](https://help.zscaler.com/cloud-branch-connector/deployment-templates-zscaler-cloud-connector).
 
 ## **Azure Deployment Scripts for Terraform**
 
