@@ -122,7 +122,7 @@
 
 ##    IPv4 CIDR configured with VNet creation. All Subnet resources (Workload, Public, and Cloud Connector) will be created based off this prefix
 ##    /24 subnets are created assuming this cidr is a /16. If you require creating a VNet smaller than /16, you may need to explicitly define all other 
-##     subnets via public_subnets, workload_subnets, and cc_subnets variables (Default: "10.1.0.0/16")
+##     subnets via cc_subnets and private_dns_subnet variables (Default: "10.1.0.0/16")
 
 ##    Note: This variable only applies if you let Terraform create a new VNet. Custom deployment with byo_vnet enabled will ignore this
 
@@ -138,10 +138,8 @@
 ##    Default/Minumum: 1 - Maximum: 3
 ##    Example: If you change network_address_space to "10.2.0.0/24", set below variables to cidrs that fit in that /24 like cc_subnets = ["10.2.0.0/27","10.2.0.32/27"] etc.
 
-#public_subnets                             = ["10.x.y.z/24","10.x.y.z/24"]
-#workloads_subnets                          = ["10.x.y.z/24","10.x.y.z/24"]
 #cc_subnets                                 = ["10.x.y.z/24","10.x.y.z/24"]
-
+#private_dns_subnet                         = "10.x.y.z/28"
 
 ## 15. Tag attribute "Owner" assigned to all resoure creation. (Default: "zscc-admin")
 
@@ -287,3 +285,25 @@
 ## 35. Provide the existing Resource Group name of your Network Security Groups.  Only uncomment and modify if you set byo_nsg to true
 
 #byo_nsg_rg                             = "existing-nsg-rg"
+
+
+#####################################################################################################################
+##### ZPA/Azure Private DNS specific variables #####
+#####################################################################################################################
+## 36. Provide the domain names you want Azure Private DNS to redirect to Cloud Connector for ZPA interception. 
+##     Only applicable for base + zpa or zpa_enabled = true deployment types where Outbound DNS subnets, Resolver Ruleset/Rules, 
+##     and Outbound Endpoints are being created. Two example domains are populated to show the mapping structure and syntax.
+##     Azure does require a trailing dot "." on all domain entries. ZPA Module will read through each to create a resolver rule per 
+##     domain_names entry. Ucomment domain_names variable and add any additional appsegXX mappings as needed.
+
+#domain_names = {
+#  appseg1 = "app1.com."
+#  appseg2 = "app2.com."
+#}
+
+
+## 37. Azure Private DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses.
+##     The required expectation is that the target should follow VNet/subnet routing towards the configured Cloud Connector Load Balancer VIP for 
+##     ZPA DNS interception
+
+#target_address                             = ["185.46.212.88", "185.46.212.89"]

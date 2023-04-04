@@ -53,8 +53,11 @@ module "network" {
   location              = var.arm_location
   network_address_space = var.network_address_space
   cc_subnets            = var.cc_subnets
+  private_dns_subnet    = var.private_dns_subnet
   zones_enabled         = var.zones_enabled
   zones                 = var.zones
+  lb_frontend_ip        = module.cc_lb.lb_ip
+  zpa_enabled           = var.zpa_enabled
   #bring-your-own variables
   byo_rg                             = var.byo_rg
   byo_rg_name                        = var.byo_rg_name
@@ -188,6 +191,40 @@ module "cc_lb" {
   zones_enabled     = var.zones_enabled
   zones             = var.zones
 }
+
+
+################################################################################
+# 6. Create Azure Private DNS Resolver Ruleset, Rules, and Outbound Endpoint
+#    for utilization with DNS redirection/conditional forwarding to Cloud
+#    Connector to enabling ZPA and/or ZIA DNS control features.
+#    This can optionally be enabled/disabled per variable "zpa_enabled".
+################################################################################
+module "private_dns" {
+  count                 = var.zpa_enabled ? 1 : 0
+  source                = "../../modules/terraform-zscc-private-dns-azure"
+  name_prefix           = var.name_prefix
+  resource_tag          = random_string.suffix.result
+  global_tags           = local.global_tags
+  resource_group        = module.network.resource_group_name
+  location              = var.arm_location
+  vnet_id               = module.network.virtual_network_id
+  private_dns_subnet_id = module.network.private_dns_subnet_id
+  domain_names          = var.domain_names
+  target_address        = var.target_address
+}
+
+################################################################################
+# Optional: Example create Azure Private DNS Resolver Virtual Network Link
+# variable spoke_vnets does not exist in this deployment. This is simply
+# an example of how you may utilize the private_dns module to create 
+# virtual network links for spoke VNets
+################################################################################
+#resource "azurerm_private_dns_resolver_virtual_network_link" "dns_vnet_link" {
+#  count                     = length(var.spoke_vnets)
+#  name                      = "${var.name_prefix}-vnet-link-${count.index + 1}-${random_string.suffix.result}"
+#  dns_forwarding_ruleset_id = module.private_dns.private_dns_forwarding_ruleset_id
+#  virtual_network_id        = element(var.spoke_vnets, count.index)
+#}
 
 
 ################################################################################
