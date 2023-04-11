@@ -17,6 +17,15 @@ ${module.cc_lb.lb_ip}
 All NAT GW IPs:
 ${join("\n", module.network.public_ip_address)}
 
+Private DNS Resolver:
+${try(module.private_dns.private_dns_resolver_name, "")}
+
+Private DNS Forwarding Ruleset:
+${try(module.private_dns.private_dns_forwarding_ruleset_name, "")}
+
+Private DNS Outbound Endpoint:
+${try(module.private_dns.private_dns_outbound_endpoint_name, "")}
+
 TB
 }
 
