@@ -1,3 +1,7 @@
+## UNRELEASED
+
+* Add CLIENT_ID field to userdata generation
+
 ## v0.3.0 (April 4, 2023)
 
 * Azure Private DNS module (terraform-zscc-private-dns-azure)
