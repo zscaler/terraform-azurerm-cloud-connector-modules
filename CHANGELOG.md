@@ -1,3 +1,11 @@
+## UNRELEASED (April 14, 2023)
+
+* Medium and Large Cloud Connector instance support
+    - azurerm_network_interface.cc_service_nic rename to azurerm_network_interface.cc_forwarding_nic
+    - azurerm_network_interface_backend_address_pool_association.cc_vm_service_nic_lb_association rename to azurerm_network_interface_backend_address_pool_association.cc_vm_forwarding_nic_lb_association
+    - remove dedicated CC Medium/Large additional service IP dependencies from load balancer associations
+    - add Standard_DS4_v2 Medium/Large ccvm_instance_type support
+
 ## v0.2.0 (March 7, 2023)
 
 * Mininum Azure Provider upgrade from 2.x to 3.x (3.46.x)
