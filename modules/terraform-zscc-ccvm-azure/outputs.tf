@@ -4,8 +4,8 @@ output "private_ip" {
 }
 
 output "service_ip" {
-  description = "Instance Service Interface Private IP Address"
-  value       = azurerm_network_interface.cc_service_nic[*].private_ip_address
+  description = "Instance Forwarding Interface Private IP Address"
+  value       = azurerm_network_interface.cc_forwarding_nic[*].private_ip_address
 }
 
 output "cc_hostname" {
