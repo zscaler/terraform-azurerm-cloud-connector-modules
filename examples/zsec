@@ -256,40 +256,62 @@ cc_instance_size=${cc_instance_size_input:-$cc_instance_size_default}
       ;;
       *)
           echo "Invalid Cloud Connector size: ${cc_instance_size}."
-          echo "Delete .zsecrc file and re-run zsecup ..."
-          exit 1
       ;;
     esac
 
-ccvm_instance_type_default=Standard_D2s_v3
+if [[ $cc_instance_size == "small" ]]; then
+ccvm_instance_type_default="Standard_D2s_v3"
 while true; do
-    read -r -p "Enter desired Azure VM type for CC. Recommended types: Small CC (Standard_D2s_v3); Medium (Standard_D8s_v3 or Standard_DS3_v2); Large (Standard_D16s_v3 or Standard_DS5_v2) [Default=$ccvm_instance_type_default]: " ccvm_instance_type_input
+    read -r -p "Enter desired Azure VM type for $cc_instance_size CC. Recommended type: (Standard_D2s_v3) [Default=$ccvm_instance_type_default]: " ccvm_instance_type_input
 ccvm_instance_type=${ccvm_instance_type_input:-$ccvm_instance_type_default}
-case $ccvm_instance_type in 
-	Standard_D2s_v3|Standard_DS3_v2|Standard_D8s_v3|Standard_D16s_v3|Standard_DS5_v2 ) 
-    echo "Cloud Connector VM type: ${ccvm_instance_type}"
-    echo "export TF_VAR_ccvm_instance_type=${ccvm_instance_type}" >> .zsecrc
-    break
-    ;;
-	*)
-    echo "Invalid Cloud Connector VM type: ${ccvm_instance_type}. Please enter an approved VM type"
+    case $ccvm_instance_type in
+      Standard_D2s_v3|Standard_DS3_v2|Standard_D8s_v3|Standard_DS4_v2|Standard_D16s_v3|Standard_DS5_v2)
+          echo "Azure VM type: $ccvm_instance_type"
+          echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+          break
+      ;;
+      *)
+          echo "Azure VM type $ccvm_instance_type not compatible with Cloud Connector size $cc_instance_size. Please enter an approved VM type"
+      ;;
     esac
-done 
+done
 
-small_cc_instance=("Standard_D2s_v3" "Standard_DS3_v2" "Standard_D8s_v3" "Standard_D16s_v3" "Standard_DS5_v2")
-medium_cc_instance=("Standard_D8s_v3" "Standard_DS3_v2" "Standard_D16s_v3" "Standard_DS5_v2")
-large_cc_instance=("Standard_D16s_v3" "Standard_DS5_v2")
+elif [[ $cc_instance_size == "medium" ]]; then
+ccvm_instance_type_default="Standard_DS4_v2"
+while true; do
+    read -r -p "Enter desired Azure VM type for $cc_instance_size CC. Recommended type: (Standard_D2s_v3) [Default=$ccvm_instance_type_default]: " ccvm_instance_type_input
+ccvm_instance_type=${ccvm_instance_type_input:-$ccvm_instance_type_default}
+    case $ccvm_instance_type in
+      Standard_DS4_v2|Standard_D16s_v3|Standard_DS5_v2)
+          echo "Azure VM type: $ccvm_instance_type"
+          echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+          break
+      ;;
+      *)
+          echo "Azure VM type $ccvm_instance_type not compatible with Cloud Connector size $cc_instance_size. Please enter an approved VM type"
+      ;;
+    esac
+done
 
-if [[ ${small_cc_instance[*]} =~ $ccvm_instance_type && "$cc_instance_size" == small ]]; then
-echo "Proceeding. ${ccvm_instance_type} compatible with ${cc_instance_size} Cloud Connector size"
-elif [[ ${medium_cc_instance[*]} =~ $ccvm_instance_type && "$cc_instance_size" == medium ]]; then
-echo "Proceeding. ${ccvm_instance_type} compatible with ${cc_instance_size} Cloud Connector size"
-elif [[ ${large_cc_instance[*]} =~ $ccvm_instance_type && "$cc_instance_size" == large ]]; then
-echo "Proceeding. ${ccvm_instance_type} compatible with ${cc_instance_size} Cloud Connector size"
-elif [[ $dtype == base ]]; then
-echo "Proceeding with no CCs to deploy"
+elif [[ $cc_instance_size == "large" ]]; then
+ccvm_instance_type_default="Standard_DS4_v2"
+while true; do
+    read -r -p "Enter desired Azure VM type for $cc_instance_size CC. Recommended type: (Standard_D2s_v3) [Default=$ccvm_instance_type_default]: " ccvm_instance_type_input
+ccvm_instance_type=${ccvm_instance_type_input:-$ccvm_instance_type_default}
+    case $ccvm_instance_type in
+      Standard_DS4_v2|Standard_D16s_v3|Standard_DS5_v2)
+          echo "Azure VM type: $ccvm_instance_type"
+          echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+          break
+      ;;
+      *)
+          echo "Azure VM type $ccvm_instance_type not compatible with Cloud Connector size $cc_instance_size. Please enter an approved VM type"
+      ;;
+    esac
+done
+
 else
-    echo "Invalid CC deployment. ${ccvm_instance_type} not compatible with ${cc_instance_size} Cloud Connector size"
+    echo "Invalid CC deployment. $ccvm_instance_type not compatible with $cc_instance_size Cloud Connector size"
     echo "Delete .zsecrc file and re-run zsec up..."
     exit 1
 fi
