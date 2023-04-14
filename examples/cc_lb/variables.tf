@@ -82,6 +82,7 @@ variable "ccvm_instance_type" {
       var.ccvm_instance_type == "Standard_D2s_v3" ||
       var.ccvm_instance_type == "Standard_DS3_v2" ||
       var.ccvm_instance_type == "Standard_D8s_v3" ||
+      var.ccvm_instance_type == "Standard_DS4_v2" ||
       var.ccvm_instance_type == "Standard_D16s_v3" ||
       var.ccvm_instance_type == "Standard_DS5_v2"
     )
@@ -105,9 +106,9 @@ variable "cc_instance_size" {
 
 # Validation to determine if the selected Azure VM type and CC VM size is compatible 
 locals {
-  small_cc_instance  = ["Standard_D2s_v3", "Standard_DS3_v2", "Standard_D8s_v3", "Standard_D16s_v3", "Standard_DS5_v2"]
-  medium_cc_instance = ["Standard_DS3_v2", "Standard_D8s_v3", "Standard_D16s_v3", "Standard_DS5_v2"]
-  large_cc_instance  = ["Standard_D16s_v3", "Standard_DS5_v2"]
+  small_cc_instance  = ["Standard_D2s_v3", "Standard_DS3_v2", "Standard_D8s_v3", "Standard_DS4_v2", "Standard_D16s_v3", "Standard_DS5_v2"]
+  medium_cc_instance = ["Standard_DS4_v2", "Standard_D16s_v3", "Standard_DS5_v2"]
+  large_cc_instance  = ["Standard_DS4_v2", "Standard_D16s_v3", "Standard_DS5_v2"]
 
   valid_cc_create = (
     contains(local.small_cc_instance, var.ccvm_instance_type) && var.cc_instance_size == "small" ||

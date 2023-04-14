@@ -67,6 +67,7 @@
 #ccvm_instance_type                         = "Standard_D2s_v3"
 #ccvm_instance_type                         = "Standard_DS3_v2"
 #ccvm_instance_type                         = "Standard_D8s_v3"
+#ccvm_instance_type                         = "Standard_DS4_v2"
 #ccvm_instance_type                         = "Standard_D16s_v3"
 #ccvm_instance_type                         = "Standard_DS5_v2"
 
@@ -75,8 +76,8 @@
 ##    (Default: "small") 
 ##    **** NOTE - There is a dependency between ccvm_instance_type and cc_instance_size selections ****
 ##    If size = "small" any supported Azure VM instance size can be deployed, but "Standard_D2s_v3" is ideal
-##    If size = "medium" only Standard_DS3_v2/Standard_D8s_v3 and up Azure VM instance sizes can be deployed
-##    If size = "large" only Standard_D16s_v3/Standard_DS5_v2 Azure VM instance sizes can be deployed 
+##    If size = "medium" only Standard_DS4_v2/Standard_D16s_v3 and up Azure VM instance sizes can be deployed
+##    If size = "large" only Standard_DS4_v2/Standard_D16s_v3 Azure VM instance sizes can be deployed 
 
 #cc_instance_size                           = "small"
 #cc_instance_size                           = "medium"
