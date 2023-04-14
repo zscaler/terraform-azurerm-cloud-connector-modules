@@ -8,7 +8,7 @@ ${module.network.resource_group_name}
 All CC Management IPs:
 ${join("\n", module.cc_vm.private_ip)}
 
-All CC Primary Service IPs:
+All CC Forwarding Service IPs:
 ${join("\n", module.cc_vm.service_ip)}
 
 LB IP: 

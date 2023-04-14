@@ -21,7 +21,7 @@ ${join("\n", module.workload.private_ip)}
 Resource Group: 
 ${module.network.resource_group_name}
 
-All CC Primary Service IPs:
+All CC Forwarding Service IPs:
 ${join("\n", module.cc_vm.service_ip)}
 
 All NAT GW IPs:
