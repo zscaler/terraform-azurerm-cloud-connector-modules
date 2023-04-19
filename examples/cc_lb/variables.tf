@@ -108,7 +108,7 @@ variable "cc_instance_size" {
 locals {
   small_cc_instance  = ["Standard_D2s_v3", "Standard_DS3_v2", "Standard_D8s_v3", "Standard_DS4_v2", "Standard_D16s_v3", "Standard_DS5_v2"]
   medium_cc_instance = ["Standard_DS4_v2", "Standard_D16s_v3", "Standard_DS5_v2"]
-  large_cc_instance  = ["Standard_DS4_v2", "Standard_D16s_v3", "Standard_DS5_v2"]
+  large_cc_instance  = ["Standard_D16s_v3", "Standard_DS5_v2"]
 
   valid_cc_create = (
     contains(local.small_cc_instance, var.ccvm_instance_type) && var.cc_instance_size == "small" ||

@@ -294,12 +294,12 @@ ccvm_instance_type=${ccvm_instance_type_input:-$ccvm_instance_type_default}
 done
 
 elif [[ $cc_instance_size == "large" ]]; then
-ccvm_instance_type_default="Standard_DS4_v2"
+ccvm_instance_type_default="Standard_D16s_v3"
 while true; do
     read -r -p "Enter desired Azure VM type for $cc_instance_size CC. Recommended type: (Standard_D2s_v3) [Default=$ccvm_instance_type_default]: " ccvm_instance_type_input
 ccvm_instance_type=${ccvm_instance_type_input:-$ccvm_instance_type_default}
     case $ccvm_instance_type in
-      Standard_DS4_v2|Standard_D16s_v3|Standard_DS5_v2)
+      Standard_D16s_v3|Standard_DS5_v2)
           echo "Azure VM type: $ccvm_instance_type"
           echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
           break
