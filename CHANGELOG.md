@@ -1,4 +1,4 @@
-## v0.3.0 (April 4, 2023)
+## v0.3.0 (April 28, 2023)
 
 * Azure Private DNS module (terraform-zscc-private-dns-azure)
 * New greenfield deployment options (base_1cc_zpa and base_cc_lb_zpa) with Azure Private DNS module integration
@@ -6,6 +6,7 @@
 * zsec additions for new deployment options + domains adding to Private DNS Resolver Rule creation
 * workload VM for greenfield deployments dns_servers set to Azure DNS default
 * terraform-zscc-network-azure refactoring to remove data source read dependencies
+* probe_threshold variable added for [Azure LB health probe fixes](https://learn.microsoft.com/en-us/azure/load-balancer/whats-new#known-issues:~:text=February%202020-,Known%20issues,-The%20product%20group)
 
 ## v0.2.0 (March 7, 2023)
 
