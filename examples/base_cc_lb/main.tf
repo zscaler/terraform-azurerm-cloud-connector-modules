@@ -147,6 +147,7 @@ module "cc_vm" {
   mgmt_nsg_id                    = module.cc_nsg.mgmt_nsg_id
   service_nsg_id                 = module.cc_nsg.service_nsg_id
   accelerated_networking_enabled = var.accelerated_networking_enabled
+  encryption_at_host_setting     = var.encryption_at_host_setting
 
   depends_on = [
     local_file.user_data_file,

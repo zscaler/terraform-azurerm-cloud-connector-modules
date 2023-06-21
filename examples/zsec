@@ -246,6 +246,47 @@ fi
 done
 fi
 
+    # ---
+    # Host Encryption Support
+    encryption_at_host_setting=false
+    # Sourcing .zsecrc to use credentials during execution
+    source .zsecrc
+    while true; do
+        read -r -p "Do you want to enable the Azure host encryption feature? [yes/no]: " input
+
+        # Convert the user input to lowercase for case-insensitive comparison
+        input=$(echo "$input" | tr '[:upper:]' '[:lower:]')
+        if [[ "$input" == "yes" || "$input" == "y" ]]; then
+            TOKEN_ENDPOINT="https://login.microsoftonline.com/${ARM_TENANT_ID}/oauth2/token"
+            RESOURCE="https://management.azure.com/"
+            ACCESS_TOKEN=$(curl -s -X POST -H "Content-Type: application/x-www-form-urlencoded" \
+                -d "grant_type=client_credentials" \
+                -d "client_id=${ARM_CLIENT_ID}" \
+                -d "client_secret=${ARM_CLIENT_SECRET}" \
+                -d "resource=${RESOURCE}" \
+                "${TOKEN_ENDPOINT}" | grep -o '"access_token":"[^"]*' | awk -F'"' '{print $4}')
+            
+            response=$(curl -s -X GET -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+                "https://management.azure.com/subscriptions/$ARM_SUBSCRIPTION_ID/providers/Microsoft.Features/providers/Microsoft.Compute/features/EncryptionAtHost?api-version=2021-07-01" \
+                |grep -o '"state":"[^"]*' | awk -F'"' '{print $4}')
+
+            if [ "$response" = "Registered" ]; then
+                encryption_at_host_setting=true
+            else
+                echo "Error: Azure Account is not registered to support host encryption. Please refer to documentation."
+                exit 1    
+            fi
+            break
+        elif [[ "$input" == "no" || "$input" == "n" ]]; then
+            break
+        else
+            echo "Invalid input. Please enter 'yes' or 'no'."
+        fi
+    done
+    echo "export TF_VAR_encryption_at_host_setting=${encryption_at_host_setting}" >> .zsecrc
+    # End of Host Encryption support update
+    # ---
+
     cc_instance_size_default=small
     read -r -p "Enter CC Instance Size. Valid input = small, medium, or large. This needs to match the size chosen in the CC provisioning template [Default=$cc_instance_size_default]: " cc_instance_size_input
 cc_instance_size=${cc_instance_size_input:-$cc_instance_size_default}

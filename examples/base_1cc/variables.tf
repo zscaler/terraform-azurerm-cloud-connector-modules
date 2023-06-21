@@ -226,3 +226,10 @@ variable "lb_enabled" {
   description = "Default true. Only relevant for 'base' deployments. Configure Workload Route Table to default route next hop to the CC Load Balancer IP passed from var.lb_frontend_ip. If false, default route next hop directly to the CC Service IP passed from var.cc_service_ip"
   default     = false
 }
+
+variable "encryption_at_host_setting" {
+  type        = string
+  description = "User input for enabling or disabling host encryption"
+  default     = false
+
+}
