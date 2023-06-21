@@ -199,7 +199,7 @@ locals {
   )
 }
 variable "encryption_at_host_setting" {
-  type = string
+  type        = string
   description = "User input for enabling or disabling host encryption"
-  default = null
+  default     = null
 }
