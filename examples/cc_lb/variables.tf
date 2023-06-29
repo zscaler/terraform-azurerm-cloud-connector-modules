@@ -207,6 +207,12 @@ variable "load_distribution" {
   }
 }
 
+variable "encryption_at_host_enabled" {
+  type        = bool
+  description = "User input for enabling or disabling host encryption"
+  default     = false
+}
+
 
 ################################################################################
 # BYO (Bring-your-own) variables list

@@ -227,9 +227,8 @@ variable "lb_enabled" {
   default     = false
 }
 
-variable "encryption_at_host_setting" {
-  type        = string
+variable "encryption_at_host_enabled" {
+  type        = bool
   description = "User input for enabling or disabling host encryption"
-  default     = false
-
+  default     = true
 }

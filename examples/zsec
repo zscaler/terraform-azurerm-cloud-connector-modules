@@ -248,7 +248,7 @@ fi
 
     # ---
     # Host Encryption Support
-    encryption_at_host_setting=false
+    encryption_at_host_enabled=false
     # Sourcing .zsecrc to use credentials during execution
     source .zsecrc
     while true; do
@@ -257,6 +257,8 @@ fi
         # Convert the user input to lowercase for case-insensitive comparison
         input=$(echo "$input" | tr '[:upper:]' '[:lower:]')
         if [[ "$input" == "yes" || "$input" == "y" ]]; then
+        echo "Checking if EncryptionAtHost feature is enabled for subscription $ARM_SUBSCRIPTION_ID..."
+
             TOKEN_ENDPOINT="https://login.microsoftonline.com/${ARM_TENANT_ID}/oauth2/token"
             RESOURCE="https://management.azure.com/"
             ACCESS_TOKEN=$(curl -s -X POST -H "Content-Type: application/x-www-form-urlencoded" \
@@ -271,19 +273,23 @@ fi
                 |grep -o '"state":"[^"]*' | awk -F'"' '{print $4}')
 
             if [ "$response" = "Registered" ]; then
-                encryption_at_host_setting=true
+                echo "EncryptionAtHost feature is enabled for subscription $ARM_SUBSCRIPTION_ID..."
+                echo "Setting encryption_at_host_enabled to true..."
+                encryption_at_host_enabled=true
             else
-                echo "Error: Azure Account is not registered to support host encryption. Please refer to documentation."
+                echo "Error: Azure Subscription $ARM_SUBSCRIPTION_ID is not registered to support host encryption. Please refer to documentation."
                 exit 1    
             fi
             break
         elif [[ "$input" == "no" || "$input" == "n" ]]; then
+                echo "Setting encryption_at_host_enabled to false..."
+                encryption_at_host_enabled=false
             break
         else
             echo "Invalid input. Please enter 'yes' or 'no'."
         fi
     done
-    echo "export TF_VAR_encryption_at_host_setting=${encryption_at_host_setting}" >> .zsecrc
+    echo "export TF_VAR_encryption_at_host_enabled=${encryption_at_host_enabled}" >> .zsecrc
     # End of Host Encryption support update
     # ---
 

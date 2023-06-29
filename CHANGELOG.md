@@ -1,3 +1,6 @@
+## TBD (Unreleased)
+* Add encryption_at_host_enabled variable and default to true
+
 ## v0.2.0 (March 7, 2023)
 
 * Mininum Azure Provider upgrade from 2.x to 3.x (3.46.x)
