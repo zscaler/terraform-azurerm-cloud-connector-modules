@@ -55,12 +55,14 @@ module "network" {
   cc_subnets            = var.cc_subnets
   workloads_subnets     = var.workloads_subnets
   public_subnets        = var.public_subnets
+  private_dns_subnet    = var.private_dns_subnet
   zones_enabled         = var.zones_enabled
   zones                 = var.zones
-  cc_service_ip         = module.cc_vm.service_ip
+  lb_frontend_ip        = module.cc_lb.lb_ip
   workloads_enabled     = true
   bastion_enabled       = true
   lb_enabled            = var.lb_enabled
+  zpa_enabled           = var.zpa_enabled
 }
 
 
@@ -123,6 +125,7 @@ resource "local_file" "user_data_file" {
 # Create specified number of CC appliances
 module "cc_vm" {
   source                         = "../../modules/terraform-zscc-ccvm-azure"
+  cc_count                       = var.cc_count
   name_prefix                    = var.name_prefix
   resource_tag                   = random_string.suffix.result
   global_tags                    = local.global_tags
@@ -132,6 +135,8 @@ module "cc_vm" {
   ssh_key                        = tls_private_key.key.public_key_openssh
   managed_identity_id            = module.cc_identity.managed_identity_id
   user_data                      = local.userdata
+  backend_address_pool           = module.cc_lb.lb_backend_address_pool
+  lb_association_enabled         = true
   location                       = var.arm_location
   zones_enabled                  = var.zones_enabled
   zones                          = var.zones
@@ -144,7 +149,6 @@ module "cc_vm" {
   mgmt_nsg_id                    = module.cc_nsg.mgmt_nsg_id
   service_nsg_id                 = module.cc_nsg.service_nsg_id
   accelerated_networking_enabled = var.accelerated_networking_enabled
-  encryption_at_host_enabled     = var.encryption_at_host_enabled
 
   depends_on = [
     local_file.user_data_file,
@@ -185,6 +189,59 @@ module "cc_identity" {
   }
 }
 
+
+################################################################################
+# 7. Create Azure Load Balancer in CC VNet with all Backend Pools, Rules, and 
+#    Health Probes
+################################################################################
+# Azure Load Balancer Module variables
+module "cc_lb" {
+  source            = "../../modules/terraform-zscc-lb-azure"
+  name_prefix       = var.name_prefix
+  resource_tag      = random_string.suffix.result
+  global_tags       = local.global_tags
+  resource_group    = module.network.resource_group_name
+  location          = var.arm_location
+  subnet_id         = module.network.cc_subnet_ids[0]
+  http_probe_port   = var.http_probe_port
+  load_distribution = var.load_distribution
+  zones_enabled     = var.zones_enabled
+  zones             = var.zones
+}
+
+
+################################################################################
+# 8. Create Azure Private DNS Resolver Ruleset, Rules, and Outbound Endpoint
+#    for utilization with DNS redirection/conditional forwarding to Cloud
+#    Connector to enabling ZPA and/or ZIA DNS control features.
+################################################################################
+module "private_dns" {
+  source                = "../../modules/terraform-zscc-private-dns-azure"
+  name_prefix           = var.name_prefix
+  resource_tag          = random_string.suffix.result
+  global_tags           = local.global_tags
+  resource_group        = module.network.resource_group_name
+  location              = var.arm_location
+  vnet_id               = module.network.virtual_network_id
+  private_dns_subnet_id = module.network.private_dns_subnet_id
+  domain_names          = var.domain_names
+  target_address        = var.target_address
+}
+
+################################################################################
+# Optional: Create Azure Private DNS Resolver Virtual Network Link
+# This resource is getting created for greenfield deployments since
+# workloads are being deployed in the same VNet as the Cloud Connectors.
+
+# Generally, this would only be created and associated with spoke VNets in
+# centralized hub-spoke topologies. Be careful what domains are used in rule
+# creation to avoid DNS loops.
+################################################################################
+resource "azurerm_private_dns_resolver_virtual_network_link" "dns_vnet_link" {
+  name                      = "${var.name_prefix}-vnet-link-${random_string.suffix.result}"
+  dns_forwarding_ruleset_id = module.private_dns.private_dns_forwarding_ruleset_id
+  virtual_network_id        = module.network.virtual_network_id
+}
 
 ################################################################################
 # Validation for Cloud Connector instance size and VM Instance Type 

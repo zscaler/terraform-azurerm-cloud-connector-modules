@@ -18,8 +18,32 @@ variable "name_prefix" {
 
 variable "network_address_space" {
   type        = string
-  description = "VNET CIDR / address prefix"
+  description = "VNet IP CIDR Range. All subnet resources that might get created (public, workload, cloud connector) are derived from this /16 CIDR. If you require creating a VNet smaller than /16, you may need to explicitly define all other subnets via public_subnets, workload_subnets, cc_subnets, and route53_subnets variables"
   default     = "10.1.0.0/16"
+}
+
+variable "cc_subnets" {
+  type        = list(string)
+  description = "Cloud Connector Subnets to create in VNet. This is only required if you want to override the default subnets that this code creates via network_address_space variable."
+  default     = null
+}
+
+variable "workloads_subnets" {
+  type        = list(string)
+  description = "Workload Subnets to create in VNet. This is only required if you want to override the default subnets that this code creates via network_address_space variable."
+  default     = null
+}
+
+variable "public_subnets" {
+  type        = list(string)
+  description = "Public/Bastion Subnets to create in VNet. This is only required if you want to override the default subnets that this code creates via network_address_space variable."
+  default     = null
+}
+
+variable "private_dns_subnet" {
+  type        = string
+  description = "Private DNS Resolver Outbound Endpoint Subnet to create in VNet. This is only required if you want to override the default subnet that this code creates via network_address_space variable."
+  default     = null
 }
 
 variable "environment" {
@@ -38,18 +62,6 @@ variable "tls_key_algorithm" {
   type        = string
   description = "algorithm for tls_private_key resource"
   default     = "RSA"
-}
-
-variable "cc_subnets" {
-  type        = list(string)
-  description = "Cloud Connector Subnets to create in VNet. This is only required if you want to override the default subnets that this code creates"
-  default     = null
-}
-
-variable "private_dns_subnet" {
-  type        = string
-  description = "Private DNS Resolver Outbound Endpoint Subnet to create in VNet. This is only required if you want to override the default subnet that this code creates via network_address_space variable."
-  default     = null
 }
 
 variable "managed_identity_subscription_id" {
@@ -159,6 +171,16 @@ variable "http_probe_port" {
   }
 }
 
+variable "workload_count" {
+  type        = number
+  description = "The number of Workload VMs to deploy"
+  default     = 1
+  validation {
+    condition     = var.workload_count >= 1 && var.workload_count <= 250
+    error_message = "Input workload_count must be a whole number between 1 and 250."
+  }
+}
+
 variable "cc_count" {
   type        = number
   description = "The number of Cloud Connectors to deploy.  Validation assumes max for /24 subnet but could be smaller or larger as long as subnet can accommodate"
@@ -199,6 +221,12 @@ variable "accelerated_networking_enabled" {
   default     = true
 }
 
+variable "bastion_nsg_source_prefix" {
+  type        = string
+  description = "user input for locking down SSH access to bastion to a specific IP or CIDR range"
+  default     = "*"
+}
+
 variable "load_distribution" {
   type        = string
   description = "Azure LB load distribution method"
@@ -213,10 +241,10 @@ variable "load_distribution" {
   }
 }
 
-variable "encryption_at_host_enabled" {
+variable "lb_enabled" {
   type        = bool
-  description = "User input for enabling or disabling host encryption"
-  default     = false
+  description = "Default true. Only relevant for 'base' deployments. Configure Workload Route Table to default route next hop to the CC Load Balancer IP passed from var.lb_frontend_ip. If false, default route next hop directly to the CC Service IP passed from var.cc_service_ip"
+  default     = true
 }
 
 
@@ -236,122 +264,4 @@ variable "target_address" {
   type        = list(string)
   description = "Azure DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses"
   default     = ["185.46.212.88", "185.46.212.89"]
-}
-
-
-################################################################################
-# BYO (Bring-your-own) variables list
-################################################################################
-variable "byo_rg" {
-  type        = bool
-  description = "Bring your own Azure Resource Group. If false, a new resource group will be created automatically"
-  default     = false
-}
-
-variable "byo_rg_name" {
-  type        = string
-  description = "User provided existing Azure Resource Group name. This must be populated if byo_rg variable is true"
-  default     = ""
-}
-
-variable "byo_vnet" {
-  type        = bool
-  description = "Bring your own Azure VNet for Cloud Connector. If false, a new VNet will be created automatically"
-  default     = false
-}
-
-variable "byo_vnet_name" {
-  type        = string
-  description = "User provided existing Azure VNet name. This must be populated if byo_vnet variable is true"
-  default     = ""
-}
-
-variable "byo_subnets" {
-  type        = bool
-  description = "Bring your own Azure subnets for Cloud Connector. If false, new subnet(s) will be created automatically. Default 1 subnet for Cloud Connector if 1 or no zones specified. Otherwise, number of subnes created will equal number of Cloud Connector zones"
-  default     = false
-}
-
-variable "byo_subnet_names" {
-  type        = list(string)
-  description = "User provided existing Azure subnet name(s). This must be populated if byo_subnets variable is true"
-  default     = null
-}
-
-variable "byo_vnet_subnets_rg_name" {
-  type        = string
-  description = "User provided existing Azure VNET Resource Group. This must be populated if either byo_vnet or byo_subnets variables are true"
-  default     = ""
-}
-
-variable "byo_pips" {
-  type        = bool
-  description = "Bring your own Azure Public IP addresses for the NAT Gateway(s) association"
-  default     = false
-}
-
-variable "byo_pip_names" {
-  type        = list(string)
-  description = "User provided Azure Public IP address resource names to be associated to NAT Gateway(s)"
-  default     = null
-}
-
-variable "byo_pip_rg" {
-  type        = string
-  description = "User provided Azure Public IP address resource group name. This must be populated if byo_pip_names variable is true"
-  default     = ""
-}
-
-variable "byo_nat_gws" {
-  type        = bool
-  description = "Bring your own Azure NAT Gateways"
-  default     = false
-}
-
-variable "byo_nat_gw_names" {
-  type        = list(string)
-  description = "User provided existing NAT Gateway resource names. This must be populated if byo_nat_gws variable is true"
-  default     = null
-}
-
-variable "byo_nat_gw_rg" {
-  type        = string
-  description = "User provided existing NAT Gateway Resource Group. This must be populated if byo_nat_gws variable is true"
-  default     = ""
-}
-
-variable "existing_nat_gw_pip_association" {
-  type        = bool
-  description = "Set this to true only if both byo_pips and byo_nat_gws variables are true. This implies that there are already NAT Gateway resources with Public IP Addresses associated so we do not attempt any new associations"
-  default     = false
-}
-
-variable "existing_nat_gw_subnet_association" {
-  type        = bool
-  description = "Set this to true only if both byo_nat_gws and byo_subnets variables are true. this implies that there are already NAT Gateway resources associated to subnets where Cloud Connectors are being deployed to"
-  default     = false
-}
-
-variable "byo_nsg" {
-  type        = bool
-  description = "Bring your own Network Security Groups for Cloud Connector"
-  default     = false
-}
-
-variable "byo_nsg_rg" {
-  type        = string
-  description = "User provided existing NSG Resource Group. This must be populated if byo_nsg variable is true"
-  default     = ""
-}
-
-variable "byo_mgmt_nsg_names" {
-  type        = list(string)
-  description = "Existing Management Network Security Group IDs for Cloud Connector VM association. This must be populated if byo_nsg variable is true"
-  default     = null
-}
-
-variable "byo_service_nsg_names" {
-  type        = list(string)
-  description = "Existing Service Network Security Group ID for Cloud Connector VM association. This must be populated if byo_nsg variable is true"
-  default     = null
 }

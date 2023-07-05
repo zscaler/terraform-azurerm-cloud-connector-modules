@@ -10,7 +10,7 @@ Zscaler Cloud Connector Azure Terraform Modules
 
 # **README for Azure Terraform**
 
-This README serves as a quick start guide to deploy Zscaler Cloud Connector resources in Microsoft Azure using Terraform. To learn more about the resources created when deploying Cloud Connector with Terraform, see [Deployment Templates for Zscaler Cloud Connector](https://help.zscaler.com/cloud-connector/about-cloud-automation-scripts).
+This README serves as a quick start guide to deploy Zscaler Cloud Connector resources in Microsoft Azure using Terraform. To learn more about the resources created when deploying Cloud Connector with Terraform, see [Deployment Templates for Zscaler Cloud Connector](https://help.zscaler.com/cloud-branch-connector/deployment-templates-zscaler-cloud-connector).
 
 ## **Azure Deployment Scripts for Terraform**
 
@@ -56,9 +56,17 @@ Use this if you are building an entire cluster from the ground up. These templat
 
 Use the [**Starter Deployment Template**](examples/base_1cc) to deploy your Cloud Connector in a new resource group and virtual network.
 
+### **Starter Deployment Template with ZPA**
+
+Use the [**Starter Deployment Template with ZPA**](examples/base_1cc_zpa) to deploy your Cloud Connector in a new resource group and virtual network with Azure Private DNS Resolver capability.
+
 ### **Starter Deployment Template with Load Balancer**
 
 Use the [**Starter Deployment Template with Load Balancer**](examples/base_cc_lb) to deploy your Cloud Connector in a new resource group and virtual network and to load balance traffic across multiple Cloud Connectors. Zscaler's recommended deployment method is Azure Standard Load Balancer. Azure Load Balancer distributes traffic across multiple Cloud Connectors and achieves high availability.
+
+### **Starter Deployment Template with Load Balancer and ZPA**
+
+Use the [**Starter Deployment Template with Load Balancer and ZPA**](examples/base_cc_lb_zpa) to deploy your Cloud Connector in a new resource group and virtual network and to load balance traffic across multiple Cloud Connectors with Azure Private DNS Resolver capability. Zscaler's recommended deployment method is Azure Standard Load Balancer. Azure Load Balancer distributes traffic across multiple Cloud Connectors and achieves high availability.
 
 ## **Brownfield Deployment**
 
@@ -66,4 +74,4 @@ Brownfield deployment templates are most applicable for production deployments a
 
 ### **Custom Deployment Template with Azure Load Balancer**
 
-Use the [**Custom Deployment template with Azure Load Balancer**](examples/cc_lb) to deploy your Cloud Connector in a new or existing VNet and load balance traffic across multiple Cloud Connectors. Zscaler's recommended deployment method is Azure Load Balancer. Azure Load Balancer distributes traffic across multiple Cloud Connectors and achieves high availability.
+Use the [**Custom Deployment template with Azure Load Balancer**](examples/cc_lb) to deploy your Cloud Connector in a new or existing VNet and load balance traffic across multiple Cloud Connectors. Zscaler's recommended deployment method is Azure Load Balancer. Azure Load Balancer distributes traffic across multiple Cloud Connectors and achieves high availability. Optional Azure Private DNS Resolver resource creation per variable zpa_enabled.

@@ -45,6 +45,12 @@ variable "public_subnets" {
   default     = null
 }
 
+variable "private_dns_subnet" {
+  type        = string
+  description = "Private DNS Resolver Outbound Endpoint Subnet to create in VNet. This is only required if you want to override the default subnet that this code creates via network_address_space variable."
+  default     = null
+}
+
 # Validation to determine if Azure Region selected supports availabilty zones if desired
 locals {
   az_supported_regions = ["australiaeast", "Australia East", "brazilsouth", "Brazil South", "canadacentral", "Canada Central", "centralindia", "Central India", "centralus", "Central US", "eastasia", "East Asia", "eastus", "East US", "francecentral", "France Central", "germanywestcentral", "Germany West Central", "japaneast", "Japan East", "koreacentral", "Korea Central", "northeurope", "North Europe", "norwayeast", "Norway East", "southafricanorth", "South Africa North", "southcentralus", "South Central US", "southeastasia", "Southeast Asia", "swedencentral", "Sweden Central", "uksouth", "UK South", "westeurope", "West Europe", "westus2", "West US 2", "westus3", "West US 3"]
@@ -105,6 +111,12 @@ variable "cc_service_ip" {
   type        = list(string)
   description = "IP address of Cloud Connector Service IP. Used for non-ha greenfield deployment types like base_cc so workload subnets automatically default route to this IP as next hop"
   default     = [""]
+}
+
+variable "zpa_enabled" {
+  type        = bool
+  default     = false
+  description = "Configure Private DNS Resolver Outbound Endpoint Subnet and route table for conditional forwarding to Cloud Connector if set to true"
 }
 
 # BYO (Bring-your-own) variables list
