@@ -1,8 +1,8 @@
 ## This is only a sample terraform.tfvars file.
 ## Uncomment and change the below variables according to your specific environment
 #####################################################################################################################
-##### Variables 1-17 are populated automically if terraform is ran via ZSEC bash script.   ##### 
-##### Modifying the variables in this file will override any inputs from ZSEC              #####
+##### Variables are populated automically if terraform is ran via ZSEC bash script.   ##### 
+##### Modifying the variables in this file will override any inputs from ZSEC         #####
 #####################################################################################################################
 
 ##    Provide the Azure Subscription ID where Terraform will authenticate to via the azurerm provider.

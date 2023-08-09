@@ -247,6 +247,11 @@ variable "lb_enabled" {
   default     = true
 }
 
+variable "encryption_at_host_enabled" {
+  type        = bool
+  description = "User input for enabling or disabling host encryption"
+  default     = true
+}
 
 # Azure Private DNS specific variables
 variable "zpa_enabled" {
