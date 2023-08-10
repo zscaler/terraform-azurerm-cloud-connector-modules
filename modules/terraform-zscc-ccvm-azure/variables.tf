@@ -198,3 +198,8 @@ locals {
     contains(local.max_fd_supported_regions, var.location) && var.zones_enabled == false
   )
 }
+variable "encryption_at_host_enabled" {
+  type        = bool
+  description = "User input for enabling or disabling host encryption"
+  default     = true
+}
