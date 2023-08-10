@@ -1,13 +1,13 @@
+
 ## TBD (Unreleased)
 * Add encryption_at_host_enabled variable and default to true
-
-## v0.3.0 (April 4, 2023)
 * Azure Private DNS module (terraform-zscc-private-dns-azure)
 * New greenfield deployment options (base_1cc_zpa and base_cc_lb_zpa) with Azure Private DNS module integration
 * zpa_enabled variable added to dynamically create Outbound DNS subnet and Route Table in VNet if set to true
 * zsec additions for new deployment options + domains adding to Private DNS Resolver Rule creation
 * workload VM for greenfield deployments dns_servers set to Azure DNS default
 * terraform-zscc-network-azure refactoring to remove data source read dependencies
+* Add AZURE_MANAGED_IDENTITY_CLIENT_ID field to userdata generation
 
 ## v0.2.0 (March 7, 2023)
 

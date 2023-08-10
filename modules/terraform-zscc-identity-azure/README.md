@@ -37,5 +37,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_managed_identity_client_id"></a> [managed\_identity\_client\_id](#output\_managed\_identity\_client\_id) | The Client ID of the User Assigned Identity |
 | <a name="output_managed_identity_id"></a> [managed\_identity\_id](#output\_managed\_identity\_id) | User Managed Identity ID |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
