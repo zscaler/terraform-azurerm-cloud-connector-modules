@@ -164,3 +164,13 @@
 ##     Uncomment if you want to use the same Network Security Group for ALL Cloud Connectors (true or false. Default: false)
 
 #reuse_nsg                                  = true
+
+
+## 18. By default, Host encryption is enabled for Cloud Connector VMs. This does require the EncryptionAtHost feature
+##     enabled for your subscription though first.
+##     You can verify this by following the Azure Prerequisites guide here: 
+##     https://learn.microsoft.com/en-us/azure/virtual-machines/linux/disks-enable-host-based-encryption-cli#prerequisites
+##
+##    Uncomment if you want to not enable this VM setting
+
+#encryption_at_host_enabled                 = false
