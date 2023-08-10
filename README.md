@@ -40,6 +40,9 @@ Our Deployment scripts are leveraging Terraform v1.1.9 which includes full binar
     - Select Principal: The Managed Identity created in the above step
 6. Accept the Cloud Connector VM image terms for the Subscription(s) where Cloud Connector is to be deployed. This can be done via the Azure Portal, Cloud Shell or az cli / powershell with a valid admin user/service principal in the correct subscription where Cloud Connector is being deployed Run Command: `az vm image terms accept --urn zscaler1579058425289:zia_cloud_connector:zs_ser_gen1_cc_01:latest`
 
+### *Host Disk Encryption*
+To enable host encryption. You **must** subscribe to the feature on your azure account. Official Microsoft Documentation on how to enable this feature can be found [here](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-enable-host-based-encryption-portal?tabs=azure-cli#prerequisites)
+
 ### Terraform client requirements
 7. If executing Terraform via the "zsec" wrapper bash script, it is advised that you run from a MacOS or Linux workstation. Minimum installed application requirements to successfully from the script are:
     - bash | curl | unzip | rm | cp | find | grep | sed
