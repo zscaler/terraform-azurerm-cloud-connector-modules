@@ -198,17 +198,20 @@ module "cc_identity" {
 ################################################################################
 # Azure Load Balancer Module variables
 module "cc_lb" {
-  source            = "../../modules/terraform-zscc-lb-azure"
-  name_prefix       = var.name_prefix
-  resource_tag      = random_string.suffix.result
-  global_tags       = local.global_tags
-  resource_group    = module.network.resource_group_name
-  location          = var.arm_location
-  subnet_id         = module.network.cc_subnet_ids[0]
-  http_probe_port   = var.http_probe_port
-  load_distribution = var.load_distribution
-  zones_enabled     = var.zones_enabled
-  zones             = var.zones
+  source                = "../../modules/terraform-zscc-lb-azure"
+  name_prefix           = var.name_prefix
+  resource_tag          = random_string.suffix.result
+  global_tags           = local.global_tags
+  resource_group        = module.network.resource_group_name
+  location              = var.arm_location
+  subnet_id             = module.network.cc_subnet_ids[0]
+  http_probe_port       = var.http_probe_port
+  load_distribution     = var.load_distribution
+  zones_enabled         = var.zones_enabled
+  zones                 = var.zones
+  health_check_interval = var.health_check_interval
+  probe_threshold       = var.probe_threshold
+  number_of_probes      = var.number_of_probes
 }
 
 

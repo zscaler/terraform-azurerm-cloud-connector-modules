@@ -44,11 +44,14 @@ resource "azurerm_lb_backend_address_pool" "cc_lb_backend_pool" {
 # Define load balancer health probe parameters
 ################################################################################
 resource "azurerm_lb_probe" "cc_lb_probe" {
-  name            = "${var.name_prefix}-cc-lb-probe-${var.resource_tag}"
-  loadbalancer_id = azurerm_lb.cc_lb.id
-  protocol        = "Http"
-  port            = var.http_probe_port
-  request_path    = "/?cchealth"
+  name                = "${var.name_prefix}-cc-lb-probe-${var.resource_tag}"
+  loadbalancer_id     = azurerm_lb.cc_lb.id
+  protocol            = "Http"
+  port                = var.http_probe_port
+  request_path        = "/?cchealth"
+  interval_in_seconds = var.health_check_interval
+  probe_threshold     = var.probe_threshold
+  number_of_probes    = var.number_of_probes
 }
 
 

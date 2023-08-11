@@ -84,3 +84,27 @@ variable "zones" {
     error_message = "Input zones variable must be a number 1-3."
   }
 }
+
+variable "health_check_interval" {
+  type        = number
+  description = "The interval, in seconds, for how frequently to probe the endpoint for health status. Typically, the interval is slightly less than half the allocated timeout period (in seconds) which allows two full probes before taking the instance out of rotation. The default value is 15, the minimum value is 5"
+  default     = 15
+  validation {
+    condition = (
+      var.health_check_interval > 4
+    )
+    error_message = "Input health_check_interval must be a number 5 or greater."
+  }
+}
+
+variable "probe_threshold" {
+  type        = number
+  description = "The number of consecutive successful or failed probes in order to allow or deny traffic from being delivered to this endpoint. After failing the number of consecutive probes equal to this value, the endpoint will be taken out of rotation and require the same number of successful consecutive probes to be placed back in rotation."
+  default     = 2
+}
+
+variable "number_of_probes" {
+  type        = number
+  description = "The number of probes where if no response, will result in stopping further traffic from being delivered to the endpoint. This values allows endpoints to be taken out of rotation faster or slower than the typical times used in Azure"
+  default     = 1
+}
