@@ -1,5 +1,5 @@
-## v0.3.0 (April 28, 2023)
-
+## TBD (Unreleased)
+* Add encryption_at_host_enabled variable and default to true
 * Azure Private DNS module (terraform-zscc-private-dns-azure)
 * New greenfield deployment options (base_1cc_zpa and base_cc_lb_zpa) with Azure Private DNS module integration
 * zpa_enabled variable added to dynamically create Outbound DNS subnet and Route Table in VNet if set to true
@@ -7,6 +7,7 @@
 * workload VM for greenfield deployments dns_servers set to Azure DNS default
 * terraform-zscc-network-azure refactoring to remove data source read dependencies
 * probe_threshold variable added for [Azure LB health probe fixes](https://learn.microsoft.com/en-us/azure/load-balancer/whats-new#known-issues:~:text=February%202020-,Known%20issues,-The%20product%20group)
+* Add AZURE_MANAGED_IDENTITY_CLIENT_ID field to userdata generation
 
 ## v0.2.0 (March 7, 2023)
 

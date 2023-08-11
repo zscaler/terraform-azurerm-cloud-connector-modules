@@ -1,8 +1,8 @@
 ## This is only a sample terraform.tfvars file.
 ## Uncomment and change the below variables according to your specific environment
 #####################################################################################################################
-##### Variables 1-17 are populated automically if terraform is ran via ZSEC bash script.   ##### 
-##### Modifying the variables in this file will override any inputs from ZSEC              #####
+##### Variables are populated automically if terraform is ran via ZSEC bash script.   ##### 
+##### Modifying the variables in this file will override any inputs from ZSEC         #####
 #####################################################################################################################
 
 ##    Provide the Azure Subscription ID where Terraform will authenticate to via the azurerm provider.
@@ -164,3 +164,13 @@
 ##     Uncomment if you want to use the same Network Security Group for ALL Cloud Connectors (true or false. Default: false)
 
 #reuse_nsg                                  = true
+
+
+## 18. By default, Host encryption is enabled for Cloud Connector VMs. This does require the EncryptionAtHost feature
+##     enabled for your subscription though first.
+##     You can verify this by following the Azure Prerequisites guide here: 
+##     https://learn.microsoft.com/en-us/azure/virtual-machines/linux/disks-enable-host-based-encryption-cli#prerequisites
+##
+##    Uncomment if you want to not enable this VM setting
+
+#encryption_at_host_enabled                 = false

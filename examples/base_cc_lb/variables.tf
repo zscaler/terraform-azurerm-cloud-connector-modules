@@ -264,3 +264,9 @@ variable "number_of_probes" {
   description = "The number of probes where if no response, will result in stopping further traffic from being delivered to the endpoint. This values allows endpoints to be taken out of rotation faster or slower than the typical times used in Azure"
   default     = 1
 }
+  
+variable "encryption_at_host_enabled" {
+  type        = bool
+  description = "User input for enabling or disabling host encryption"
+  default     = true
+}
