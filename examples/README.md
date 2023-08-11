@@ -4,35 +4,41 @@
 
 ## Prerequisites (You will be prompted for Azure application credentials and region during deployment)
 
-### Azure Requirements
-1. Azure Subscription Id
-[link to Azure subscriptions](https://portal.azure.com/#blade/Microsoft_Azure_Billing/SubscriptionsBlade)
-2. Have/Create a Service Principal. See: https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal). Then Collect:
-   1. Application (client) ID
-   2. Directory (tenant) ID
-   3. Client Secret Value
-3. Azure Region (e.g. westus2) where Cloud Connector resources are to be deployed
-4. User created Azure Managed Identity.
-    Role Assignment:  Network Contributor (If using a Custom Role, the minimum requirement is: Microsoft.Network/networkInterfaces/read)
-    Scope: Subscription or Resource Group (where Cloud Connector VMs will be deployed)
-5. Azure Vault URL with Zscaler Cloud Connector Credentials (E.g. https://zscaler-cc-demo.vault.azure.net)
-   Add an access policy to the above Key Vault as below
-   1. Secret Permissions: Get, List
-   2. Select Principal: The Managed Identity created in the above step
-6. Accept the Cloud Connector VM image terms for the Subscription(s) where Cloud Connector is to be deployed. This can be done via the Azure Portal, Cloud Shell or az cli / powershell with a valid admin user/service principal in the correct subscription where Cloud Connector is being deployed
-    Run Command: az vm image terms accept --urn zscaler1579058425289:zia_cloud_connector:zs_ser_gen1_cc_01:latest
+### **Azure Requirements**
 
-### Zscaler requirements
-7. A valid Zscaler Cloud Connector provisioning URL generated. This is done via the Cloud Connector portal (E.g. connector.<zscalercloud>.net/login)
-8. Zscaler Cloud Connector Credentials (api key, username, password) are stored in Azure Key Vault from step 5.
+1. Azure Subscription Id [link to Azure subscriptions](https://portal.azure.com/#blade/Microsoft_Azure_Billing/SubscriptionsBlade)
+2. Have/Create a Service Principal. See: [https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal)). Then Collect:
+    - Application (client) ID
+    - Directory (tenant) ID
+    - Client Secret Value
+3. Azure Region (e.g. westus2) where Cloud Connector resources are to be deployed
+4. User-created Azure Managed Identity. Role Assignment: Network Contributor (If using a Custom Role, the minimum requirement is: Microsoft. Network/networkInterfaces/read) Scope: Subscription or Resource Group (where Cloud Connector VMs will be deployed)
+5. Azure Vault URL with Zscaler Cloud Connector Credentials (E.g. [https://zscaler-cc-demo.vault.azure.net](https://zscaler-cc-demo.vault.azure.net/)) Add an access policy to the above Key Vault as below
+    - Secret Permissions: Get, List
+    - Select Principal: The Managed Identity created in the above step
+6. Accept the Cloud Connector VM image terms for the Subscription(s) where Cloud Connector is to be deployed. This can be done via the Azure Portal, Cloud Shell or az cli / powershell with a valid admin user/service principal in the correct subscription where Cloud Connector is being deployed Run Command: `az vm image terms accept --urn zscaler1579058425289:zia_cloud_connector:zs_ser_gen1_cc_01:latest`
+
+### Terraform client requirements
+7. If executing Terraform via the "zsec" wrapper bash script, it is advised that you run from a MacOS or Linux workstation. Minimum installed application requirements to successfully from the script are:
+    - bash | curl | unzip | rm | cp | find | grep | sed
+
+<p>These can all be installed via your distribution app installer. ie: sudo apt install bash curl unzip</p>
+
+### **Zscaler requirements**
+
+8. A valid Zscaler Cloud Connector provisioning URL generated. This is done via the Cloud Connector portal (E.g. connector..net/login)
+9. Zscaler Cloud Connector Credentials (api key, username, password) are stored in Azure Key Vault from step 5.
 
 See: [Zscaler Cloud Cloud Connector Azure Deployment Guide](https://help.zscaler.com/cloud-connector/deploying-cloud-connector-microsoft-azure) for additional prerequisite provisioning steps.
+
+### *Host Disk Encryption*
+To enable host encryption. You **must** subscribe to the feature on your azure account. Official Microsoft Documentation on how to enable this feature can be found [here](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-enable-host-based-encryption-portal?tabs=azure-cli#prerequisites)
 
 
 ## Deploying the cluster
 (The automated tool can run only from MacOS and Linux. You can also upload all repo contents to the respective public cloud provider Cloud Shells and run directly from there).   
  
-**1. Greenfield Deployments**
+**1. Test/Greenfield Deployments**
 
 (Use this if you are building an entire cluster from ground up.
  Particularly useful for a Customer Demo/PoC or dev-test environment)
@@ -50,7 +56,7 @@ Optional: Edit the terraform.tfvars file under your desired deployment type (ie:
 - verify all resources that will be created/modified and enter "yes" to confirm
 ```
 
-**Greenfield Deployment Types:**
+**Test/Greenfield Deployment Types:**
 
 ```
 Deployment Type: (base | base_1cc | base_1cc_zpa | base_cc_lb | base_cc_lb_zpa):
@@ -66,7 +72,7 @@ Deployment Type: (base | base_1cc | base_1cc_zpa | base_cc_lb | base_cc_lb_zpa):
 ```
 
 
-**2. Brownfield Deployments**
+**2. Prod/Brownfield Deployments**
 
 (These templates would be most applicable for production deployments and have more customization options than a "base" deployments)
 
@@ -83,7 +89,7 @@ Optional: Edit the terraform.tfvars file under your desired deployment type (ie:
 - verify all resources that will be created/modified and enter "yes" to confirm
 ```
 
-**Brownfield Deployment Types**
+**Prod/Brownfield Deployment Types**
 
 ```
 Deployment Type: (cc_lb):

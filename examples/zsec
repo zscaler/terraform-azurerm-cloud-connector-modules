@@ -29,6 +29,9 @@ if [[ "$oper" == "up" ]]; then
 
     case $deploy in
       greenfield)
+      echo ""
+      echo "**Caution** These deployments include test workloads and publicly accessible jump hosts and are intended primarily for lab/test environments"
+      echo ""
           break
       ;;
       brownfield)
