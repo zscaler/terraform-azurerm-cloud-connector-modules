@@ -301,23 +301,23 @@ fi
 
 
     cc_instance_size_default=small
-    read -r -p "Enter CC Instance Size. Valid input = small, medium, or large. This needs to match the size chosen in the CC provisioning template [Default=$cc_instance_size_default]: " cc_instance_size_input
-cc_instance_size=${cc_instance_size_input:-$cc_instance_size_default}
-    case $cc_instance_size in
-      small|medium|large)
-          echo "Cloud Connector size: ${cc_instance_size}"
-          echo "export TF_VAR_cc_instance_size=${cc_instance_size}" >> .zsecrc
-      ;;
-      *)
-          echo "Invalid Cloud Connector size: ${cc_instance_size}."
-          echo "Delete .zsecrc file and re-run zsecup ..."
-          exit 1
-      ;;
-    esac
+    #read -r -p "Enter CC Instance Size. Valid input = small, medium, or large. This needs to match the size chosen in the CC provisioning template [Default=$cc_instance_size_default]: " cc_instance_size_input
+#cc_instance_size=${cc_instance_size_input:-$cc_instance_size_default}
+#    case $cc_instance_size in
+#      small|medium|large)
+#          echo "Cloud Connector size: ${cc_instance_size}"
+#          echo "export TF_VAR_cc_instance_size=${cc_instance_size}" >> .zsecrc
+#      ;;
+#      *)
+#          echo "Invalid Cloud Connector size: ${cc_instance_size}."
+#          echo "Delete .zsecrc file and re-run zsecup ..."
+#          exit 1
+#      ;;
+#    esac
 
 ccvm_instance_type_default=Standard_D2s_v3
 while true; do
-    read -r -p "Enter desired Azure VM type for CC. Recommended types: Small CC (Standard_D2s_v3); Medium (Standard_D8s_v3 or Standard_DS3_v2); Large (Standard_D16s_v3 or Standard_DS5_v2) [Default=$ccvm_instance_type_default]: " ccvm_instance_type_input
+    read -r -p "Enter desired Azure VM type for CC. Recommended types: Small CC (Standard_D2s_v3) [Default=$ccvm_instance_type_default]: " ccvm_instance_type_input
 ccvm_instance_type=${ccvm_instance_type_input:-$ccvm_instance_type_default}
 case $ccvm_instance_type in 
 	Standard_D2s_v3|Standard_DS3_v2|Standard_D8s_v3|Standard_D16s_v3|Standard_DS5_v2 ) 
