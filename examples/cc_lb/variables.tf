@@ -202,7 +202,7 @@ variable "accelerated_networking_enabled" {
 variable "load_distribution" {
   type        = string
   description = "Azure LB load distribution method"
-  default     = "SourceIP"
+  default     = "Default"
   validation {
     condition = (
       var.load_distribution == "SourceIP" ||

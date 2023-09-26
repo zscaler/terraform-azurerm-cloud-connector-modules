@@ -224,7 +224,7 @@ variable "bastion_nsg_source_prefix" {
 variable "load_distribution" {
   type        = string
   description = "Azure LB load distribution method"
-  default     = "SourceIP"
+  default     = "Default"
   validation {
     condition = (
       var.load_distribution == "SourceIP" ||
