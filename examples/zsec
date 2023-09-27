@@ -300,7 +300,8 @@ fi
     # ---
 
 
-    cc_instance_size_default=small
+    cc_instance_size=small
+    echo "export TF_VAR_cc_instance_size=${cc_instance_size}" >> .zsecrc
     #read -r -p "Enter CC Instance Size. Valid input = small, medium, or large. This needs to match the size chosen in the CC provisioning template [Default=$cc_instance_size_default]: " cc_instance_size_input
 #cc_instance_size=${cc_instance_size_input:-$cc_instance_size_default}
 #    case $cc_instance_size in
