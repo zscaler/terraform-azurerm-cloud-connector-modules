@@ -5,6 +5,7 @@ FEATURES:
     - add: deployment types base_1cc_zpa/base_cc_lb_zpa (greenfield/pov/test) with Azure Private DNS module integration
     - add: conditional variable zpa_enabled for cc_lb (brownfield/prod) deployment for Azure Private DNS module integration
     - add: zsec additions for new deployment options + domains adding to Private DNS Resolver Rule creation
+* AzureRM Provider version bump to 3.74.x default. Support from 3.46.x to 3.74.x
 
 ENHANCEMENTS:
 * Encryption at Host enabled by default
