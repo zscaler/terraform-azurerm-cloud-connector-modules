@@ -186,7 +186,7 @@ resource "azurerm_network_interface_security_group_association" "cc_service_nic_
 resource "azurerm_network_interface_backend_address_pool_association" "cc_vm_service_nic_lb_association" {
   count                   = var.lb_association_enabled == true && var.cc_instance_size == "small" ? var.cc_count : 0
   network_interface_id    = azurerm_network_interface.cc_service_nic[count.index].id
-  ip_configuration_name   = "${var.name_prefix}-cc-service-nic-conf-${var.resource_tag}"
+  ip_configuration_name   = "${var.name_prefix}-ccvm-fwd-nic-conf-${var.resource_tag}"
   backend_address_pool_id = var.backend_address_pool
 
   depends_on = [var.backend_address_pool]
