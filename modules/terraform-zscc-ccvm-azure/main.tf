@@ -9,7 +9,7 @@ resource "azurerm_network_interface" "cc_mgmt_nic" {
   resource_group_name = var.resource_group
 
   ip_configuration {
-    name                          = "${var.name_prefix}-cc-mgmt-nic-conf-${var.resource_tag}"
+    name                          = "${var.name_prefix}-ccvm-mgmt-nic-conf-${var.resource_tag}"
     subnet_id                     = element(var.mgmt_subnet_id, count.index)
     private_ip_address_allocation = "Dynamic"
     primary                       = true
@@ -37,14 +37,14 @@ resource "azurerm_network_interface_security_group_association" "cc_mgmt_nic_ass
 ################################################################################
 resource "azurerm_network_interface" "cc_service_nic" {
   count                         = local.valid_cc_create ? var.cc_count : 0
-  name                          = var.cc_instance_size == "small" ? "${var.name_prefix}-ccvm-${count.index + 1}-service-nic-${var.resource_tag}" : "${var.name_prefix}-ccvm-${count.index + 1}-lb-nic-${var.resource_tag}"
+  name                          = "${var.name_prefix}-ccvm-${count.index + 1}-fwd-nic-${var.resource_tag}"
   location                      = var.location
   resource_group_name           = var.resource_group
   enable_ip_forwarding          = true
   enable_accelerated_networking = var.accelerated_networking_enabled
 
   ip_configuration {
-    name                          = var.cc_instance_size == "small" ? "${var.name_prefix}-cc-service-nic-conf-${var.resource_tag}" : "${var.name_prefix}-cc-lb-nic-conf-${var.resource_tag}"
+    name                          = "${var.name_prefix}-ccvm-fwd-nic-conf-${var.resource_tag}"
     subnet_id                     = element(var.service_subnet_id, count.index)
     private_ip_address_allocation = "Dynamic"
     primary                       = true
@@ -57,7 +57,7 @@ resource "azurerm_network_interface" "cc_service_nic" {
 
 
 ################################################################################
-# Associate CC Service/LB NIC to Service NSG
+# Associate CC Service/Forwarding NIC to Service NSG
 ################################################################################
 resource "azurerm_network_interface_security_group_association" "cc_service_nic_association" {
   count                     = local.valid_cc_create ? var.cc_count : 0
@@ -182,41 +182,11 @@ resource "azurerm_network_interface_security_group_association" "cc_service_nic_
 ################################################################################
 # Create Cloud Connector Network Interface to Load Balancer associations
 ################################################################################
-# Associate "small" CC service interface to Azure LB backend pool. This resource will not be created for "medium" or "large" CC instances
+# Associate CC forwarding interface to Azure LB backend pool
 resource "azurerm_network_interface_backend_address_pool_association" "cc_vm_service_nic_lb_association" {
   count                   = var.lb_association_enabled == true && var.cc_instance_size == "small" ? var.cc_count : 0
   network_interface_id    = azurerm_network_interface.cc_service_nic[count.index].id
-  ip_configuration_name   = "${var.name_prefix}-cc-service-nic-conf-${var.resource_tag}"
-  backend_address_pool_id = var.backend_address_pool
-
-  depends_on = [var.backend_address_pool]
-}
-
-# Associate "medium/large" CC service interface-1 to Azure LB backend pool. This resource will not be created for "small" CC instances
-resource "azurerm_network_interface_backend_address_pool_association" "cc_vm_service_1_nic_lb_association" {
-  count                   = var.lb_association_enabled == true && var.cc_instance_size != "small" ? var.cc_count : 0
-  network_interface_id    = azurerm_network_interface.cc_service_nic_1[count.index].id
-  ip_configuration_name   = "${var.name_prefix}-cc-service-nic-1-conf-${var.resource_tag}"
-  backend_address_pool_id = var.backend_address_pool
-
-  depends_on = [var.backend_address_pool]
-}
-
-# Associate "medium/large" CC service interface-2 to Azure LB backend pool. This resource will not be created for "small" CC instances
-resource "azurerm_network_interface_backend_address_pool_association" "cc_vm_service_2_nic_lb_association" {
-  count                   = var.lb_association_enabled == true && var.cc_instance_size != "small" ? var.cc_count : 0
-  network_interface_id    = azurerm_network_interface.cc_service_nic_2[count.index].id
-  ip_configuration_name   = "${var.name_prefix}-cc-service-nic-2-conf-${var.resource_tag}"
-  backend_address_pool_id = var.backend_address_pool
-
-  depends_on = [var.backend_address_pool]
-}
-
-# Associate "large" CC service interface-3 to Azure LB backend pool. This resource will not be created for "small" or "medium" CC instances
-resource "azurerm_network_interface_backend_address_pool_association" "cc_vm_service_3_nic_lb_association" {
-  count                   = var.lb_association_enabled == true && var.cc_instance_size == "large" ? var.cc_count : 0
-  network_interface_id    = azurerm_network_interface.cc_service_nic_3[count.index].id
-  ip_configuration_name   = "${var.name_prefix}-cc-service-nic-3-conf-${var.resource_tag}"
+  ip_configuration_name   = "${var.name_prefix}-ccvm-fwd-nic-conf-${var.resource_tag}"
   backend_address_pool_id = var.backend_address_pool
 
   depends_on = [var.backend_address_pool]

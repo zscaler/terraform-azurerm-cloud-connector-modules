@@ -74,7 +74,7 @@ Deployment Type: (base | base_1cc | base_1cc_zpa | base_cc_lb | base_cc_lb_zpa):
 
 **2. Prod/Brownfield Deployments**
 
-(These templates would be most applicable for production deployments and have more customization options than a "base" deployments)
+(These templates would be most applicable for production deployments and have more customization options than a "base" deployments). They also do not include a bastion or workload hosts deployed.
 
 ```
 bash
