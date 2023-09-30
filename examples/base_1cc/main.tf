@@ -93,7 +93,7 @@ module "workload" {
   resource_group = module.network.resource_group_name
   subnet_id      = module.network.workload_subnet_ids[0]
   ssh_key        = tls_private_key.key.public_key_openssh
-  dns_servers    = ["185.46.212.88", "185.46.212.89"]
+  dns_servers    = []
 }
 
 
@@ -111,6 +111,7 @@ locals {
 CC_URL=${var.cc_vm_prov_url}
 AZURE_VAULT_URL=${var.azure_vault_url}
 HTTP_PROBE_PORT=${var.http_probe_port}
+AZURE_MANAGED_IDENTITY_CLIENT_ID=${module.cc_identity.managed_identity_client_id}
 USERDATA
 }
 
@@ -144,6 +145,7 @@ module "cc_vm" {
   mgmt_nsg_id                    = module.cc_nsg.mgmt_nsg_id
   service_nsg_id                 = module.cc_nsg.service_nsg_id
   accelerated_networking_enabled = var.accelerated_networking_enabled
+  encryption_at_host_enabled     = var.encryption_at_host_enabled
 
   depends_on = [
     local_file.user_data_file,

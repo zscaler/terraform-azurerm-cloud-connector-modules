@@ -21,7 +21,7 @@ az vm image terms accept --urn zscaler1579058425289:zia_cloud_connector:zs_ser_g
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.7, < 2.0.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.46.0 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 3.46, <= 3.74 |
 | <a name="requirement_local"></a> [local](#requirement\_local) | ~> 2.2.0 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | ~> 3.1.0 |
 
@@ -29,7 +29,7 @@ az vm image terms accept --urn zscaler1579058425289:zia_cloud_connector:zs_ser_g
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 3.46.0 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | >= 3.46, <= 3.74 |
 | <a name="provider_null"></a> [null](#provider\_null) | ~> 3.1.0 |
 
 ## Modules
@@ -47,9 +47,6 @@ No modules.
 | [azurerm_network_interface.cc_service_nic_1](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface) | resource |
 | [azurerm_network_interface.cc_service_nic_2](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface) | resource |
 | [azurerm_network_interface.cc_service_nic_3](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface) | resource |
-| [azurerm_network_interface_backend_address_pool_association.cc_vm_service_1_nic_lb_association](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface_backend_address_pool_association) | resource |
-| [azurerm_network_interface_backend_address_pool_association.cc_vm_service_2_nic_lb_association](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface_backend_address_pool_association) | resource |
-| [azurerm_network_interface_backend_address_pool_association.cc_vm_service_3_nic_lb_association](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface_backend_address_pool_association) | resource |
 | [azurerm_network_interface_backend_address_pool_association.cc_vm_service_nic_lb_association](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface_backend_address_pool_association) | resource |
 | [azurerm_network_interface_security_group_association.cc_mgmt_nic_association](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface_security_group_association) | resource |
 | [azurerm_network_interface_security_group_association.cc_service_nic_1_association](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface_security_group_association) | resource |
@@ -72,6 +69,7 @@ No modules.
 | <a name="input_ccvm_image_sku"></a> [ccvm\_image\_sku](#input\_ccvm\_image\_sku) | Azure Marketplace Cloud Connector Image SKU | `string` | `"zs_ser_gen1_cc_01"` | no |
 | <a name="input_ccvm_image_version"></a> [ccvm\_image\_version](#input\_ccvm\_image\_version) | Azure Marketplace Cloud Connector Image Version | `string` | `"latest"` | no |
 | <a name="input_ccvm_instance_type"></a> [ccvm\_instance\_type](#input\_ccvm\_instance\_type) | Cloud Connector Image size | `string` | `"Standard_D2s_v3"` | no |
+| <a name="input_encryption_at_host_enabled"></a> [encryption\_at\_host\_enabled](#input\_encryption\_at\_host\_enabled) | User input for enabling or disabling host encryption | `bool` | `true` | no |
 | <a name="input_global_tags"></a> [global\_tags](#input\_global\_tags) | Populate any custom user defined tags from a map | `map(string)` | `{}` | no |
 | <a name="input_lb_association_enabled"></a> [lb\_association\_enabled](#input\_lb\_association\_enabled) | Determines whether or not to create a nic backend pool assocation to the service nic(s) | `bool` | `false` | no |
 | <a name="input_location"></a> [location](#input\_location) | Cloud Connector Azure Region | `string` | n/a | yes |

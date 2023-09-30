@@ -44,6 +44,12 @@ variable "public_subnets" {
   default     = null
 }
 
+variable "private_dns_subnet" {
+  type        = string
+  description = "Private DNS Resolver Outbound Endpoint Subnet to create in VNet. This is only required if you want to override the default subnet that this code creates via network_address_space variable."
+  default     = null
+}
+
 variable "environment" {
   type        = string
   description = "Customer defined environment tag. ie: Dev, QA, Prod, etc."
@@ -182,7 +188,7 @@ variable "workload_count" {
 variable "cc_count" {
   type        = number
   description = "The number of Cloud Connectors to deploy.  Validation assumes max for /24 subnet but could be smaller or larger as long as subnet can accommodate"
-  default     = 1
+  default     = 2
   validation {
     condition     = var.cc_count >= 1 && var.cc_count <= 250
     error_message = "Input cc_count must be a whole number between 1 and 250."
@@ -225,14 +231,71 @@ variable "bastion_nsg_source_prefix" {
   default     = "*"
 }
 
+variable "load_distribution" {
+  type        = string
+  description = "Azure LB load distribution method"
+  default     = "Default"
+  validation {
+    condition = (
+      var.load_distribution == "SourceIP" ||
+      var.load_distribution == "SourceIPProtocol" ||
+      var.load_distribution == "Default"
+    )
+    error_message = "Input load_distribution must be set to either SourceIP, SourceIPProtocol, or Default."
+  }
+}
+
 variable "lb_enabled" {
   type        = bool
   description = "Default true. Only relevant for 'base' deployments. Configure Workload Route Table to default route next hop to the CC Load Balancer IP passed from var.lb_frontend_ip. If false, default route next hop directly to the CC Service IP passed from var.cc_service_ip"
-  default     = false
+  default     = true
+}
+
+variable "health_check_interval" {
+  type        = number
+  description = "The interval, in seconds, for how frequently to probe the endpoint for health status. Typically, the interval is slightly less than half the allocated timeout period (in seconds) which allows two full probes before taking the instance out of rotation. The default value is 15, the minimum value is 5"
+  default     = 15
+  validation {
+    condition = (
+      var.health_check_interval > 4
+    )
+    error_message = "Input health_check_interval must be a number 5 or greater."
+  }
+}
+
+variable "probe_threshold" {
+  type        = number
+  description = "The number of consecutive successful or failed probes in order to allow or deny traffic from being delivered to this endpoint. After failing the number of consecutive probes equal to this value, the endpoint will be taken out of rotation and require the same number of successful consecutive probes to be placed back in rotation."
+  default     = 2
+}
+
+variable "number_of_probes" {
+  type        = number
+  description = "The number of probes where if no response, will result in stopping further traffic from being delivered to the endpoint. This values allows endpoints to be taken out of rotation faster or slower than the typical times used in Azure"
+  default     = 1
 }
 
 variable "encryption_at_host_enabled" {
   type        = bool
   description = "User input for enabling or disabling host encryption"
   default     = true
+}
+
+
+# Azure Private DNS specific variables
+variable "zpa_enabled" {
+  type        = bool
+  description = "Configure Azure Private DNS Outbound subnet, Resolvers, Rulesets/Rules, and Outbound Endpoint ZPA DNS redirection"
+  default     = true
+}
+
+variable "domain_names" {
+  type        = map(any)
+  description = "Domain names fqdn/wildcard to have Azure Private DNS redirect DNS requests to Cloud Connector"
+}
+
+variable "target_address" {
+  type        = list(string)
+  description = "Azure DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses"
+  default     = ["185.46.212.88", "185.46.212.89"]
 }

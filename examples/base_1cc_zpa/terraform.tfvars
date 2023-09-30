@@ -122,7 +122,7 @@
 
 ##    IPv4 CIDR configured with VNet creation. All Subnet resources (Workload, Public, and Cloud Connector) will be created based off this prefix
 ##    /24 subnets are created assuming this cidr is a /16. If you require creating a VNet smaller than /16, you may need to explicitly define all other 
-##     subnets via public_subnets, workload_subnets, and cc_subnets variables (Default: "10.1.0.0/16")
+##     subnets via public_subnets, workload_subnets, cc_subnets and private_dns_subnet variables (Default: "10.1.0.0/16")
 
 ##    Note: This variable only applies if you let Terraform create a new VNet. Custom deployment with byo_vnet enabled will ignore this
 
@@ -141,6 +141,7 @@
 #public_subnets                             = ["10.x.y.z/24","10.x.y.z/24"]
 #workloads_subnets                          = ["10.x.y.z/24","10.x.y.z/24"]
 #cc_subnets                                 = ["10.x.y.z/24","10.x.y.z/24"]
+#private_dns_subnet                         = "10.x.y.z/28"
 
 ## 16. Number of Workload VMs to be provisioned in the workload subnet. Only limitation is available IP space
 ##    in subnet configuration. Only applicable for "base" deployment types. Default workload subnet is /24 so 250 max
@@ -168,3 +169,24 @@
 ##    Uncomment if you want to not enable this VM setting
 
 #encryption_at_host_enabled                 = false
+
+
+#####################################################################################################################
+##### ZPA/Azure Private DNS specific variables #####
+#####################################################################################################################
+## 21. Provide the domain names you want Azure Private DNS to redirect to Cloud Connector for ZPA interception. 
+##     Only applicable for base + zpa or zpa_enabled = true deployment types where Outbound DNS subnets, Resolver Ruleset/Rules, 
+##     and Outbound Endpoints are being created. Two example domains are populated to show the mapping structure and syntax.
+##     Azure does require a trailing dot "." on all domain entries. ZPA Module will read through each to create a resolver rule per 
+##     domain_names entry. Ucomment domain_names variable and add any additional appsegXX mappings as needed.
+
+#domain_names = {
+#  appseg1 = "app1.com."
+#  appseg2 = "app2.com."
+#}
+
+## 22. Azure Private DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses.
+##     The required expectation is that the target should follow VNet/subnet routing towards the configured Cloud Connector Load Balancer VIP for 
+##     ZPA DNS interception
+
+#target_address                             = ["185.46.212.88", "185.46.212.89"]

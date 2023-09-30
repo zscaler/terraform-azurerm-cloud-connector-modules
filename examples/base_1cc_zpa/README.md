@@ -1,8 +1,8 @@
-# Zscaler "Base_1cc" deployment type
+# Zscaler "Base_1cc_zpa" deployment type
 
 This deployment type is intended for greenfield/pov/lab purposes. It will deploy a fully functioning sandbox environment in a new Resource Group/VNet with test workload VMs. Full set of resources provisioned listed below, but this will effectively create all network infrastructure dependencies for an Azure environment. Everything from "Base" deployment type (Creates 1 new Resource Group; 1 VNet with 1 public subnet and 1 private/workload subnet; 1 Centos server workload in the private subnet; 1 Bastion Host in the public subnet assigned a Public IP; and generates local key pair .pem file for ssh access).<br>
 
-Additionally: Creates 1 Cloud Connector private subnet associated to a NAT Gateway; 1 Cloud Connector VM; and workload private subnet UDR repointed to service interface IP of Cloud Connector.
+Additionally: Creates 1 Cloud Connector private subnet associated to a NAT Gateway; 1 Cloud Connector VM; and workload private subnet UDR repointed to service interface IP of Cloud Connector; Private DNS Resolver, Private DNS Resolver Ruleset, Private DNS Resolver rules based on the number of domains entered, Virtual Network Link for Ruleset, and Outbound Endpoint in a dedicated Outbound DNS subnet.
 
 ## Caveats/Considerations
 - WSL2 DNS bug: If you are trying to run these Azure terraform deployments specifically from a Windows WSL2 instance like Ubuntu and receive an error containing a message similar to this "dial tcp: lookup management.azure.com on 172.21.240.1:53: cannot unmarshal DNS message" please refer here for a WSL2 resolv.conf fix. https://github.com/microsoft/WSL/issues/5420#issuecomment-646479747.
@@ -12,16 +12,16 @@ Additionally: Creates 1 Cloud Connector private subnet associated to a NAT Gatew
 From the examples directory, run the zsec bash script that walks to all required inputs.
 - ./zsec up
 - enter "greenfield"
-- enter "base_1cc"
+- enter "base_1cc_zpa"
 - follow the remainder of the authentication and configuration input prompts.
 - script will detect client operating system and download/run a specific version of terraform in a temporary bin directory
 - inputs will be validated and terraform init/apply will automatically exectute.
 - verify all resources that will be created/modified and enter "yes" to confirm
 
 ### Option 2 (manual):
-Modify/populate any required variable input values in base_1cc/terraform.tfvars file and save.
+Modify/populate any required variable input values in base_1cc_zpa/terraform.tfvars file and save.
 
-From base_1cc directory execute:
+From base_1cc_zpa directory execute:
 - terraform init
 - terraform apply
 
@@ -32,7 +32,7 @@ From the examples directory, run the zsec bash script that walks to all required
 - ./zsec destroy
 
 ### Option 2 (manual):
-From base_1cc directory execute:
+From base_1cc_zpa directory execute:
 - terraform destroy
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
@@ -51,6 +51,7 @@ From base_1cc directory execute:
 
 | Name | Version |
 |------|---------|
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | >= 3.46, <= 3.74 |
 | <a name="provider_local"></a> [local](#provider\_local) | ~> 2.2.0 |
 | <a name="provider_null"></a> [null](#provider\_null) | ~> 3.1.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | ~> 3.3.0 |
@@ -65,12 +66,14 @@ From base_1cc directory execute:
 | <a name="module_cc_nsg"></a> [cc\_nsg](#module\_cc\_nsg) | ../../modules/terraform-zscc-nsg-azure | n/a |
 | <a name="module_cc_vm"></a> [cc\_vm](#module\_cc\_vm) | ../../modules/terraform-zscc-ccvm-azure | n/a |
 | <a name="module_network"></a> [network](#module\_network) | ../../modules/terraform-zscc-network-azure | n/a |
+| <a name="module_private_dns"></a> [private\_dns](#module\_private\_dns) | ../../modules/terraform-zscc-private-dns-azure | n/a |
 | <a name="module_workload"></a> [workload](#module\_workload) | ../../modules/terraform-zscc-workload-azure | n/a |
 
 ## Resources
 
 | Name | Type |
 |------|------|
+| [azurerm_private_dns_resolver_virtual_network_link.dns_vnet_link](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_resolver_virtual_network_link) | resource |
 | [local_file.private_key](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 | [local_file.testbed](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 | [local_file.user_data_file](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
@@ -97,6 +100,7 @@ From base_1cc directory execute:
 | <a name="input_ccvm_image_sku"></a> [ccvm\_image\_sku](#input\_ccvm\_image\_sku) | Azure Marketplace Cloud Connector Image SKU | `string` | `"zs_ser_gen1_cc_01"` | no |
 | <a name="input_ccvm_image_version"></a> [ccvm\_image\_version](#input\_ccvm\_image\_version) | Azure Marketplace Cloud Connector Image Version | `string` | `"latest"` | no |
 | <a name="input_ccvm_instance_type"></a> [ccvm\_instance\_type](#input\_ccvm\_instance\_type) | Cloud Connector Image size | `string` | `"Standard_D2s_v3"` | no |
+| <a name="input_domain_names"></a> [domain\_names](#input\_domain\_names) | Domain names fqdn/wildcard to have Azure Private DNS redirect DNS requests to Cloud Connector | `map(any)` | n/a | yes |
 | <a name="input_encryption_at_host_enabled"></a> [encryption\_at\_host\_enabled](#input\_encryption\_at\_host\_enabled) | User input for enabling or disabling host encryption | `bool` | `true` | no |
 | <a name="input_env_subscription_id"></a> [env\_subscription\_id](#input\_env\_subscription\_id) | Azure Subscription ID where resources are to be deployed in | `string` | n/a | yes |
 | <a name="input_environment"></a> [environment](#input\_environment) | Customer defined environment tag. ie: Dev, QA, Prod, etc. | `string` | `"Development"` | no |
@@ -106,13 +110,16 @@ From base_1cc directory execute:
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | The name prefix for all your resources | `string` | `"zscc"` | no |
 | <a name="input_network_address_space"></a> [network\_address\_space](#input\_network\_address\_space) | VNet IP CIDR Range. All subnet resources that might get created (public, workload, cloud connector) are derived from this /16 CIDR. If you require creating a VNet smaller than /16, you may need to explicitly define all other subnets via public\_subnets, workload\_subnets, cc\_subnets, and route53\_subnets variables | `string` | `"10.1.0.0/16"` | no |
 | <a name="input_owner_tag"></a> [owner\_tag](#input\_owner\_tag) | Customer defined owner tag value. ie: Org, Dept, username, etc. | `string` | `"zscc-admin"` | no |
+| <a name="input_private_dns_subnet"></a> [private\_dns\_subnet](#input\_private\_dns\_subnet) | Private DNS Resolver Outbound Endpoint Subnet to create in VNet. This is only required if you want to override the default subnet that this code creates via network\_address\_space variable. | `string` | `null` | no |
 | <a name="input_public_subnets"></a> [public\_subnets](#input\_public\_subnets) | Public/Bastion Subnets to create in VNet. This is only required if you want to override the default subnets that this code creates via network\_address\_space variable. | `list(string)` | `null` | no |
 | <a name="input_reuse_nsg"></a> [reuse\_nsg](#input\_reuse\_nsg) | Specifies whether the NSG module should create 1:1 network security groups per instance or 1 network security group for all instances | `bool` | `"false"` | no |
+| <a name="input_target_address"></a> [target\_address](#input\_target\_address) | Azure DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses | `list(string)` | <pre>[<br>  "185.46.212.88",<br>  "185.46.212.89"<br>]</pre> | no |
 | <a name="input_tls_key_algorithm"></a> [tls\_key\_algorithm](#input\_tls\_key\_algorithm) | algorithm for tls\_private\_key resource | `string` | `"RSA"` | no |
 | <a name="input_workload_count"></a> [workload\_count](#input\_workload\_count) | The number of Workload VMs to deploy | `number` | `1` | no |
 | <a name="input_workloads_subnets"></a> [workloads\_subnets](#input\_workloads\_subnets) | Workload Subnets to create in VNet. This is only required if you want to override the default subnets that this code creates via network\_address\_space variable. | `list(string)` | `null` | no |
 | <a name="input_zones"></a> [zones](#input\_zones) | Specify which availability zone(s) to deploy VM resources in if zones\_enabled variable is set to true | `list(string)` | <pre>[<br>  "1"<br>]</pre> | no |
 | <a name="input_zones_enabled"></a> [zones\_enabled](#input\_zones\_enabled) | Determine whether to provision Cloud Connector VMs explicitly in defined zones (if supported by the Azure region provided in the location variable). If left false, Azure will automatically choose a zone and module will create an availability set resource instead for VM fault tolerance | `bool` | `false` | no |
+| <a name="input_zpa_enabled"></a> [zpa\_enabled](#input\_zpa\_enabled) | Configure Azure Private DNS Outbound subnet, Resolvers, Rulesets/Rules, and Outbound Endpoint ZPA DNS redirection | `bool` | `true` | no |
 
 ## Outputs
 

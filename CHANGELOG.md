@@ -1,3 +1,25 @@
+## v0.3.0 (September 30, 2023)
+
+FEATURES:
+* Azure Private DNS module (terraform-zscc-private-dns-azure)
+    - add: deployment types base_1cc_zpa/base_cc_lb_zpa (greenfield/pov/test) with Azure Private DNS module integration
+    - add: conditional variable zpa_enabled for cc_lb (brownfield/prod) deployment for Azure Private DNS module integration
+    - add: zsec additions for new deployment options + domains adding to Private DNS Resolver Rule creation
+* AzureRM Provider version bump to 3.74.x default. Support from 3.46.x to 3.74.x
+
+ENHANCEMENTS:
+* Encryption at Host enabled by default
+    - add: encryption_at_host_enabled variable and default to true
+* change: workload VM for greenfield deployments dns_servers to Azure DNS default
+* add: AZURE_MANAGED_IDENTITY_CLIENT_ID field to userdata generation
+* change: variable load_distribution set to Azure "Default" corresponding to None/5-tuple session persistency in the Azure Portal.
+* change: name_prefix variable default to zscc
+
+BUG FIXES:
+* refactor: terraform-zscc-network-azure to remove data source read dependencies
+* add: variable probe_threshold for [Azure LB health probe fixes](https://learn.microsoft.com/en-us/azure/load-balancer/whats-new#known-issues:~:text=February%202020-,Known%20issues,-The%20product%20group)
+
+
 ## v0.2.0 (March 7, 2023)
 
 * Mininum Azure Provider upgrade from 2.x to 3.x (3.46.x)

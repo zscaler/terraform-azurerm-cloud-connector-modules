@@ -13,7 +13,11 @@ variable "arm_location" {
 variable "name_prefix" {
   type        = string
   description = "The name prefix for all your resources"
-  default     = "zsdemo"
+  default     = "zscc"
+  validation {
+    condition     = length(var.name_prefix) <= 12
+    error_message = "Variable name_prefix must be 12 or less characters."
+  }
 }
 
 variable "network_address_space" {
@@ -224,7 +228,7 @@ variable "bastion_nsg_source_prefix" {
 variable "load_distribution" {
   type        = string
   description = "Azure LB load distribution method"
-  default     = "SourceIP"
+  default     = "Default"
   validation {
     condition = (
       var.load_distribution == "SourceIP" ||
@@ -238,5 +242,35 @@ variable "load_distribution" {
 variable "lb_enabled" {
   type        = bool
   description = "Default true. Only relevant for 'base' deployments. Configure Workload Route Table to default route next hop to the CC Load Balancer IP passed from var.lb_frontend_ip. If false, default route next hop directly to the CC Service IP passed from var.cc_service_ip"
+  default     = true
+}
+
+variable "health_check_interval" {
+  type        = number
+  description = "The interval, in seconds, for how frequently to probe the endpoint for health status. Typically, the interval is slightly less than half the allocated timeout period (in seconds) which allows two full probes before taking the instance out of rotation. The default value is 15, the minimum value is 5"
+  default     = 15
+  validation {
+    condition = (
+      var.health_check_interval > 4
+    )
+    error_message = "Input health_check_interval must be a number 5 or greater."
+  }
+}
+
+variable "probe_threshold" {
+  type        = number
+  description = "The number of consecutive successful or failed probes in order to allow or deny traffic from being delivered to this endpoint. After failing the number of consecutive probes equal to this value, the endpoint will be taken out of rotation and require the same number of successful consecutive probes to be placed back in rotation."
+  default     = 2
+}
+
+variable "number_of_probes" {
+  type        = number
+  description = "The number of probes where if no response, will result in stopping further traffic from being delivered to the endpoint. This values allows endpoints to be taken out of rotation faster or slower than the typical times used in Azure"
+  default     = 1
+}
+
+variable "encryption_at_host_enabled" {
+  type        = bool
+  description = "User input for enabling or disabling host encryption"
   default     = true
 }

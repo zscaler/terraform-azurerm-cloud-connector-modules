@@ -29,6 +29,9 @@ if [[ "$oper" == "up" ]]; then
 
     case $deploy in
       greenfield)
+      echo ""
+      echo "**Caution** These deployments include test workloads and publicly accessible jump hosts and are intended primarily for lab/test environments"
+      echo ""
           break
       ;;
       brownfield)
@@ -41,10 +44,10 @@ if [[ "$oper" == "up" ]]; then
   done
     
     while [ "$deploy" == "greenfield" ]; do
-     read -r -p "Deployment Type: ( base | base_1cc | base_cc_lb ) : " dtype
+     read -r -p "Deployment Type: ( base | base_1cc | base_1cc_zpa | base_cc_lb | base_cc_lb_zpa ) : " dtype
 
     case $dtype in
-      base|base_1cc|base_cc_lb|cc_lb)
+      base|base_1cc|base_1cc_zpa|base_cc_lb|base_cc_lb_zpa)
           echo "Deployment Type: ${dtype}"
           break
       ;;
@@ -246,24 +249,76 @@ fi
 done
 fi
 
-    cc_instance_size_default=small
-    read -r -p "Enter CC Instance Size. Valid input = small, medium, or large. This needs to match the size chosen in the CC provisioning template [Default=$cc_instance_size_default]: " cc_instance_size_input
-cc_instance_size=${cc_instance_size_input:-$cc_instance_size_default}
-    case $cc_instance_size in
-      small|medium|large)
-          echo "Cloud Connector size: ${cc_instance_size}"
-          echo "export TF_VAR_cc_instance_size=${cc_instance_size}" >> .zsecrc
-      ;;
-      *)
-          echo "Invalid Cloud Connector size: ${cc_instance_size}."
-          echo "Delete .zsecrc file and re-run zsecup ..."
-          exit 1
-      ;;
-    esac
+    # ---
+    # Host Encryption Support
+    encryption_at_host_enabled=true
+    # Sourcing .zsecrc to use credentials during execution
+    source .zsecrc
+
+    while true; do
+        read -r -p "Do you want to enable the Azure host encryption feature? [Default setting is Yes]: " input
+
+        # Convert the user input to lowercase for case-insensitive comparison
+        input=$(echo "$input" | tr '[:upper:]' '[:lower:]')
+
+        if [[ "$input" == "no" || "$input" == "n" ]]; then
+            echo "Setting encryption_at_host_enabled to false..."
+            encryption_at_host_enabled=false
+            break
+        elif [[ "$input" == "yes" || "$input" == "y" || -z "$input" ]]; then
+            echo "Checking if EncryptionAtHost feature is enabled for subscription $ARM_SUBSCRIPTION_ID..."
+
+            TOKEN_ENDPOINT="https://login.microsoftonline.com/${ARM_TENANT_ID}/oauth2/token"
+            RESOURCE="https://management.azure.com/"
+            ACCESS_TOKEN=$(curl -s -X POST -H "Content-Type: application/x-www-form-urlencoded" \
+                -d "grant_type=client_credentials" \
+                -d "client_id=${ARM_CLIENT_ID}" \
+                -d "client_secret=${ARM_CLIENT_SECRET}" \
+                -d "resource=${RESOURCE}" \
+                "${TOKEN_ENDPOINT}" | grep -o '"access_token":"[^"]*' | awk -F'"' '{print $4}')
+            
+            response=$(curl -s -X GET -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+                "https://management.azure.com/subscriptions/$ARM_SUBSCRIPTION_ID/providers/Microsoft.Features/providers/Microsoft.Compute/features/EncryptionAtHost?api-version=2021-07-01" \
+                |grep -o '"state":"[^"]*' | awk -F'"' '{print $4}')
+
+            if [ "$response" = "Registered" ]; then
+                echo "EncryptionAtHost feature is enabled for subscription $ARM_SUBSCRIPTION_ID..."
+                echo "Setting encryption_at_host_enabled to true..."
+                encryption_at_host_enabled=true
+            else
+                echo "Error: Azure Subscription $ARM_SUBSCRIPTION_ID is not registered to support host encryption. Please refer to documentation."
+                exit 1    
+            fi
+            break
+        else
+            echo "Invalid input. Please enter 'yes' or 'no'."
+        fi
+    done
+
+    echo "export TF_VAR_encryption_at_host_enabled=${encryption_at_host_enabled}" >> .zsecrc
+    # End of Host Encryption support update
+    # ---
+
+
+    cc_instance_size=small
+    echo "export TF_VAR_cc_instance_size=${cc_instance_size}" >> .zsecrc
+    #read -r -p "Enter CC Instance Size. Valid input = small, medium, or large. This needs to match the size chosen in the CC provisioning template [Default=$cc_instance_size_default]: " cc_instance_size_input
+#cc_instance_size=${cc_instance_size_input:-$cc_instance_size_default}
+#    case $cc_instance_size in
+#      small|medium|large)
+#          echo "Cloud Connector size: ${cc_instance_size}"
+#          echo "export TF_VAR_cc_instance_size=${cc_instance_size}" >> .zsecrc
+#      ;;
+#      *)
+#          echo "Invalid Cloud Connector size: ${cc_instance_size}."
+#          echo "Delete .zsecrc file and re-run zsecup ..."
+#          exit 1
+#      ;;
+#    esac
 
 ccvm_instance_type_default=Standard_D2s_v3
 while true; do
-    read -r -p "Enter desired Azure VM type for CC. Recommended types: Small CC (Standard_D2s_v3); Medium (Standard_D8s_v3 or Standard_DS3_v2); Large (Standard_D16s_v3 or Standard_DS5_v2) [Default=$ccvm_instance_type_default]: " ccvm_instance_type_input
+    read -r -p "Enter desired Azure VM type for CC. Recommended types: Small CC (Standard_D2s_v3) [Default=$ccvm_instance_type_default]: " ccvm_instance_type_input
 ccvm_instance_type=${ccvm_instance_type_input:-$ccvm_instance_type_default}
 case $ccvm_instance_type in 
 	Standard_D2s_v3|Standard_DS3_v2|Standard_D8s_v3|Standard_D16s_v3|Standard_DS5_v2 ) 
@@ -446,6 +501,70 @@ else
 fi
 else
 echo "Azure region ${azure_location} does not support Zones. Proceeding..."
+fi
+
+if [[ "$dtype" == "cc"* ]]; then
+   while true; do
+    read -r -p "Enable Azure Private DNS for ZPA? (yes/no): " zpa_response
+case $zpa_response in 
+	yes|y ) 
+    echo "Enabling Azure Private DNS module..."
+    zpa_enabled=true
+    echo "export TF_VAR_zpa_enabled=$zpa_enabled" >> .zsecrc
+    break
+    ;;
+	no|n )
+    echo "No ZPA enablement..."
+    zpa_enabled=false
+    echo "export TF_VAR_zpa_enabled=$zpa_enabled" >> .zsecrc
+    break
+    ;;
+	* ) echo "invalid response. Please enter yes or no";;
+    esac
+done 
+fi
+
+if [[ "$zpa_enabled" == "true" || "$dtype" == *"zpa" ]]; then
+array=()
+domain_names_map="'{ "
+counter=0
+while true; do
+read -r -p "How many Domain/FQDN application segments to add to Private DNS Resolver Rules? " domain_number
+if [[ $domain_number == 0 ]]; then
+    echo "Invalid input. Please enter a whole number for the number of domains you will be adding..."
+elif [[ $domain_number =~ ^[0-9]+$ ]]; then
+   echo "$domain_number domains to enter..."
+   break
+else
+   echo "Invalid input. Please enter a whole number for the number of domains you will be adding..."
+fi
+done
+for i in $(seq $domain_number); do
+read -r -p "Enter a single ZPA Domain/FQDN ending with a trailing dot ( e.g. azure.company.com. ): " domain_name
+    if [[ $domain_name = *" "* ]]; then
+        echo "Spaces not allowed. Please enter only one domain at a time. Delete .zsecrc file and re-run zsec up..."
+        exit 1
+    elif [[ $domain_name == '' ]]; then
+        echo "Empty entries are not allowed. Delete .zsecrc file and re-run zsec up..."
+        exit 1
+    elif [[ $domain_name == "." ]]; then
+        echo "You entered '.' dot. While Azure does support this to forward all domain requests, this could have unintended consequences/compatibility issues with Azure services"
+    elif [[ $domain_name == "."* ]]; then
+        echo "Invalid format. Domains cannot start with a dot (.). Delete .zsecrc file and re-run zsec up..."
+        exit 1
+    elif [[ $domain_name == "*"* ]]; then
+        echo "Invalid format. Domains cannot start with a star/wildcard (*). Delete .zsecrc file and re-run zsec up..."
+        exit 1
+    elif [[ $domain_name != *"." ]]; then
+        echo "Invalid format. Domains must end with a dot (.). Delete .zsecrc file and re-run zsec up..."
+        exit 1
+    fi
+array+=("$domain_name")
+    counter=$(( $counter + 1 ))
+    domain_names_map+="appseg$counter: \"$domain_name\", "
+done
+domain_names_map+="}'"
+echo "export TF_VAR_domain_names=$domain_names_map" >> .zsecrc
 fi
 
 fi

@@ -53,32 +53,54 @@ module "network" {
   location              = var.arm_location
   network_address_space = var.network_address_space
   cc_subnets            = var.cc_subnets
+  workloads_subnets     = var.workloads_subnets
+  public_subnets        = var.public_subnets
   private_dns_subnet    = var.private_dns_subnet
   zones_enabled         = var.zones_enabled
   zones                 = var.zones
-  lb_frontend_ip        = module.cc_lb.lb_ip
+  cc_service_ip         = module.cc_vm.service_ip
+  workloads_enabled     = true
+  bastion_enabled       = true
+  lb_enabled            = var.lb_enabled
   zpa_enabled           = var.zpa_enabled
-  #bring-your-own variables
-  byo_rg                             = var.byo_rg
-  byo_rg_name                        = var.byo_rg_name
-  byo_vnet                           = var.byo_vnet
-  byo_vnet_name                      = var.byo_vnet_name
-  byo_subnets                        = var.byo_subnets
-  byo_subnet_names                   = var.byo_subnet_names
-  byo_vnet_subnets_rg_name           = var.byo_vnet_subnets_rg_name
-  byo_pips                           = var.byo_pips
-  byo_pip_names                      = var.byo_pip_names
-  byo_pip_rg                         = var.byo_pip_rg
-  byo_nat_gws                        = var.byo_nat_gws
-  byo_nat_gw_names                   = var.byo_nat_gw_names
-  byo_nat_gw_rg                      = var.byo_nat_gw_rg
-  existing_nat_gw_pip_association    = var.existing_nat_gw_pip_association
-  existing_nat_gw_subnet_association = var.existing_nat_gw_subnet_association
 }
 
 
 ################################################################################
-# 2. Create specified number of CC VMs per cc_count by default in an
+# 2. Create Bastion Host for workload and CC SSH jump access
+################################################################################
+module "bastion" {
+  source                    = "../../modules/terraform-zscc-bastion-azure"
+  location                  = var.arm_location
+  name_prefix               = var.name_prefix
+  resource_tag              = random_string.suffix.result
+  global_tags               = local.global_tags
+  resource_group            = module.network.resource_group_name
+  public_subnet_id          = module.network.bastion_subnet_ids[0]
+  ssh_key                   = tls_private_key.key.public_key_openssh
+  bastion_nsg_source_prefix = var.bastion_nsg_source_prefix
+}
+
+
+################################################################################
+# 3. Create Workload Hosts to test traffic connectivity through CC
+################################################################################
+module "workload" {
+  source         = "../../modules/terraform-zscc-workload-azure"
+  workload_count = var.workload_count
+  location       = var.arm_location
+  name_prefix    = var.name_prefix
+  resource_tag   = random_string.suffix.result
+  global_tags    = local.global_tags
+  resource_group = module.network.resource_group_name
+  subnet_id      = module.network.workload_subnet_ids[0]
+  ssh_key        = tls_private_key.key.public_key_openssh
+  dns_servers    = []
+}
+
+
+################################################################################
+# 4. Create specified number of CC VMs per cc_count by default in an
 #    availability set for Azure Data Center fault tolerance. Optionally, deployed
 #    CCs can automatically span equally across designated availabilty zones 
 #    if enabled via "zones_enabled" and "zones" variables. E.g. cc_count set to 
@@ -103,7 +125,6 @@ resource "local_file" "user_data_file" {
 
 # Create specified number of CC appliances
 module "cc_vm" {
-  cc_count                       = var.cc_count
   source                         = "../../modules/terraform-zscc-ccvm-azure"
   name_prefix                    = var.name_prefix
   resource_tag                   = random_string.suffix.result
@@ -114,8 +135,6 @@ module "cc_vm" {
   ssh_key                        = tls_private_key.key.public_key_openssh
   managed_identity_id            = module.cc_identity.managed_identity_id
   user_data                      = local.userdata
-  backend_address_pool           = module.cc_lb.lb_backend_address_pool
-  lb_association_enabled         = true
   location                       = var.arm_location
   zones_enabled                  = var.zones_enabled
   zones                          = var.zones
@@ -138,7 +157,7 @@ module "cc_vm" {
 
 
 ################################################################################
-# 3. Create Network Security Group and rules to be assigned to CC mgmt and 
+# 5. Create Network Security Group and rules to be assigned to CC mgmt and 
 #    service interface(s). Default behavior will create 1 of each resource per
 #    CC VM. Set variable "reuse_nsg" to true if you would like a single NSG 
 #    created and assigned to ALL Cloud Connectors
@@ -148,20 +167,14 @@ module "cc_nsg" {
   nsg_count      = var.reuse_nsg == false ? var.cc_count : 1
   name_prefix    = var.name_prefix
   resource_tag   = random_string.suffix.result
-  resource_group = var.byo_nsg == false ? module.network.resource_group_name : var.byo_nsg_rg
+  resource_group = module.network.resource_group_name
   location       = var.arm_location
   global_tags    = local.global_tags
-
-  byo_nsg = var.byo_nsg
-  # optional inputs. only required if byo_nsg set to true
-  byo_mgmt_nsg_names    = var.byo_mgmt_nsg_names
-  byo_service_nsg_names = var.byo_service_nsg_names
-  # optional inputs. only required if byo_nsg set to true
 }
 
 
 ################################################################################
-# 4. Reference User Managed Identity resource to obtain ID to be assigned to 
+# 6. Reference User Managed Identity resource to obtain ID to be assigned to 
 #    all Cloud Connectors 
 ################################################################################
 module "cc_identity" {
@@ -177,35 +190,11 @@ module "cc_identity" {
 
 
 ################################################################################
-# 5. Create Azure Load Balancer in CC VNet with all Backend Pools, Rules, and 
-#    Health Probes
-################################################################################
-module "cc_lb" {
-  source                = "../../modules/terraform-zscc-lb-azure"
-  name_prefix           = var.name_prefix
-  resource_tag          = random_string.suffix.result
-  global_tags           = local.global_tags
-  resource_group        = module.network.resource_group_name
-  location              = var.arm_location
-  subnet_id             = module.network.cc_subnet_ids[0]
-  http_probe_port       = var.http_probe_port
-  load_distribution     = var.load_distribution
-  zones_enabled         = var.zones_enabled
-  zones                 = var.zones
-  health_check_interval = var.health_check_interval
-  probe_threshold       = var.probe_threshold
-  number_of_probes      = var.number_of_probes
-}
-
-
-################################################################################
-# 6. Create Azure Private DNS Resolver Ruleset, Rules, and Outbound Endpoint
+# 7. Create Azure Private DNS Resolver Ruleset, Rules, and Outbound Endpoint
 #    for utilization with DNS redirection/conditional forwarding to Cloud
 #    Connector to enabling ZPA and/or ZIA DNS control features.
-#    This can optionally be enabled/disabled per variable "zpa_enabled".
 ################################################################################
 module "private_dns" {
-  count                 = var.zpa_enabled ? 1 : 0
   source                = "../../modules/terraform-zscc-private-dns-azure"
   name_prefix           = var.name_prefix
   resource_tag          = random_string.suffix.result
@@ -219,17 +208,19 @@ module "private_dns" {
 }
 
 ################################################################################
-# Optional: Example create Azure Private DNS Resolver Virtual Network Link
-# variable spoke_vnets does not exist in this deployment. This is simply
-# an example of how you may utilize the private_dns module to create 
-# virtual network links for spoke VNets
+# Optional: Create Azure Private DNS Resolver Virtual Network Link
+# This resource is getting created for greenfield deployments since
+# workloads are being deployed in the same VNet as the Cloud Connectors.
+
+# Generally, this would only be created and associated with spoke VNets in
+# centralized hub-spoke topologies. Be careful what domains are used in rule
+# creation to avoid DNS loops.
 ################################################################################
-#resource "azurerm_private_dns_resolver_virtual_network_link" "dns_vnet_link" {
-#  count                     = length(var.spoke_vnets)
-#  name                      = "${var.name_prefix}-vnet-link-${count.index + 1}-${random_string.suffix.result}"
-#  dns_forwarding_ruleset_id = module.private_dns.private_dns_forwarding_ruleset_id
-#  virtual_network_id        = element(var.spoke_vnets, count.index)
-#}
+resource "azurerm_private_dns_resolver_virtual_network_link" "dns_vnet_link" {
+  name                      = "${var.name_prefix}-vnet-link-${random_string.suffix.result}"
+  dns_forwarding_ruleset_id = module.private_dns.private_dns_forwarding_ruleset_id
+  virtual_network_id        = module.network.virtual_network_id
+}
 
 
 ################################################################################

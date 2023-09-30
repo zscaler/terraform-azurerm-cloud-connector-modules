@@ -75,11 +75,11 @@
 #ccvm_instance_type                         = "Standard_DS5_v2"
 
 ## 11. Cloud Connector Instance size selection. Uncomment cc_instance_size line with desired vm size to change
-##    (Default: "small") 
-##    **** NOTE - There is a dependency between ccvm_instance_type and cc_instance_size selections ****
-##    If size = "small" any supported Azure VM instance size can be deployed, but "Standard_D2s_v3" is ideal
-##    If size = "medium" only Standard_DS3_v2/Standard_D8s_v3 and up Azure VM instance sizes can be deployed
-##    If size = "large" only Standard_D16s_v3/Standard_DS5_v2 Azure VM instance sizes can be deployed 
+##     (Default: "small") 
+##     **** NOTE - There is a dependency between ccvm_instance_type and cc_instance_size selections ****
+##     If size = "small" any supported Azure VM instance size can be deployed, but "Standard_D2s_v3" is ideal
+##     If size = "medium" only Standard_DS3_v2/Standard_D8s_v3 and up Azure VM instance sizes can be deployed
+##     If size = "large" only Standard_D16s_v3/Standard_DS5_v2 Azure VM instance sizes can be deployed 
 
 #cc_instance_size                           = "small"
 #cc_instance_size                           = "medium"
@@ -141,6 +141,7 @@
 #public_subnets                             = ["10.x.y.z/24","10.x.y.z/24"]
 #workloads_subnets                          = ["10.x.y.z/24","10.x.y.z/24"]
 #cc_subnets                                 = ["10.x.y.z/24","10.x.y.z/24"]
+#private_dns_subnet                         = "10.x.y.z/28"
 
 ## 16. Number of Workload VMs to be provisioned in the workload subnet. Only limitation is available IP space
 ##    in subnet configuration. Only applicable for "base" deployment types. Default workload subnet is /24 so 250 max
@@ -168,3 +169,24 @@
 ##    Uncomment if you want to not enable this VM setting
 
 #encryption_at_host_enabled                 = false
+
+
+#####################################################################################################################
+##### ZPA/Azure Private DNS specific variables #####
+#####################################################################################################################
+## 21. Provide the domain names you want Azure Private DNS to redirect to Cloud Connector for ZPA interception. 
+##     Only applicable for base + zpa or zpa_enabled = true deployment types where Outbound DNS subnets, Resolver Ruleset/Rules, 
+##     and Outbound Endpoints are being created. Two example domains are populated to show the mapping structure and syntax.
+##     Azure does require a trailing dot "." on all domain entries. ZPA Module will read through each to create a resolver rule per 
+##     domain_names entry. Ucomment domain_names variable and add any additional appsegXX mappings as needed.
+
+#domain_names = {
+#  appseg1 = "app1.com."
+#  appseg2 = "app2.com."
+#}
+
+## 22. Azure Private DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses.
+##     The required expectation is that the target should follow VNet/subnet routing towards the configured Cloud Connector Load Balancer VIP for 
+##     ZPA DNS interception
+
+#target_address                             = ["185.46.212.88", "185.46.212.89"]

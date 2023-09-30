@@ -93,7 +93,7 @@ module "workload" {
   resource_group = module.network.resource_group_name
   subnet_id      = module.network.workload_subnet_ids[0]
   ssh_key        = tls_private_key.key.public_key_openssh
-  dns_servers    = ["185.46.212.88", "185.46.212.89"]
+  dns_servers    = []
 }
 
 
@@ -111,6 +111,7 @@ locals {
 CC_URL=${var.cc_vm_prov_url}
 AZURE_VAULT_URL=${var.azure_vault_url}
 HTTP_PROBE_PORT=${var.http_probe_port}
+AZURE_MANAGED_IDENTITY_CLIENT_ID=${module.cc_identity.managed_identity_client_id}
 USERDATA
 }
 
@@ -147,6 +148,7 @@ module "cc_vm" {
   mgmt_nsg_id                    = module.cc_nsg.mgmt_nsg_id
   service_nsg_id                 = module.cc_nsg.service_nsg_id
   accelerated_networking_enabled = var.accelerated_networking_enabled
+  encryption_at_host_enabled     = var.encryption_at_host_enabled
 
   depends_on = [
     local_file.user_data_file,
@@ -194,17 +196,20 @@ module "cc_identity" {
 ################################################################################
 # Azure Load Balancer Module variables
 module "cc_lb" {
-  source            = "../../modules/terraform-zscc-lb-azure"
-  name_prefix       = var.name_prefix
-  resource_tag      = random_string.suffix.result
-  global_tags       = local.global_tags
-  resource_group    = module.network.resource_group_name
-  location          = var.arm_location
-  subnet_id         = module.network.cc_subnet_ids[0]
-  http_probe_port   = var.http_probe_port
-  load_distribution = var.load_distribution
-  zones_enabled     = var.zones_enabled
-  zones             = var.zones
+  source                = "../../modules/terraform-zscc-lb-azure"
+  name_prefix           = var.name_prefix
+  resource_tag          = random_string.suffix.result
+  global_tags           = local.global_tags
+  resource_group        = module.network.resource_group_name
+  location              = var.arm_location
+  subnet_id             = module.network.cc_subnet_ids[0]
+  http_probe_port       = var.http_probe_port
+  load_distribution     = var.load_distribution
+  zones_enabled         = var.zones_enabled
+  zones                 = var.zones
+  health_check_interval = var.health_check_interval
+  probe_threshold       = var.probe_threshold
+  number_of_probes      = var.number_of_probes
 }
 
 

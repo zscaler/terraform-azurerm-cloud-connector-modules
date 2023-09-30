@@ -44,6 +44,12 @@ variable "public_subnets" {
   default     = null
 }
 
+variable "private_dns_subnet" {
+  type        = string
+  description = "Private DNS Resolver Outbound Endpoint Subnet to create in VNet. This is only required if you want to override the default subnet that this code creates via network_address_space variable."
+  default     = null
+}
+
 variable "environment" {
   type        = string
   description = "Customer defined environment tag. ie: Dev, QA, Prod, etc."
@@ -235,4 +241,22 @@ variable "encryption_at_host_enabled" {
   type        = bool
   description = "User input for enabling or disabling host encryption"
   default     = true
+}
+
+# Azure Private DNS specific variables
+variable "zpa_enabled" {
+  type        = bool
+  description = "Configure Azure Private DNS Outbound subnet, Resolvers, Rulesets/Rules, and Outbound Endpoint ZPA DNS redirection"
+  default     = true
+}
+
+variable "domain_names" {
+  type        = map(any)
+  description = "Domain names fqdn/wildcard to have Azure Private DNS redirect DNS requests to Cloud Connector"
+}
+
+variable "target_address" {
+  type        = list(string)
+  description = "Azure DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses"
+  default     = ["185.46.212.88", "185.46.212.89"]
 }

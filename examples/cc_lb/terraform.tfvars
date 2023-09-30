@@ -1,11 +1,12 @@
 ## This is only a sample terraform.tfvars file.
 ## Uncomment and change the below variables according to your specific environment
+
 #####################################################################################################################
-##### Variables 1-17 are populated automically if terraform is ran via ZSEC bash script.   ##### 
-##### Modifying the variables in this file will override any inputs from ZSEC              #####
+##### Variables are populated automically if terraform is ran via ZSEC bash script.   ##### 
+##### Modifying the variables in this file will override any inputs from ZSEC         #####
 #####################################################################################################################
 
-##    Provide the Azure Subscription ID where Terraform will authenticate to via the azurerm provider.
+## 1. Provide the Azure Subscription ID where Terraform will authenticate to via the azurerm provider.
 ##    ** Note ** This will be auto populated for you via ZSEC bash script, so only uncomment if running Terraform manually.
 ##    E.g "abc12345-6789-0123-a456-bc1234567de8"
 
@@ -14,15 +15,16 @@
 #####################################################################################################################
 ##### Cloud Init Provisioning variables for userdata file  #####
 #####################################################################################################################
-## 1. Zscaler Cloud Connector Provisioning URL E.g. connector.zscaler.net/api/v1/provUrl?name=azure_prov_url
+
+## 2. Zscaler Cloud Connector Provisioning URL E.g. connector.zscaler.net/api/v1/provUrl?name=azure_prov_url
 
 #cc_vm_prov_url                             = "connector.zscaler.net/api/v1/provUrl?name=azure_prov_url"
 
-## 2. Azure Vault URL E.g. "https://zscaler-cc-demo.vault.azure.net"
+## 3. Azure Vault URL E.g. "https://zscaler-cc-demo.vault.azure.net"
 
 #azure_vault_url                            =  "https://zscaler-cc-demo.vault.azure.net"
 
-## 3. Cloud Connector cloud init provisioning listener port. This is required for Azure LB Health Probe deployments. 
+## 4. Cloud Connector cloud init provisioning listener port. This is required for Azure LB Health Probe deployments. 
 ## Uncomment and set custom probe port to a single value of 80 or any number between 1024-65535. Default is 50000.
 
 #http_probe_port                            = 50000
@@ -35,17 +37,17 @@
 ##### (minimum Role permissions: Microsoft.Network/networkInterfaces/read)   ##### 
 #####################################################################################################################
 
-## 4. Provide the Azure Subscription ID where the User Managed Identity resides. Leave commented out unless the
+## 5. Provide the Azure Subscription ID where the User Managed Identity resides. Leave commented out unless the
 ##    Managed Identity is in a different Subscription than the one where Cloud Connector is being deployed.
-##    E.g "eab20328-8964-4168-a464-db4829164dc8"
+##    E.g "abc12345-6789-0123-a456-bc1234567de8"
 
 #managed_identity_subscription_id           = "abc12345-6789-0123-a456-bc1234567de8"
 
-## 5. Provide your existing Azure Managed Identity name to attach to the CC VM. E.g cloud_connector_managed_identity
+## 6. Provide your existing Azure Managed Identity name to attach to the CC VM. E.g cloud_connector_managed_identity
 
 #cc_vm_managed_identity_name                = "cloud_connector_managed_identity"
 
-## 6. Provide the existing Resource Group of the Azure Managed Identity name to attach to the CC VM. E.g. cloud_connector_rg_1
+## 7. Provide the existing Resource Group of the Azure Managed Identity name to attach to the CC VM. E.g. cloud_connector_rg_1
 
 #cc_vm_managed_identity_rg                  = "cloud_connector_rg_1"
 
@@ -54,13 +56,16 @@
 ##### Custom variables. Only change if required for your environment  #####
 #####################################################################################################################
 
-## 7. Azure region where Cloud Connector resources will be deployed. This environment variable is automatically populated if running ZSEC script
+## 8. The name string for all Cloud Connector resources created by Terraform for Tag/Name attributes. (Default: zscc)
+
+#name_prefix                                = "zscc"
+
+## 9. Azure region where Cloud Connector resources will be deployed. This environment variable is automatically populated if running ZSEC script
 ##    and thus will override any value set here. Only uncomment and set this value if you are deploying terraform standalone. (Default: westus2)
 
 #arm_location                               = "westus2"
 
-
-## 8. Cloud Connector Azure VM Instance size selection. Uncomment ccvm_instance_type line with desired vm size to change.
+## 10. Cloud Connector Azure VM Instance size selection. Uncomment ccvm_instance_type line with desired vm size to change.
 ##    (Default: Standard_D2s_v3)
 
 #ccvm_instance_type                         = "Standard_D2s_v3"
@@ -69,28 +74,25 @@
 #ccvm_instance_type                         = "Standard_D16s_v3"
 #ccvm_instance_type                         = "Standard_DS5_v2"
 
-
-## 9. Cloud Connector Instance size selection. Uncomment cc_instance_size line with desired vm size to change
-##    (Default: "small") 
-##    **** NOTE - There is a dependency between ccvm_instance_type and cc_instance_size selections ****
-##    If size = "small" any supported Azure VM instance size can be deployed, but "Standard_D2s_v3" is ideal
-##    If size = "medium" only Standard_DS3_v2/Standard_D8s_v3 and up Azure VM instance sizes can be deployed
-##    If size = "large" only Standard_D16s_v3/Standard_DS5_v2 Azure VM instance sizes can be deployed 
+## 11. Cloud Connector Instance size selection. Uncomment cc_instance_size line with desired vm size to change
+##     (Default: "small") 
+##     **** NOTE - There is a dependency between ccvm_instance_type and cc_instance_size selections ****
+##     If size = "small" any supported Azure VM instance size can be deployed, but "Standard_D2s_v3" is ideal
+##     If size = "medium" only Standard_DS3_v2/Standard_D8s_v3 and up Azure VM instance sizes can be deployed
+##     If size = "large" only Standard_D16s_v3/Standard_DS5_v2 Azure VM instance sizes can be deployed 
 
 #cc_instance_size                           = "small"
 #cc_instance_size                           = "medium"
 #cc_instance_size                           = "large" 
 
-
-## 10. The number of Cloud Connector appliances to provision. Each incremental Cloud Connector will be created in alternating 
+## 12. The number of Cloud Connector appliances to provision. Each incremental Cloud Connector will be created in alternating 
 ##    subnets based on the zones or byo_subnet_names variable and loop through for any deployments where cc_count > zones.
 ##    Not configurable for base or base_1cc deployment types. (All others - Default: 2)
 ##    E.g. cc_count set to 4 and 2 zones set ['1","2"] will create 2x CCs in AZ1 and 2x CCs in AZ2
 
 #cc_count                                   = 2
 
-
-## 11. By default, no zones are specified in any resource creation meaning they are either auto-assigned by Azure 
+## 13. By default, no zones are specified in any resource creation meaning they are either auto-assigned by Azure 
 ##    (Virtual Machines and NAT Gateways) or Zone-Redundant (Public IP) based on whatever default configuration is.
 ##    Setting this value to true will do the following:
 ##    1. will create zonal NAT Gateway resources in order of the zones [1-3] specified in zones variable. 1x per zone
@@ -101,8 +103,7 @@
 
 #zones_enabled                              = true
 
-
-## 12. By default, this variable is used as a count (1) for resource creation of Public IP, NAT Gateway, and CC Subnets.
+## 14. By default, this variable is used as a count (1) for resource creation of Public IP, NAT Gateway, and CC Subnets.
 ##    This should only be modified if zones_enabled is also set to true
 ##    Doing so will change the default zone aware configuration for the 3 aforementioned resources with the values specified
 ##    
@@ -117,8 +118,7 @@
 #zones                                      = ["1","2"]
 #zones                                      = ["1","2","3"]
 
-
-## 13. Network Configuration:
+## 15. Network Configuration:
 
 ##    IPv4 CIDR configured with VNet creation. All Subnet resources (Workload, Public, and Cloud Connector) will be created based off this prefix
 ##    /24 subnets are created assuming this cidr is a /16. If you require creating a VNet smaller than /16, you may need to explicitly define all other 
@@ -141,56 +141,64 @@
 #public_subnets                             = ["10.x.y.z/24","10.x.y.z/24"]
 #workloads_subnets                          = ["10.x.y.z/24","10.x.y.z/24"]
 #cc_subnets                                 = ["10.x.y.z/24","10.x.y.z/24"]
+#private_dns_subnet                         = "10.x.y.z/28"
 
+## 16. Number of Workload VMs to be provisioned in the workload subnet. Only limitation is available IP space
+##    in subnet configuration. Only applicable for "base" deployment types. Default workload subnet is /24 so 250 max
 
-## 15. Tag attribute "Owner" assigned to all resoure creation. (Default: "zscc-admin")
+#workload_count                             = 2
+
+## 17. Tag attribute "Owner" assigned to all resoure creation. (Default: "zscc-admin")
 
 #owner_tag                                  = "username@company.com"
 
-
-## 16. Tag attribute "Environment" assigned to all resources created. (Default: "Development")
+## 18. Tag attribute "Environment" assigned to all resources created. (Default: "Development")
 
 #environment                                = "Development"
 
-
-## 17. By default, this script will apply 1 Network Security Group per Cloud Connector instance. 
+## 19. By default, this script will apply 1 Network Security Group per Cloud Connector instance. 
 ##     Uncomment if you want to use the same Network Security Group for ALL Cloud Connectors (true or false. Default: false)
 
 #reuse_nsg                                  = true
+
+## 20. By default, Host encryption is enabled for Cloud Connector VMs. This does require the EncryptionAtHost feature
+##     enabled for your subscription though first.
+##     You can verify this by following the Azure Prerequisites guide here: 
+##     https://learn.microsoft.com/en-us/azure/virtual-machines/linux/disks-enable-host-based-encryption-cli#prerequisites
+##
+##    Uncomment if you want to not enable this VM setting
+
+#encryption_at_host_enabled                 = false
+
 
 #####################################################################################################################
 ##### Custom BYO variables. Only applicable for "cc_lb" deployment without "base" resource requirements  #####
 #####################################################################################################################
 
-## 18. By default, this script will create a new Resource Group and place all resources in this group.
+## 21. By default, this script will create a new Resource Group and place all resources in this group.
 ##     Uncomment if you want to deploy all resources in an existing Resource Group? (true or false. Default: false)
 
 #byo_rg                                 = true
 
-
-## 19. Provide your existing Resource Group name. Only uncomment and modify if you set byo_rg to true
+## 22. Provide your existing Resource Group name. Only uncomment and modify if you set byo_rg to true
 
 #byo_rg_name                            = "existing-rg"
 
-
-## 20. By default, this script will create a new Azure Virtual Network in the default resource group.
+## 23. By default, this script will create a new Azure Virtual Network in the default resource group.
 ##     Uncomment if you want to deploy all resources to a VNet that already exists (true or false. Default: false)
 
 #byo_vnet                               = true
 
-
-## 21. Provide your existing VNet name. Only uncomment and modify if you set byo_vnet to true
+## 24. Provide your existing VNet name. Only uncomment and modify if you set byo_vnet to true
 
 #byo_vnet_name                          = "existing-vnet"
 
-
-## 22. Provide the existing Resource Group name of your VNet. Only uncomment and modify if you set byo_vnet to true
+## 25. Provide the existing Resource Group name of your VNet. Only uncomment and modify if you set byo_vnet to true
 ##     Subnets depend on VNet so the same resource group is implied for subnets
 
 #byo_vnet_subnets_rg_name               = "existing-vnet-rg"
 
-
-## 23. By default, this script will create 1 new Azure subnet in the default resource group unles the zones variable
+## 26. By default, this script will create 1 new Azure subnet in the default resource group unles the zones variable
 ##     specifies multiple zonal deployments in which case subnet 1 would logically map to resources in zone "1", etc.
 ##     Uncomment if you want to deploy all resources in subnets that already exist (true or false. Default: false)
 ##     Dependencies require in order to reference existing subnets, the corresponding VNet must also already exist.
@@ -198,8 +206,7 @@
 
 #byo_subnets                            = true
 
-
-## 24. Provide your existing Cloud Connector subnet names. Only uncomment and modify if you set byo_subnets to true
+## 27. Provide your existing Cloud Connector subnet names. Only uncomment and modify if you set byo_subnets to true
 ##     By default, management and service interfaces reside in a single subnet. Therefore, specifying multiple subnets
 ##     implies only that you are doing a zonal deployment with resources in separate AZs and corresponding zonal NAT
 ##     Gateway resources associated with the CC subnets mapped to the same respective zones.
@@ -208,14 +215,12 @@
 
 #byo_subnet_names                       = ["existing-cc-subnet"]
 
-
-## 25. By default, this script will create new Public IP resources to be associated with CC NAT Gateways.
+## 28. By default, this script will create new Public IP resources to be associated with CC NAT Gateways.
 ##     Uncomment if you want to use your own public IP for the NAT GW (true or false. Default: false)
 
 #byo_pips                               = true
 
-
-## 26. Provide your existing Azure Public IP resource names. Only uncomment and modify if you set byo_pips to true
+## 29. Provide your existing Azure Public IP resource names. Only uncomment and modify if you set byo_pips to true
 ##     Existing Public IP resource cannot be associated with any resource other than an existing NAT Gateway in which
 ##     case existing_pip_association and existing_nat_gw_association need both set to true
 ##
@@ -226,19 +231,16 @@
 
 #byo_pip_names                          = ["pip-az1","pip-az2"]
 
-
-## 27. Provide the existing Resource Group name of your Azure public IPs.  Only uncomment and modify if you set byo_pips to true
+## 30. Provide the existing Resource Group name of your Azure public IPs.  Only uncomment and modify if you set byo_pips to true
 
 #byo_pip_rg                             = "existing-pip-rg"
 
-
-## 28. By default, this script will create new NAT Gateway resources for the Cloud Connector subnets to be associated
+## 31. By default, this script will create new NAT Gateway resources for the Cloud Connector subnets to be associated
 ##    Uncomment if you want to use your own NAT Gateway (true or false. Default: false)
 
 #byo_nat_gws                            = true
 
-
-## 29. Provide your existing Azure NAT Gateway resource names. Only uncomment and modify if you set byo_nat_gws to true
+## 32. Provide your existing Azure NAT Gateway resource names. Only uncomment and modify if you set byo_nat_gws to true
 ##    ***** Note *****
 ##    If you already have existing NAT Gateways AND set zone_enabled to true these resource should be configured as zonal and
 ##    be added here to this variable list in order of the zones specified in the "zones" variable. 
@@ -246,35 +248,30 @@
 
 #byo_nat_gw_names                       = ["natgw-az1","natgw-az2"]
 
-
-## 30. Provide the existing Resource Group name of your NAT Gateway.  Only uncomment and modify if you set byo_nat_gws to true
+## 33. Provide the existing Resource Group name of your NAT Gateway.  Only uncomment and modify if you set byo_nat_gws to true
 
 #byo_nat_gw_rg                          = "existing-nat-gw-rg"
 
-
-## 31.  By default, this script will create a new Azure Public IP and associate it with new/existing NAT Gateways.
+## 34.  By default, this script will create a new Azure Public IP and associate it with new/existing NAT Gateways.
 ##      Uncomment if you are deploying cloud connector to an environment where the PIP already exists AND is already asssociated to
 ##      an existing NAT Gateway. (true or false. Default: false). 
 ##      Setting existing_pip_association to true means byo_nat_gws and byo_pips must ALSO be set to true.
 
 #existing_nat_gw_pip_association        = true
 
-
-## 32.  By default this script will create a new Azure NAT Gateway and associate it with new or existing CC subnets.
+## 35.  By default this script will create a new Azure NAT Gateway and associate it with new or existing CC subnets.
 ##      Uncomment if you are deploying cloud connector to an environment where the subnet already exists AND is already asssociated to
 ##      an existing NAT Gateway. (true or false. Default: false). 
 ##      Setting existing_nat_gw_association to true means byo_subnets AND byo_nat_gws must also be set to true.
 
 #existing_nat_gw_subnet_association     = true
 
-
-## 33. By default, this script will create new Network Security Groups for the Cloud Connector mgmt and service interfaces
+## 36. By default, this script will create new Network Security Groups for the Cloud Connector mgmt and service interfaces
 ##     Uncomment if you want to use your own NSGs (true or false. Default: false)
 
 #byo_nsg                                = true
 
-
-## 34. Provide your existing Network Security Group resource names. Only uncomment and modify if you set byo_nsg to true
+## 37. Provide your existing Network Security Group resource names. Only uncomment and modify if you set byo_nsg to true
 ##     ***** Note *****
 
 ##    Example: byo_mgmt_nsg_names       = ["mgmt-nsg-1","mgmt-nsg-2"]
@@ -283,7 +280,27 @@
 #byo_mgmt_nsg_names                     = ["mgmt-nsg-1","mgmt-nsg-2"]
 #byo_service_nsg_names                  = ["service-nsg-1","service-nsg-2"]
 
-
-## 35. Provide the existing Resource Group name of your Network Security Groups.  Only uncomment and modify if you set byo_nsg to true
+## 38. Provide the existing Resource Group name of your Network Security Groups.  Only uncomment and modify if you set byo_nsg to true
 
 #byo_nsg_rg                             = "existing-nsg-rg"
+
+
+#####################################################################################################################
+##### ZPA/Azure Private DNS specific variables #####
+#####################################################################################################################
+## 39. Provide the domain names you want Azure Private DNS to redirect to Cloud Connector for ZPA interception. 
+##     Only applicable for base + zpa or zpa_enabled = true deployment types where Outbound DNS subnets, Resolver Ruleset/Rules, 
+##     and Outbound Endpoints are being created. Two example domains are populated to show the mapping structure and syntax.
+##     Azure does require a trailing dot "." on all domain entries. ZPA Module will read through each to create a resolver rule per 
+##     domain_names entry. Ucomment domain_names variable and add any additional appsegXX mappings as needed.
+
+#domain_names = {
+#  appseg1 = "app1.com."
+#  appseg2 = "app2.com."
+#}
+
+## 40. Azure Private DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses.
+##     The required expectation is that the target should follow VNet/subnet routing towards the configured Cloud Connector Load Balancer VIP for 
+##     ZPA DNS interception
+
+#target_address                             = ["185.46.212.88", "185.46.212.89"]

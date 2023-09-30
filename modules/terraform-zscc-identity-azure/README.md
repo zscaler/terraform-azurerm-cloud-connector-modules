@@ -8,13 +8,13 @@ This module takes name and resource group inputs of an existing User Managed Ide
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.7, < 2.0.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.46.0 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 3.46, <= 3.74 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 3.46.0 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | >= 3.46, <= 3.74 |
 
 ## Modules
 
@@ -37,5 +37,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_managed_identity_client_id"></a> [managed\_identity\_client\_id](#output\_managed\_identity\_client\_id) | The Client ID of the User Assigned Identity |
 | <a name="output_managed_identity_id"></a> [managed\_identity\_id](#output\_managed\_identity\_id) | User Managed Identity ID |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
