@@ -122,7 +122,7 @@
 
 ##    IPv4 CIDR configured with VNet creation. All Subnet resources (Workload, Public, and Cloud Connector) will be created based off this prefix
 ##    /24 subnets are created assuming this cidr is a /16. If you require creating a VNet smaller than /16, you may need to explicitly define all other 
-##     subnets via public_subnets, workload_subnets, and cc_subnets variables (Default: "10.1.0.0/16")
+##     subnets via cc_subnets and private_dns_subnet (only if var.zpa_enabled = true) variables (Default: "10.1.0.0/16")
 
 ##    Note: This variable only applies if you let Terraform create a new VNet. Custom deployment with byo_vnet enabled will ignore this
 
@@ -138,8 +138,6 @@
 ##    Default/Minumum: 1 - Maximum: 3
 ##    Example: If you change network_address_space to "10.2.0.0/24", set below variables to cidrs that fit in that /24 like cc_subnets = ["10.2.0.0/27","10.2.0.32/27"] etc.
 
-#public_subnets                             = ["10.x.y.z/24","10.x.y.z/24"]
-#workloads_subnets                          = ["10.x.y.z/24","10.x.y.z/24"]
 #cc_subnets                                 = ["10.x.y.z/24","10.x.y.z/24"]
 #private_dns_subnet                         = "10.x.y.z/28"
 
