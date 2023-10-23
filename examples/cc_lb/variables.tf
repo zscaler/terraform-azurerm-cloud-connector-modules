@@ -252,12 +252,13 @@ variable "encryption_at_host_enabled" {
 variable "zpa_enabled" {
   type        = bool
   description = "Configure Azure Private DNS Outbound subnet, Resolvers, Rulesets/Rules, and Outbound Endpoint ZPA DNS redirection"
-  default     = true
+  default     = false
 }
 
 variable "domain_names" {
   type        = map(any)
   description = "Domain names fqdn/wildcard to have Azure Private DNS redirect DNS requests to Cloud Connector"
+  default     = {}
 }
 
 variable "target_address" {
