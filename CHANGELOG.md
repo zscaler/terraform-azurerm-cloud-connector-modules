@@ -1,3 +1,8 @@
+## v0.3.1 (October 23, 2023)
+
+BUG FIXES:
+* fix: brownfield cc_lb defaults for non-zpa private dns deployments
+
 ## v0.3.0 (September 30, 2023)
 
 FEATURES:
