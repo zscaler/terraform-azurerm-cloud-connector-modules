@@ -229,18 +229,28 @@ resource "azurerm_linux_virtual_machine" "cc_vm" {
     storage_account_type = "Premium_LRS"
   }
 
-  source_image_reference {
-    publisher = var.ccvm_image_publisher
-    offer     = var.ccvm_image_offer
-    sku       = var.ccvm_image_sku
-    version   = var.ccvm_image_version
+  dynamic "source_image_reference" {
+    for_each = var.ccvm_source_image_id == null ? [var.ccvm_image_publisher] : []
+
+    content {
+      publisher = var.ccvm_image_publisher
+      offer     = var.ccvm_image_offer
+      sku       = var.ccvm_image_sku
+      version   = var.ccvm_image_version
+    }
   }
 
-  plan {
-    publisher = var.ccvm_image_publisher
-    name      = var.ccvm_image_sku
-    product   = var.ccvm_image_offer
+  dynamic "plan" {
+    for_each = var.ccvm_source_image_id == null ? [var.ccvm_image_publisher] : []
+
+    content {
+      publisher = var.ccvm_image_publisher
+      name      = var.ccvm_image_sku
+      product   = var.ccvm_image_offer
+    }
   }
+
+  source_image_id = var.ccvm_source_image_id != null ? var.ccvm_source_image_id : null
 
   identity {
     type         = "UserAssigned"

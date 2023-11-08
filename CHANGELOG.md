@@ -1,3 +1,10 @@
+## TBD (UNRELEASED)
+FEATURES:
+* Azure China support (China East, China East 2, China North, China North 2, and China North 3)
+
+ENHANCEMENTS:
+* ZSEC bash script support for Azure China regions
+
 ## v0.3.0 (September 30, 2023)
 
 FEATURES:

@@ -121,6 +121,12 @@ variable "ccvm_image_version" {
   default     = "latest"
 }
 
+variable "ccvm_source_image_id" {
+  type        = string
+  description = "Custom Cloud Connector Source Image ID. Set this value to the path of a local subscription Microsoft.Compute image to override the Cloud Connector deployment instead of using the marketplace publisher"
+  default     = null
+}
+
 variable "cc_count" {
   type        = number
   description = "The number of Cloud Connectors to deploy.  Validation assumes max for /24 subnet but could be smaller or larger as long as subnet can accommodate"
