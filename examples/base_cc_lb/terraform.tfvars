@@ -168,3 +168,12 @@
 ##    Uncomment if you want to not enable this VM setting
 
 #encryption_at_host_enabled                 = false
+
+## 21. By default, if Terraform is creating NSGs an outbound rule named Zscaler_Support_Access is configured enabling 
+##     Zscaler remote support access. Without this firewall access, Zscaler Support may not be able to assist as
+##     efficiently if troubleshooting is required. Uncomment if you do not want to enable this rule. 
+##
+##     For more information, refer to: https://config.zscaler.com/zscaler.net/cloud-branch-connector and 
+##     https://help.zscaler.com/cloud-branch-connector/enabling-remote-access
+
+#support_access_enabled                     = false

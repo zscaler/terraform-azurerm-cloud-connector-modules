@@ -166,13 +166,14 @@ module "cc_vm" {
 #    created and assigned to ALL Cloud Connectors
 ################################################################################
 module "cc_nsg" {
-  source         = "../../modules/terraform-zscc-nsg-azure"
-  nsg_count      = var.reuse_nsg == false ? var.cc_count : 1
-  name_prefix    = var.name_prefix
-  resource_tag   = random_string.suffix.result
-  resource_group = module.network.resource_group_name
-  location       = var.arm_location
-  global_tags    = local.global_tags
+  source                 = "../../modules/terraform-zscc-nsg-azure"
+  nsg_count              = var.reuse_nsg == false ? var.cc_count : 1
+  name_prefix            = var.name_prefix
+  resource_tag           = random_string.suffix.result
+  resource_group         = module.network.resource_group_name
+  location               = var.arm_location
+  global_tags            = local.global_tags
+  support_access_enabled = var.support_access_enabled
 }
 
 

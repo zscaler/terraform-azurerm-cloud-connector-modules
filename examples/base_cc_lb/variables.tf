@@ -274,3 +274,9 @@ variable "encryption_at_host_enabled" {
   description = "User input for enabling or disabling host encryption"
   default     = true
 }
+
+variable "support_access_enabled" {
+  type        = bool
+  description = "If Network Security Group is being configured, enable a specific outbound rule for Cloud Connector to be able to establish connectivity for Zscaler support access. Default is true"
+  default     = true
+}
