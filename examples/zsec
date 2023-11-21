@@ -567,6 +567,26 @@ domain_names_map+="}'"
 echo "export TF_VAR_domain_names=$domain_names_map" >> .zsecrc
 fi
 
+support_access_response_default="no"
+while true; do
+    read -r -p "By default, an outbound NSG rule is configured enabling Zscaler remote support access. Would you like to disable this rule creation? [Default=$support_access_response_default]: " support_access_response_input
+    support_access_response=${support_access_response_input:-$support_access_response_default}
+    case $support_access_response in 
+        yes|y ) 
+        echo "Outbound rule Zscaler_Support_Access will not be created"
+        echo "*** Caution: Zscaler Support may not be able to assist as efficiently if troubleshooting is required without this access"
+        echo "export TF_VAR_support_access_enabled=false" >> .zsecrc
+    break
+        ;;
+        no|n )
+        echo "Outbound rule Zscaler_Support_Access will be created"
+        echo "export TF_VAR_support_access_enabled=true" >> .zsecrc
+    break
+        ;;
+        * ) echo "invalid response. Please enter yes or no";;
+    esac
+done
+
 fi
 
 
