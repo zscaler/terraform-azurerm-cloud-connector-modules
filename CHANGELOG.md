@@ -1,3 +1,8 @@
+## TBD (UNRELEASED)
+ENHANCEMENTS:
+* add: variable support_access_enabled for dynamic NSG rule creation for Zscaler Support Tunnel access
+* add: zsec prompt for support tunnel rule creation
+
 ## v0.3.0 (September 30, 2023)
 
 FEATURES:
