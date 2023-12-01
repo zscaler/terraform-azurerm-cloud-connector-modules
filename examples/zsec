@@ -211,6 +211,8 @@ if [[ ! -e ./.zsecrc ]]; then
             echo "Azure China region detected. Setting ARM_ENVIRONMENT..."
             echo "export ARM_ENVIRONMENT=china" >> .zsecrc
             echo "export ARM_SKIP_PROVIDER_REGISTRATION=true" >> .zsecrc
+            read -r -p "Enter full Source Image ID path for your CC image (e.g. /subscriptions/<id>/resourceGroups/<rg>/providers/Microsoft.Compute/images/<image_name>): " ccvm_source_image_id
+            echo "export TF_VAR_ccvm_source_image_id='$ccvm_source_image_id'" >> .zsecrc
         fi
     else
     echo "Invalid Azure region name entered."
