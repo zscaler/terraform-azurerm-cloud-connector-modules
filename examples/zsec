@@ -135,13 +135,14 @@ if [[ $dtype == "base" && ! -e ./.zsecrc ]]; then
         if [[ ${azure_location} = "china"*  ]]; then
             echo "Azure China region detected. Setting ARM_ENVIRONMENT..."
             echo "export ARM_ENVIRONMENT=china" >> .zsecrc
+            echo "export ARM_SKIP_PROVIDER_REGISTRATION=true" >> .zsecrc
         fi
     else
     echo "Invalid Azure region name entered."
     echo "Delete .zsecrc file and re-run zsec up..."
     exit 1
     fi
-    
+
     while [[ "$dtype" == "base" && "$oper" == "up" ]]; do
 clientpublicip=$(curl -s ifconfig.me)
     echo "greenfield deployments include a publicly accessible ssh bastion host.."
@@ -209,6 +210,7 @@ if [[ ! -e ./.zsecrc ]]; then
         if [[ ${azure_location} = "china"*  ]]; then
             echo "Azure China region detected. Setting ARM_ENVIRONMENT..."
             echo "export ARM_ENVIRONMENT=china" >> .zsecrc
+            echo "export ARM_SKIP_PROVIDER_REGISTRATION=true" >> .zsecrc
         fi
     else
     echo "Invalid Azure region name entered."
