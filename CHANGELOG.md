@@ -1,7 +1,12 @@
-## v0.3.1 (October 23, 2023)
+## TBD (UNRELEASED)
+FEATURES:
+* Azure China support (China East, China East 2, China North, China North 2, and China North 3)
 
 BUG FIXES:
 * fix: brownfield cc_lb defaults for non-zpa private dns deployments
+* 
+ENHANCEMENTS:
+* ZSEC bash script support for Azure China regions
 
 ## v0.3.0 (September 30, 2023)
 

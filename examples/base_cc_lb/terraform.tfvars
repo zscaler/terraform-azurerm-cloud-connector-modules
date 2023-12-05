@@ -168,3 +168,11 @@
 ##    Uncomment if you want to not enable this VM setting
 
 #encryption_at_host_enabled                 = false
+
+## 21. By default, Terraform will lookup the latest Cloud Connector image version from the Azure Marketplace.
+##     Uncomment and set this value to the path of a local subscription Microsoft.Compute image to override the 
+##     Cloud Connector deployment with a private VHD instead of using the marketplace publisher.
+##     *** This is recommended only for testing purposes and not supported for production deployments ***
+##     Example: /subscriptions/<id>/resourceGroups/<rg>/providers/Microsoft.Compute/images/<image_name>
+
+#ccvm_source_image_id                       = "<insert path to image>"
