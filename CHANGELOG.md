@@ -1,4 +1,5 @@
 ## TBD (UNRELEASED)
+
 FEATURES:
 * Azure China support (China East, China East 2, China North, China North 2, and China North 3)
 
@@ -7,6 +8,8 @@ BUG FIXES:
 * 
 ENHANCEMENTS:
 * ZSEC bash script support for Azure China regions
+* * add: variable support_access_enabled for dynamic NSG rule creation for Zscaler Support Tunnel access
+* add: zsec prompt for support tunnel rule creation
 
 ## v0.3.0 (September 30, 2023)
 

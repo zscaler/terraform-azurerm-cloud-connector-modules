@@ -266,3 +266,9 @@ variable "target_address" {
   description = "Azure DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses"
   default     = ["185.46.212.88", "185.46.212.89"]
 }
+
+variable "support_access_enabled" {
+  type        = bool
+  description = "If Network Security Group is being configured, enable a specific outbound rule for Cloud Connector to be able to establish connectivity for Zscaler support access. Default is true"
+  default     = true
+}
