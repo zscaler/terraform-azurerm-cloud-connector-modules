@@ -271,6 +271,13 @@ fi
     encryption_at_host_enabled=true
     # Sourcing .zsecrc to use credentials during execution
     source .zsecrc
+    if grep -q "export ARM_ENVIRONMENT=china" .zsecrc; then
+    TOKEN_ENDPOINT="https://login.partner.microsoftonline.cn/${ARM_TENANT_ID}/oauth2/token"
+    RESOURCE="https://management.chinacloudapi.cn"
+    else
+    TOKEN_ENDPOINT="https://login.microsoftonline.com/${ARM_TENANT_ID}/oauth2/token"
+    RESOURCE="https://management.azure.com/"
+    fi
 
     while true; do
         read -r -p "Do you want to enable the Azure host encryption feature? [Default setting is Yes]: " input
@@ -282,24 +289,20 @@ fi
             echo "Setting encryption_at_host_enabled to false..."
             encryption_at_host_enabled=false
             break
-        elif [[ "$input" == "yes" || "$input" == "y" || -z "$input" ]]; then
+        elif [[ "$input" == "yes" || "$input" == "y" || -z "$input" ]]; then            
             echo "Checking if EncryptionAtHost feature is enabled for subscription $ARM_SUBSCRIPTION_ID..."
-
-            TOKEN_ENDPOINT="https://login.microsoftonline.com/${ARM_TENANT_ID}/oauth2/token"
-            RESOURCE="https://management.azure.com/"
             ACCESS_TOKEN=$(curl -s -X POST -H "Content-Type: application/x-www-form-urlencoded" \
                 -d "grant_type=client_credentials" \
                 -d "client_id=${ARM_CLIENT_ID}" \
                 -d "client_secret=${ARM_CLIENT_SECRET}" \
                 -d "resource=${RESOURCE}" \
                 "${TOKEN_ENDPOINT}" | grep -o '"access_token":"[^"]*' | awk -F'"' '{print $4}')
-            
+                
             response=$(curl -s -X GET -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-                "https://management.azure.com/subscriptions/$ARM_SUBSCRIPTION_ID/providers/Microsoft.Features/providers/Microsoft.Compute/features/EncryptionAtHost?api-version=2021-07-01" \
+                "$RESOURCE/subscriptions/$ARM_SUBSCRIPTION_ID/providers/Microsoft.Features/providers/Microsoft.Compute/features/EncryptionAtHost?api-version=2021-07-01" \
                 |grep -o '"state":"[^"]*' | awk -F'"' '{print $4}')
 
             if [ "$response" = "Registered" ]; then
-                echo "EncryptionAtHost feature is enabled for subscription $ARM_SUBSCRIPTION_ID..."
                 echo "Setting encryption_at_host_enabled to true..."
                 encryption_at_host_enabled=true
             else
@@ -312,9 +315,9 @@ fi
         fi
     done
 
-    echo "export TF_VAR_encryption_at_host_enabled=${encryption_at_host_enabled}" >> .zsecrc
-    # End of Host Encryption support update
-    # ---
+echo "export TF_VAR_encryption_at_host_enabled=${encryption_at_host_enabled}" >> .zsecrc
+# End of Host Encryption support update
+# ---
 
 
     cc_instance_size=small
