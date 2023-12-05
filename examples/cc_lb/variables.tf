@@ -150,6 +150,12 @@ variable "ccvm_image_version" {
   default     = "latest"
 }
 
+variable "ccvm_source_image_id" {
+  type        = string
+  description = "Custom Cloud Connector Source Image ID. Set this value to the path of a local subscription Microsoft.Compute image to override the Cloud Connector deployment instead of using the marketplace publisher"
+  default     = null
+}
+
 variable "http_probe_port" {
   type        = number
   description = "Port number for Cloud Connector cloud init to enable listener port for HTTP probe from Azure LB"
@@ -258,12 +264,13 @@ variable "support_access_enabled" {
 variable "zpa_enabled" {
   type        = bool
   description = "Configure Azure Private DNS Outbound subnet, Resolvers, Rulesets/Rules, and Outbound Endpoint ZPA DNS redirection"
-  default     = true
+  default     = false
 }
 
 variable "domain_names" {
   type        = map(any)
   description = "Domain names fqdn/wildcard to have Azure Private DNS redirect DNS requests to Cloud Connector"
+  default     = {}
 }
 
 variable "target_address" {

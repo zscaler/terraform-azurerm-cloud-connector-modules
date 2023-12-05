@@ -162,6 +162,12 @@ variable "ccvm_image_version" {
   default     = "latest"
 }
 
+variable "ccvm_source_image_id" {
+  type        = string
+  description = "Custom Cloud Connector Source Image ID. Set this value to the path of a local subscription Microsoft.Compute image to override the Cloud Connector deployment instead of using the marketplace publisher"
+  default     = null
+}
+
 variable "http_probe_port" {
   type        = number
   description = "Port number for Cloud Connector cloud init to enable listener port for HTTP probe from Azure LB"

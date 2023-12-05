@@ -32,13 +32,13 @@ All NAT GW IPs:
 ${join("\n", module.network.public_ip_address)}
 
 Private DNS Resolver:
-${try(module.private_dns.private_dns_resolver_name, "")}
+${try(module.private_dns.private_dns_resolver_name, "N/A")}
 
 Private DNS Forwarding Ruleset:
-${try(module.private_dns.private_dns_forwarding_ruleset_name, "")}
+${try(module.private_dns.private_dns_forwarding_ruleset_name, "N/A")}
 
 Private DNS Outbound Endpoint:
-${try(module.private_dns.private_dns_outbound_endpoint_name, "")}
+${try(module.private_dns.private_dns_outbound_endpoint_name, "N/A")}
 
 TB
 }

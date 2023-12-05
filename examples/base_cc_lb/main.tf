@@ -144,6 +144,7 @@ module "cc_vm" {
   ccvm_image_offer               = var.ccvm_image_offer
   ccvm_image_sku                 = var.ccvm_image_sku
   ccvm_image_version             = var.ccvm_image_version
+  ccvm_source_image_id           = var.ccvm_source_image_id
   cc_instance_size               = var.cc_instance_size
   mgmt_nsg_id                    = module.cc_nsg.mgmt_nsg_id
   service_nsg_id                 = module.cc_nsg.service_nsg_id
