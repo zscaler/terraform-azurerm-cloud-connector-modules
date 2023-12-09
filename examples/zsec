@@ -21,59 +21,81 @@ else
     esac
 fi
 
+
 if [[ "$oper" == "up" ]]; then
-    # shellcheck disable=SC2153
-    if [ -z "$dtype" ]; then
-    while true; do
-     read -r -p "Deployment: ( greenfield | brownfield ): " deploy
-
-    case $deploy in
-      greenfield)
-      echo ""
-      echo "**Caution** These deployments include test workloads and publicly accessible jump hosts and are intended primarily for lab/test environments"
-      echo ""
-          break
-      ;;
-      brownfield)
-          break
-      ;;    
-      *)
-          echo "Invalid Deployment Type: ${dtype}"
-      ;;
-    esac
-  done
+    PS3="Select desired deployment: "
+    deployments=("greenfield" "brownfield")
+    select deployment in "${deployments[@]}"
+    do
+        case $REPLY in
+            1)
+            echo "Greenfield deployment selected..."
+            echo "**Caution** These deployments include test workloads and publicly accessible jump hosts and are intended primarily for lab/test environments"
+            echo ""
+            break
+            ;;
+            2)
+            echo "Brownfield deployment selected..."
+            break
+            ;;
+            *) 
+            echo "invalid response"
+        esac
+    done
+fi
     
-    while [ "$deploy" == "greenfield" ]; do
-     read -r -p "Deployment Type: ( base | base_1cc | base_1cc_zpa | base_cc_lb | base_cc_lb_zpa ) : " dtype
-
-    case $dtype in
-      base|base_1cc|base_1cc_zpa|base_cc_lb|base_cc_lb_zpa)
-          echo "Deployment Type: ${dtype}"
-          break
-      ;;
-      *)
-          echo "Invalid Deployment Type: ${dtype}"
-      ;;
-    esac
-  done
-    
-    while [ "$deploy" == "brownfield" ]; do
-     read -r -p "Deployment Type: ( cc_lb ) : " dtype
-
-    case $dtype in
-      cc_lb)
-          echo "Deployment Type: ${dtype}"
-          break
-      ;;
-      *)
-          echo "Invalid Deployment Type: ${dtype}"
-      ;;
-    esac
-  done
-    
-    else
-      dtype=$dtype
-    fi
+if [[ "$deployment" == "greenfield" ]]; then
+    PS3="Select desired deployment type: "
+    dtypes=("Deploy 1 Cloud Connector in a new Resource Group and VNet" "Deploy 1 Cloud Connector in a new Resource Group and VNet w/ Private DNS for ZPA" "Deploy multiple Cloud Connectors in a new Resource Group and VNet" "Deploy multiple Cloud Connectors in a new Resource Group and VNet w/ Private DNS for ZPA" "Deploy a new Resource Group and VNet only - No Cloud Connector")
+    select greenfield_type in "${dtypes[@]}"
+    do
+        case $REPLY in
+            1)
+            echo "Deployment type base_1cc selected..."
+            dtype=base_1cc
+            break
+            ;;
+            2)
+            echo "Deployment type base_1cc_zpa selected..."
+            dtype=base_1cc_zpa
+            break
+            ;;
+            3)
+            echo "Deployment type base_cc_lb selected..."
+            dtype=base_cc_lb
+            break
+            ;;
+            4)
+            echo "Deployment type base_cc_lb_zpa selected..."
+            dtype=base_cc_lb_zpa
+            break
+            ;;
+            5)
+            echo "Deployment type base selected..."
+            dtype=base
+            break
+            ;;
+            *) 
+            echo "invalid response"
+        esac
+    done
+elif [[ "$deployment" == "brownfield" ]]; then
+    PS3="Select desired deployment type: "
+    dtypes=("Deploy multiple Cloud Connectors in a new or existing Resource Group and VNet" )
+    select greenfield_type in "${dtypes[@]}"
+    do
+        case $REPLY in
+            1)
+            echo "Deployment type cc_lb selected..."
+            dtype=cc_lb
+            break
+            ;;
+            *) 
+            echo "invalid response"
+        esac
+    done
+else
+    dtype=$dtype
 fi
 
 echo "Discovering processor architecture..."
@@ -336,38 +358,55 @@ echo "export TF_VAR_encryption_at_host_enabled=${encryption_at_host_enabled}" >>
 #      ;;
 #    esac
 
-ccvm_instance_type_default=Standard_D2ds_v5
-while true; do
-    read -r -p "Enter desired Azure VM type for CC. Recommended types: Small CC (Standard_D2ds_v5) [Default=$ccvm_instance_type_default]: " ccvm_instance_type_input
-ccvm_instance_type=${ccvm_instance_type_input:-$ccvm_instance_type_default}
-case $ccvm_instance_type in 
-	Standard_D2s_v3|Standard_DS3_v2|Standard_D2ds_v4|Standard_D2ds_v5|Standard_D8s_v3|Standard_D16s_v3|Standard_DS5_v2 ) 
-    echo "Cloud Connector VM type: ${ccvm_instance_type}"
-    echo "export TF_VAR_ccvm_instance_type=${ccvm_instance_type}" >> .zsecrc
-    break
-    ;;
-	*)
-    echo "Invalid Cloud Connector VM type: ${ccvm_instance_type}. Please enter an approved VM type"
-    esac
-done 
 
-small_cc_instance=("Standard_D2s_v3" "Standard_DS3_v2" "Standard_D2ds_v4" "Standard_D2ds_v5" "Standard_D8s_v3" "Standard_D16s_v3" "Standard_DS5_v2")
-medium_cc_instance=("Standard_D8s_v3" "Standard_DS3_v2" "Standard_D16s_v3" "Standard_DS5_v2")
-large_cc_instance=("Standard_D16s_v3" "Standard_DS5_v2")
 
-if [[ ${small_cc_instance[*]} =~ $ccvm_instance_type && "$cc_instance_size" == small ]]; then
-echo "Proceeding. ${ccvm_instance_type} compatible with ${cc_instance_size} Cloud Connector size"
-elif [[ ${medium_cc_instance[*]} =~ $ccvm_instance_type && "$cc_instance_size" == medium ]]; then
-echo "Proceeding. ${ccvm_instance_type} compatible with ${cc_instance_size} Cloud Connector size"
-elif [[ ${large_cc_instance[*]} =~ $ccvm_instance_type && "$cc_instance_size" == large ]]; then
-echo "Proceeding. ${ccvm_instance_type} compatible with ${cc_instance_size} Cloud Connector size"
-elif [[ $dtype == base ]]; then
-echo "Proceeding with no CCs to deploy"
+if [[ $cc_instance_size == "small" ]]; then
+    PS3="Select desired Azure VM type for Cloud Connector: "
+    if [[ "$azure_location" == "chinanorth" || "$azure_location" == "China North" || "$azure_location" == "ChinaNorth" || "$azure_location" == "chinaeast" || "$azure_location" == "China East" || "$azure_location" == "ChinaEast" ]]; then
+    vm_sizes=("Standard_DS2_v2" "Standard_DS3_v2")
+    else
+    vm_sizes=("Standard_D2ds_v5" "Standard_D2ds_v4" "Standard_D2s_v3")
+    fi
+    select ccvm_instance_type in "${vm_sizes[@]}"
+    do
+        case $ccvm_instance_type in
+            Standard_D2ds_v5)
+            echo "Cloud Connector VM type $ccvm_instance_type selected"
+            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+            break
+            ;;
+            Standard_D2ds_v4)
+            echo "Cloud Connector VM type $ccvm_instance_type selected"
+            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+            break
+            ;;
+            Standard_D2s_v3)
+            echo "Cloud Connector VM type $ccvm_instance_type selected"
+            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+            break
+            ;;
+            Standard_DS2_v2)
+            echo "Cloud Connector VM type $ccvm_instance_type selected"
+            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+            break
+            ;;
+            Standard_DS3_v2)
+            echo "Cloud Connector VM type $ccvm_instance_type selected"
+            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+            break
+            ;;
+            *) 
+            echo "invalid response"
+        esac
+    done
+elif [[ $cc_instance_size == "medium" ]]; then
+    echo ""
+elif [[ $cc_instance_size == "large" ]]; then
+    echo ""
 else
-    echo "Invalid CC deployment. ${ccvm_instance_type} not compatible with ${cc_instance_size} Cloud Connector size"
-    echo "Delete .zsecrc file and re-run zsec up..."
     exit 1
 fi
+
     read -r -p "Enter CC Provisioning URL (E.g. connector.zscaler.net/api/v1/provUrl?name=azure_prov_url): " cc_vm_prov_url
     echo "Provisioning URL entered is: $cc_vm_prov_url. Make sure this matches the CC Instance Size $cc_instance_size chosen."
     echo "export TF_VAR_cc_vm_prov_url=${cc_vm_prov_url}" >> .zsecrc
