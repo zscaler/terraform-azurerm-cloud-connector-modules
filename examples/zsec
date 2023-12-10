@@ -46,7 +46,7 @@ fi
     
 if [[ "$deployment" == "greenfield" ]]; then
     PS3="Select desired deployment type: "
-    dtypes=("Deploy 1 Cloud Connector in a new Resource Group and VNet" "Deploy 1 Cloud Connector in a new Resource Group and VNet w/ Private DNS for ZPA" "Deploy multiple Cloud Connectors in a new Resource Group and VNet" "Deploy multiple Cloud Connectors in a new Resource Group and VNet w/ Private DNS for ZPA" "Deploy a new Resource Group and VNet only - No Cloud Connector")
+    dtypes=("Deploy 1 Cloud Connector in a new Resource Group and VNet" "Deploy 1 Cloud Connector in a new Resource Group and VNet w/ Private DNS for ZPA" "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet" "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet w/ Private DNS for ZPA" "Deploy a new Resource Group and VNet only - No Cloud Connector")
     select greenfield_type in "${dtypes[@]}"
     do
         case $REPLY in
@@ -81,7 +81,7 @@ if [[ "$deployment" == "greenfield" ]]; then
     done
 elif [[ "$deployment" == "brownfield" ]]; then
     PS3="Select desired deployment type: "
-    dtypes=("Deploy multiple Cloud Connectors in a new or existing Resource Group and VNet" )
+    dtypes=("Deploy multiple Cloud Connectors w/ Load Balancer in a new or existing Resource Group and VNet" )
     select greenfield_type in "${dtypes[@]}"
     do
         case $REPLY in
