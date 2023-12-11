@@ -33,7 +33,7 @@ fi
 
 if [[ "$oper" == "up" ]]; then
     PS3="${CYAN}Select desired deployment: ${RESET}"
-    deployments=("greenfield" "brownfield")
+    deployments=("greenfield - Recommended for isolated test/POV deployments. Creates new network infrastructure, test workloads, and a public jump host" "brownfield - Recommended for prod deployments. Bring-your-own existing network infrastructure customizations + no workload/bastion creation")
     select deployment in "${deployments[@]}"
     do
         case $REPLY in
@@ -41,10 +41,12 @@ if [[ "$oper" == "up" ]]; then
             echo "Greenfield deployment selected..."
             echo "${YELLOW}**Caution** These deployments include test workloads and publicly accessible jump hosts and are intended primarily for lab/test environments${RESET}"
             echo ""
+            deployment=greenfield
             break
             ;;
             2)
             echo "Brownfield deployment selected..."
+            deployemt=brownfield
             break
             ;;
             *) 
