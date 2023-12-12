@@ -79,5 +79,5 @@ variable "bastion_nsg_source_prefix" {
 }
 
 locals {
-  china_regions = ["chinaeast", "China East", "ChinaEast", "chinaeast2", "China East 2", "ChinaEast2", "chinanorth", "China North", "ChinaNorth", "chinanorth2", "China North 2", "ChinaNorth2", "chinanorth3", "China North 3", "ChinaNorth3"]
+  china_regions = ["chinaeast", "China East", "ChinaEast", "Chinaeast", "chinaeast2", "China East 2", "ChinaEast2", "Chinaeast2", "chinanorth", "China North", "ChinaNorth", "Chinanorth", "chinanorth2", "China North 2", "ChinaNorth2", "Chinanorth2", "chinanorth3", "China North 3", "ChinaNorth3", "Chinanorth3"]
 }
