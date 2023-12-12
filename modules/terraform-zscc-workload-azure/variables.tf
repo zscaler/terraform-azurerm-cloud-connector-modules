@@ -48,6 +48,10 @@ variable "instance_size" {
   default     = "Standard_B1s"
 }
 
+locals {
+  unsupported_regions = ["chinanorth", "chinaeast", "china east", "china north"]
+}
+
 variable "instance_image_publisher" {
   type        = string
   description = "The workload CentOS image publisher"
