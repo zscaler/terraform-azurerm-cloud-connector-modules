@@ -77,7 +77,3 @@ variable "bastion_nsg_source_prefix" {
   description = "user input for locking down SSH access to bastion to a specific IP or CIDR range"
   default     = "*"
 }
-
-locals {
-  china_regions = ["chinaeast", "China East", "ChinaEast", "Chinaeast", "chinaeast2", "China East 2", "ChinaEast2", "Chinaeast2", "chinanorth", "China North", "ChinaNorth", "Chinanorth", "chinanorth2", "China North 2", "ChinaNorth2", "Chinanorth2", "chinanorth3", "China North 3", "ChinaNorth3", "Chinanorth3"]
-}
