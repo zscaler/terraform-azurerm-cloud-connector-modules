@@ -94,7 +94,7 @@ resource "azurerm_linux_virtual_machine" "workload_vm" {
 
   os_disk {
     caching              = "ReadWrite"
-    storage_account_type = "Premium_LRS"
+    storage_account_type = contains(local.unsupported_regions, lower(var.location)) ? "Standard_LRS" : "Premium_LRS"
   }
 
   source_image_reference {

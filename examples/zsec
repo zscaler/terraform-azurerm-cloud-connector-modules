@@ -418,7 +418,7 @@ http_probe_port_default=50000
     read -r -p "${CYAN}Enter CC service health probe TCP port number. Valid input = 80 or any number between 1024-65535 [Default=$http_probe_port_default]: ${RESET}" http_probe_port_input
 http_probe_port=${http_probe_port_input:-$http_probe_port_default}
 if ((http_probe_port == 80 || http_probe_port >= 1024 && http_probe_port <= 65535)); then
-    echo "Valid HTTP probe port input of $http_probe_port"
+    echo "${GREEN}Valid HTTP probe port input of $http_probe_port${RESET}"
     echo "export TF_VAR_http_probe_port=${http_probe_port}" >> .zsecrc
 else
     echo "${RED}Invalid HTTP probe port value${RESET}"
