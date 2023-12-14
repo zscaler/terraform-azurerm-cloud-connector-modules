@@ -376,21 +376,11 @@ if [[ $cc_instance_size == "small" ]]; then
     if [[ "$azure_location" == "chinanorth" || "$azure_location" == "China North" || "$azure_location" == "ChinaNorth" || "$azure_location" == "chinaeast" || "$azure_location" == "China East" || "$azure_location" == "ChinaEast" ]]; then
     vm_sizes=("Standard_DS2_v2" "Standard_DS3_v2")
     else
-    vm_sizes=("Standard_D2ds_v5" "Standard_D2ds_v4" "Standard_D2s_v3")
+    vm_sizes=("Standard_D2s_v3")
     fi
     select ccvm_instance_type in "${vm_sizes[@]}"
     do
         case $ccvm_instance_type in
-            Standard_D2ds_v5)
-            echo "Cloud Connector VM type $ccvm_instance_type selected"
-            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
-            break
-            ;;
-            Standard_D2ds_v4)
-            echo "Cloud Connector VM type $ccvm_instance_type selected"
-            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
-            break
-            ;;
             Standard_D2s_v3)
             echo "Cloud Connector VM type $ccvm_instance_type selected"
             echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
