@@ -1,4 +1,4 @@
-## v0.4.0 (December 10, 2023)
+## v0.4.0 (December 16, 2023)
 
 FEATURES:
 * Azure China support (China East, China East 2, China North, China North 2, and China North 3)
@@ -10,6 +10,8 @@ ENHANCEMENTS:
 * ZSEC bash script support for Azure China regions
 * add: variable support_access_enabled for dynamic NSG rule creation for Zscaler Support Tunnel access
 * add: zsec prompt for support tunnel rule creation
+* add: Standard_DS2_v2 size support
+* ZSEC bash script refactoring
 
 ## v0.3.0 (September 30, 2023)
 
