@@ -102,6 +102,7 @@ variable "ccvm_instance_type" {
   validation {
     condition = (
       var.ccvm_instance_type == "Standard_D2s_v3" ||
+      var.ccvm_instance_type == "Standard_DS2_v2" ||
       var.ccvm_instance_type == "Standard_DS3_v2" ||
       var.ccvm_instance_type == "Standard_D8s_v3" ||
       var.ccvm_instance_type == "Standard_D16s_v3" ||
@@ -127,7 +128,7 @@ variable "cc_instance_size" {
 
 # Validation to determine if the selected Azure VM type and CC VM size is compatible 
 locals {
-  small_cc_instance  = ["Standard_D2s_v3", "Standard_DS3_v2", "Standard_D8s_v3", "Standard_D16s_v3", "Standard_DS5_v2"]
+  small_cc_instance  = ["Standard_D2s_v3", "Standard_DS2_v2", "Standard_DS3_v2", "Standard_D8s_v3", "Standard_D16s_v3", "Standard_DS5_v2"]
   medium_cc_instance = ["Standard_DS3_v2", "Standard_D8s_v3", "Standard_D16s_v3", "Standard_DS5_v2"]
   large_cc_instance  = ["Standard_D16s_v3", "Standard_DS5_v2"]
 
@@ -160,6 +161,12 @@ variable "ccvm_image_version" {
   type        = string
   description = "Azure Marketplace Cloud Connector Image Version"
   default     = "latest"
+}
+
+variable "ccvm_source_image_id" {
+  type        = string
+  description = "Custom Cloud Connector Source Image ID. Set this value to the path of a local subscription Microsoft.Compute image to override the Cloud Connector deployment instead of using the marketplace publisher"
+  default     = null
 }
 
 variable "http_probe_port" {
@@ -259,4 +266,10 @@ variable "target_address" {
   type        = list(string)
   description = "Azure DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses"
   default     = ["185.46.212.88", "185.46.212.89"]
+}
+
+variable "support_access_enabled" {
+  type        = bool
+  description = "If Network Security Group is being configured, enable a specific outbound rule for Cloud Connector to be able to establish connectivity for Zscaler support access. Default is true"
+  default     = true
 }

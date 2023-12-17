@@ -56,6 +56,7 @@ variable "ccvm_instance_type" {
   validation {
     condition = (
       var.ccvm_instance_type == "Standard_D2s_v3" ||
+      var.ccvm_instance_type == "Standard_DS2_v2" ||
       var.ccvm_instance_type == "Standard_DS3_v2" ||
       var.ccvm_instance_type == "Standard_D8s_v3" ||
       var.ccvm_instance_type == "Standard_D16s_v3" ||
@@ -81,7 +82,7 @@ variable "cc_instance_size" {
 
 # Validation to determine if the selected Azure VM type and CC VM size is compatible 
 locals {
-  small_cc_instance  = ["Standard_D2s_v3", "Standard_DS3_v2", "Standard_D8s_v3", "Standard_D16s_v3", "Standard_DS5_v2"]
+  small_cc_instance  = ["Standard_D2s_v3", "Standard_DS2_v2", "Standard_DS3_v2", "Standard_D8s_v3", "Standard_D16s_v3", "Standard_DS5_v2"]
   medium_cc_instance = ["Standard_DS3_v2", "Standard_D8s_v3", "Standard_D16s_v3", "Standard_DS5_v2"]
   large_cc_instance  = ["Standard_D16s_v3", "Standard_DS5_v2"]
 
@@ -121,6 +122,12 @@ variable "ccvm_image_version" {
   default     = "latest"
 }
 
+variable "ccvm_source_image_id" {
+  type        = string
+  description = "Custom Cloud Connector Source Image ID. Set this value to the path of a local subscription Microsoft.Compute image to override the Cloud Connector deployment instead of using the marketplace publisher"
+  default     = null
+}
+
 variable "cc_count" {
   type        = number
   description = "The number of Cloud Connectors to deploy.  Validation assumes max for /24 subnet but could be smaller or larger as long as subnet can accommodate"
@@ -145,7 +152,7 @@ variable "backend_address_pool" {
 
 # Validation to determine if Azure Region selected supports availabilty zones if desired
 locals {
-  az_supported_regions = ["australiaeast", "Australia East", "brazilsouth", "Brazil South", "canadacentral", "Canada Central", "centralindia", "Central India", "centralus", "Central US", "eastasia", "East Asia", "eastus", "East US", "francecentral", "France Central", "germanywestcentral", "Germany West Central", "japaneast", "Japan East", "koreacentral", "Korea Central", "northeurope", "North Europe", "norwayeast", "Norway East", "southafricanorth", "South Africa North", "southcentralus", "South Central US", "southeastasia", "Southeast Asia", "swedencentral", "Sweden Central", "uksouth", "UK South", "westeurope", "West Europe", "westus2", "West US 2", "westus3", "West US 3"]
+  az_supported_regions = ["australiaeast", "Australia East", "brazilsouth", "Brazil South", "canadacentral", "Canada Central", "centralindia", "Central India", "centralus", "Central US", "eastasia", "East Asia", "eastus", "East US", "francecentral", "France Central", "germanywestcentral", "Germany West Central", "japaneast", "Japan East", "koreacentral", "Korea Central", "northeurope", "North Europe", "norwayeast", "Norway East", "southafricanorth", "South Africa North", "southcentralus", "South Central US", "southeastasia", "Southeast Asia", "swedencentral", "Sweden Central", "uksouth", "UK South", "westeurope", "West Europe", "westus2", "West US 2", "westus3", "West US 3", "chinanorth3", "China North 3", "ChinaNorth3"]
   zones_supported = (
     contains(local.az_supported_regions, var.location) && var.zones_enabled == true
   )

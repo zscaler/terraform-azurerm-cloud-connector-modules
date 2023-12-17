@@ -31,6 +31,23 @@ resource "azurerm_network_security_group" "cc_mgmt_nsg" {
     destination_address_prefix = "*"
   }
 
+  dynamic "security_rule" {
+    for_each = var.support_access_enabled ? ["1"] : []
+
+    content {
+      name                       = "Zscaler_Support_Access"
+      description                = "Required for Cloud Connector to establish connectivity for Zscaler Support to remotely assist"
+      priority                   = 3000
+      direction                  = "Outbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "12002"
+      source_address_prefix      = "*"
+      destination_address_prefix = "199.168.148.101"
+    }
+  }
+
   security_rule {
     name                       = "OUTBOUND"
     priority                   = 4000

@@ -68,7 +68,7 @@ resource "azurerm_linux_virtual_machine" "bastion_vm" {
   location              = var.location
   resource_group_name   = var.resource_group
   network_interface_ids = [azurerm_network_interface.bastion_nic.id]
-  size                  = var.instance_size
+  size                  = contains(local.unsupported_regions, lower(var.location)) ? "Standard_A3" : var.instance_size
   admin_username        = var.server_admin_username
   computer_name         = "${var.name_prefix}-bastion-${var.resource_tag}"
   admin_ssh_key {
@@ -78,7 +78,7 @@ resource "azurerm_linux_virtual_machine" "bastion_vm" {
 
   os_disk {
     caching              = "ReadWrite"
-    storage_account_type = "Premium_LRS"
+    storage_account_type = contains(local.unsupported_regions, lower(var.location)) ? "Standard_LRS" : "Premium_LRS"
   }
 
   source_image_reference {

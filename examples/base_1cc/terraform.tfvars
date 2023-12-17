@@ -168,3 +168,20 @@
 ##    Uncomment if you want to not enable this VM setting
 
 #encryption_at_host_enabled                 = false
+
+## 21. By default, if Terraform is creating NSGs an outbound rule named Zscaler_Support_Access is configured enabling 
+##     Zscaler remote support access. Without this firewall access, Zscaler Support may not be able to assist as
+##     efficiently if troubleshooting is required. Uncomment if you do not want to enable this rule. 
+##
+##     For more information, refer to: https://config.zscaler.com/zscaler.net/cloud-branch-connector and 
+##     https://help.zscaler.com/cloud-branch-connector/enabling-remote-access
+
+#support_access_enabled                     = false
+
+## 22. By default, Terraform will lookup the latest Cloud Connector image version from the Azure Marketplace.
+##     Uncomment and set this value to the path of a local subscription Microsoft.Compute image to override the 
+##     Cloud Connector deployment with a private VHD instead of using the marketplace publisher.
+##     *** This is recommended only for testing purposes and not supported for production deployments ***
+##     Example: /subscriptions/<id>/resourceGroups/<rg>/providers/Microsoft.Compute/images/<image_name>
+
+#ccvm_source_image_id                       = "<insert path to image>"
