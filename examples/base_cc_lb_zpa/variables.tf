@@ -98,17 +98,52 @@ variable "azure_vault_url" {
 variable "ccvm_instance_type" {
   type        = string
   description = "Cloud Connector Image size"
-  default     = "Standard_D2s_v3"
+  default     = "Standard_D2ds_v5"
   validation {
     condition = (
       var.ccvm_instance_type == "Standard_D2s_v3" ||
       var.ccvm_instance_type == "Standard_DS2_v2" ||
-      var.ccvm_instance_type == "Standard_DS3_v2"
+      var.ccvm_instance_type == "Standard_D2ds_v4" ||
+      var.ccvm_instance_type == "Standard_D2ds_v5" ||
+      var.ccvm_instance_type == "Standard_DS3_v2" ||
+      var.ccvm_instance_type == "Standard_D8s_v3" ||
+      var.ccvm_instance_type == "Standard_D16s_v3" ||
+      var.ccvm_instance_type == "Standard_DS5_v2"
     )
     error_message = "Input ccvm_instance_type must be set to an approved vm size."
   }
 }
 
+<<<<<<< HEAD
+=======
+variable "cc_instance_size" {
+  type        = string
+  description = "Cloud Connector Instance size. Determined by and needs to match the Cloud Connector Portal provisioning template configuration"
+  default     = "small"
+  validation {
+    condition = (
+      var.cc_instance_size == "small" ||
+      var.cc_instance_size == "medium" ||
+      var.cc_instance_size == "large"
+    )
+    error_message = "Input cc_instance_size must be set to an approved cc instance type."
+  }
+}
+
+# Validation to determine if the selected Azure VM type and CC VM size is compatible 
+locals {
+  small_cc_instance  = ["Standard_D2s_v3", "Standard_DS2_v2", "Standard_D2ds_v4", "Standard_D2ds_v5", "Standard_DS3_v2", "Standard_D8s_v3", "Standard_D16s_v3", "Standard_DS5_v2"]
+  medium_cc_instance = ["Standard_DS3_v2", "Standard_D8s_v3", "Standard_D16s_v3", "Standard_DS5_v2"]
+  large_cc_instance  = ["Standard_D16s_v3", "Standard_DS5_v2"]
+
+  valid_cc_create = (
+    contains(local.small_cc_instance, var.ccvm_instance_type) && var.cc_instance_size == "small" ||
+    contains(local.medium_cc_instance, var.ccvm_instance_type) && var.cc_instance_size == "medium" ||
+    contains(local.large_cc_instance, var.ccvm_instance_type) && var.cc_instance_size == "large"
+  )
+}
+
+>>>>>>> 9a48c41 (feat: add new vm type defaults)
 variable "ccvm_image_publisher" {
   type        = string
   description = "Azure Marketplace Cloud Connector Image Publisher"
