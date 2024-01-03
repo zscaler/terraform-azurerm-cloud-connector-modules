@@ -465,7 +465,7 @@ first_run="yes"
                     esac
                 done
             else
-                vm_sizes=("Standard_D2s_v3" "Standard_DS2_v2" "Standard_DS3_v2")
+                vm_sizes=("Standard_D2ds_v5" "Standard_D2ds_v4" "Standard_D2s_v3" "Standard_DS2_v2" "Standard_DS3_v2")
                 select ccvm_instance_type in "${vm_sizes[@]}"
                 do
                     case $REPLY in
@@ -480,6 +480,16 @@ first_run="yes"
                             break
                             ;;
                         3)
+                            echo "Cloud Connector VM type $ccvm_instance_type selected"
+                            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+                            break
+                            ;;
+                        4)
+                            echo "Cloud Connector VM type $ccvm_instance_type selected"
+                            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+                            break
+                            ;;
+                        5)
                             echo "Cloud Connector VM type $ccvm_instance_type selected"
                             echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
                             break
