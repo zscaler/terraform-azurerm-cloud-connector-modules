@@ -374,32 +374,64 @@ echo "export TF_VAR_encryption_at_host_enabled=${encryption_at_host_enabled}" >>
 if [[ $cc_instance_size == "small" ]]; then
     PS3="${CYAN}Select desired Azure VM type for Cloud Connector: ${RESET}"
     if [[ "$azure_location" == "chinanorth" || "$azure_location" == "China North" || "$azure_location" == "ChinaNorth" || "$azure_location" == "chinaeast" || "$azure_location" == "China East" || "$azure_location" == "ChinaEast" ]]; then
-    vm_sizes=("Standard_DS2_v2" "Standard_DS3_v2")
-    else
-    vm_sizes=("Standard_D2s_v3")
-    fi
+    vm_sizes=("Standard_DS2_v2")
     select ccvm_instance_type in "${vm_sizes[@]}"
-    do
-        case $ccvm_instance_type in
-            Standard_D2s_v3)
-            echo "Cloud Connector VM type $ccvm_instance_type selected"
-            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
-            break
-            ;;
-            Standard_DS2_v2)
-            echo "Cloud Connector VM type $ccvm_instance_type selected"
-            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
-            break
-            ;;
-            Standard_DS3_v2)
-            echo "Cloud Connector VM type $ccvm_instance_type selected"
-            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
-            break
-            ;;
-            *) 
-            echo "${RED}invalid response${RESET}"
-        esac
-    done
+        do
+            case $REPLY in
+                1)
+                echo "Cloud Connector VM type $ccvm_instance_type selected"
+                echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+                break
+                ;;
+                *) 
+                echo "${RED}invalid response${RESET}"
+            esac
+        done
+    elif [[ "$azure_location" == "china"* || "$azure_location" == "China"* ]]; then
+    vm_sizes=("Standard_DS3_v2" "Standard_DS2_v2")
+    select ccvm_instance_type in "${vm_sizes[@]}"
+        do
+            case $REPLY in
+                1)
+                echo "Cloud Connector VM type $ccvm_instance_type selected"
+                echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+                break
+                ;;
+                2)
+                echo "Cloud Connector VM type $ccvm_instance_type selected"
+                echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+                break
+                ;;
+                *) 
+                echo "${RED}invalid response${RESET}"
+            esac
+        done
+    else
+    vm_sizes=("Standard_D2ds_v5" "Standard_D2ds_v4" "Standard_D2s_v3")
+    select ccvm_instance_type in "${vm_sizes[@]}"
+        do
+            case $REPLY in
+                1)
+                echo "Cloud Connector VM type $ccvm_instance_type selected"
+                echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+                break
+                ;;
+                2)
+                echo "Cloud Connector VM type $ccvm_instance_type selected"
+                echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+                break
+                ;;
+                3)
+                echo "Cloud Connector VM type $ccvm_instance_type selected"
+                echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+                break
+                ;;
+                *) 
+                echo "${RED}invalid response${RESET}"
+            esac
+        done
+    fi
+
 elif [[ $cc_instance_size == "medium" ]]; then
     echo ""
 elif [[ $cc_instance_size == "large" ]]; then
