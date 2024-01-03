@@ -92,11 +92,13 @@ variable "azure_vault_url" {
 variable "ccvm_instance_type" {
   type        = string
   description = "Cloud Connector Image size"
-  default     = "Standard_D2s_v3"
+  default     = "Standard_D2ds_v5"
   validation {
     condition = (
       var.ccvm_instance_type == "Standard_D2s_v3" ||
       var.ccvm_instance_type == "Standard_DS2_v2" ||
+      var.ccvm_instance_type == "Standard_D2ds_v4" ||
+      var.ccvm_instance_type == "Standard_D2ds_v5" ||
       var.ccvm_instance_type == "Standard_DS3_v2" ||
       var.ccvm_instance_type == "Standard_D8s_v3" ||
       var.ccvm_instance_type == "Standard_D16s_v3" ||
@@ -122,7 +124,7 @@ variable "cc_instance_size" {
 
 # Validation to determine if the selected Azure VM type and CC VM size is compatible 
 locals {
-  small_cc_instance  = ["Standard_D2s_v3", "Standard_DS2_v2", "Standard_DS3_v2", "Standard_D8s_v3", "Standard_D16s_v3", "Standard_DS5_v2"]
+  small_cc_instance  = ["Standard_D2s_v3", "Standard_DS2_v2", "Standard_D2ds_v4", "Standard_D2ds_v5", "Standard_DS3_v2", "Standard_D8s_v3", "Standard_D16s_v3", "Standard_DS5_v2"]
   medium_cc_instance = ["Standard_DS3_v2", "Standard_D8s_v3", "Standard_D16s_v3", "Standard_DS5_v2"]
   large_cc_instance  = ["Standard_D16s_v3", "Standard_DS5_v2"]
 
