@@ -1,3 +1,8 @@
+## TBD (UNRELEASED)
+ENHANCEMENTS:
+* add: Standard_D2ds_v4 and Standard_D2ds_v5 size support
+* change: Default recommended small CC instance to Standard_D2ds_v5
+
 ## v0.4.0 (December 16, 2023)
 
 FEATURES:
