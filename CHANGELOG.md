@@ -2,6 +2,9 @@
 BUG FIXES:
 * ZSEC bash script fixes
 
+BUG FIXES:
+* update az_supported_regions static map to include regions: East US 2, Switzerland North, and UAE North availability zones support
+
 ## v0.4.0 (December 16, 2023)
 
 FEATURES:
