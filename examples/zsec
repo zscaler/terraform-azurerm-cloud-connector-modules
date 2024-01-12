@@ -494,7 +494,7 @@ elif [[ "$dtype" == "base_1cc" ]]; then
     echo "${dtype} will deploy one Cloud Connector in ${azure_location}"   
 fi
 
-az_supported_regions=["australiaeast","Australia East","brazilsouth","Brazil South","canadacentral","Canada Central","centralindia","Central India","centralus","Central US","eastasia","East Asia","eastus","East US","francecentral","France Central","germanywestcentral","Germany West Central","japaneast","Japan East","koreacentral","Korea Central","northeurope","North Europe","norwayeast","Norway East","southafricanorth","South Africa North","southcentralus","South Central US","southeastasia","Southeast Asia","swedencentral","Sweden Central","uksouth","UK South","westeurope","West Europe","westus2","West US 2","westus3","West US 3","chinanorth3","China North 3","ChinaNorth3"]
+az_supported_regions=["australiaeast","Australia East","brazilsouth","Brazil South","canadacentral","Canada Central","centralindia","Central India","centralus","Central US","chinanorth3","China North 3","ChinaNorth3","eastasia","East Asia","eastus","East US","eastus2","East US 2","francecentral","France Central","germanywestcentral","Germany West Central","japaneast","Japan East","koreacentral","Korea Central","northeurope","North Europe","norwayeast","Norway East","southafricanorth","South Africa North","southcentralus","South Central US","southeastasia","Southeast Asia","swedencentral","Sweden Central","switzerlandnorth","Switzerland North","uaenorth","UAE North","uksouth","UK South","westeurope","West Europe","westus2","West US 2","westus3","West US 3"]
 if [[ ${az_supported_regions[*]} =~ $azure_location ]]; then
 echo "${GREEN}Azure region ${azure_location} supports Zones...${RESET}"
 zones_enabled_default=no

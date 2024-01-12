@@ -3,6 +3,9 @@ ENHANCEMENTS:
 * add: Standard_D2ds_v4 and Standard_D2ds_v5 size support
 * change: Default recommended small CC instance to Standard_D2ds_v5
 
+BUG FIXES:
+* update az_supported_regions static map to include regions: East US 2, Switzerland North, and UAE North availability zones support
+
 ## v0.4.0 (December 16, 2023)
 
 FEATURES:
