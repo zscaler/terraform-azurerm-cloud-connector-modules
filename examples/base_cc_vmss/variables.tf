@@ -274,3 +274,39 @@ variable "encryption_at_host_enabled" {
   description = "User input for enabling or disabling host encryption"
   default     = true
 }
+
+variable "vmss_desired_ccs" {
+  type        = number
+  description = "Desired number of CCs in vmss. This value should be updated with the current VMSS count every deployment."
+  default     = 2
+}
+
+variable "vmss_min_ccs" {
+  type        = number
+  description = "Minimum number of CCs in vmss."
+  default     = 2
+}
+
+variable "vmss_max_ccs" {
+  type        = number
+  description = "Maximum number of CCs in vmss."
+  default     = 16
+}
+
+variable "scale_out_threshold" {
+  type        = number
+  description = "Metric threshold for determining scale out."
+  default     = 70
+}
+
+variable "scale_in_threshold" {
+  type        = number
+  description = "Metric threshold for determining scale in."
+  default     = 30
+}
+
+variable "terminate_unhealthy_instances" {
+  type        = bool
+  description = "Indicate whether detected unhealthy instances are terminated or not."
+  default     = true
+}
