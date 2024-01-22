@@ -10,6 +10,12 @@ variable "resource_tag" {
   default     = null
 }
 
+variable "fault_domain_count" {
+  type        = number
+  description = "Number of fault domains to have VMs deployed across"
+  default     = 1
+}
+
 variable "global_tags" {
   type        = map(string)
   description = "Populate any custom user defined tags from a map"
@@ -159,4 +165,96 @@ variable "encryption_at_host_enabled" {
   type        = bool
   description = "User input for enabling or disabling host encryption"
   default     = true
+}
+
+variable "vmss_desired_ccs" {
+  type        = number
+  description = "Desired number of CCs in vmss."
+  default     = 2
+}
+
+variable "vmss_min_ccs" {
+  type        = number
+  description = "Minimum number of CCs in vmss."
+  default     = 2
+}
+
+variable "vmss_max_ccs" {
+  type        = number
+  description = "Maximum number of CCs in vmss."
+  default     = 16
+}
+
+variable "scale_out_evaluation_period" {
+  type        = string
+  description = "Amount of time the average of scaling metric is evaluated over."
+  default     = "PT5M"
+}
+
+variable "scale_out_threshold" {
+  type        = number
+  description = "Metric threshold for determining scale out."
+  default     = 70
+}
+
+variable "scale_out_count" {
+  type        = string
+  description = "Number of CCs to bring up on scale out event."
+  default     = "1"
+}
+
+variable "scale_out_cooldown" {
+  type        = string
+  description = "Amount of time after scale out before scale out is evaluated again."
+  default     = "PT15M"
+}
+
+variable "scale_in_evaluation_period" {
+  type        = string
+  description = "Amount of time the average of scaling metric is evaluated over."
+  default     = "PT5M"
+}
+
+variable "scale_in_threshold" {
+  type        = number
+  description = "Metric threshold for determining scale in."
+  default     = 30
+}
+
+variable "scale_in_count" {
+  type        = string
+  description = "Number of CCs to bring up on scale in event."
+  default     = "1"
+}
+
+variable "scale_in_cooldown" {
+  type        = string
+  description = "Amount of time after scale in before scale in is evaluated again."
+  default     = "PT15M"
+}
+
+variable "susbcription_id" {
+  type        = string
+  description = "Subscription ID."
+}
+
+variable "managed_identity_client_id" {
+  type        = string
+  description = "Managed Identity Client ID."
+}
+
+variable "vault_url" {
+  type        = string
+  description = "Azure Key Vault URL containing Zscaler credentials."
+}
+
+variable "cc_vm_prov_url" {
+  type        = string
+  description = "Zscaler provisioning template url."
+}
+
+variable "terminate_unhealthy_instances" {
+  type        = string
+  description = "true/false to indicate whether Azure function should terminate instances that are seen to be unhealthy."
+  default     = "true"
 }

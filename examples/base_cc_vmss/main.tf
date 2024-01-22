@@ -126,12 +126,14 @@ module "cc_vmss" {
   source                         = "../../modules/terraform-zscc-ccvmss-azure"
   name_prefix                    = var.name_prefix
   resource_tag                   = random_string.suffix.result
+  fault_domain_count             = 1
   global_tags                    = local.global_tags
   resource_group                 = module.network.resource_group_name
   mgmt_subnet_id                 = module.network.cc_subnet_ids[0]
   service_subnet_id              = module.network.cc_subnet_ids[0]
   ssh_key                        = tls_private_key.key.public_key_openssh
   managed_identity_id            = module.cc_identity.managed_identity_id
+  managed_identity_client_id     = module.cc_identity.managed_identity_client_id
   user_data                      = local.userdata
   backend_address_pool           = module.cc_lb.lb_backend_address_pool
   location                       = var.arm_location
@@ -146,6 +148,16 @@ module "cc_vmss" {
   service_nsg_id                 = module.cc_nsg.service_nsg_id[0]
   accelerated_networking_enabled = var.accelerated_networking_enabled
   encryption_at_host_enabled     = var.encryption_at_host_enabled
+  vmss_desired_ccs               = var.vmss_desired_ccs
+  vmss_min_ccs                   = var.vmss_min_ccs
+  vmss_max_ccs                   = var.vmss_max_ccs
+  scale_out_threshold            = var.scale_out_threshold
+  scale_in_threshold             = var.scale_in_threshold
+  susbcription_id                = var.env_subscription_id
+  vault_url                      = var.azure_vault_url
+  cc_vm_prov_url                 = var.cc_vm_prov_url
+  terminate_unhealthy_instances  = var.terminate_unhealthy_instances
+
 
   depends_on = [
     local_file.user_data_file,
