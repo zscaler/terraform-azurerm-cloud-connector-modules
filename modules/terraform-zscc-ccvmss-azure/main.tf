@@ -1,47 +1,19 @@
 ################################################################################
 # Create Cloud Connector VMSS
 ################################################################################
-resource "azurerm_linux_virtual_machine_scale_set" "cc_vmss" {
-  name                       = "${var.name_prefix}-ccvmss-${var.resource_tag}"
-  location                   = var.location
-  resource_group_name        = var.resource_group
-  sku                        = var.ccvm_instance_type
-  encryption_at_host_enabled = var.encryption_at_host_enabled
-  zones                      = var.zones
-  # TODO: need to define this as a variable
-  upgrade_mode = "Manual"
-  # TODO: need to define this as a variable
-  instances = 1
-
-  admin_username = var.cc_username
-  custom_data    = base64encode(var.user_data)
-
-  admin_ssh_key {
-    username   = var.cc_username
-    public_key = "${trimspace(var.ssh_key)} ${var.cc_username}@me.io"
-  }
-
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Premium_LRS"
-  }
-
-  source_image_reference {
-    publisher = var.ccvm_image_publisher
-    offer     = var.ccvm_image_offer
-    sku       = var.ccvm_image_sku
-    version   = var.ccvm_image_version
-  }
-
-  plan {
-    publisher = var.ccvm_image_publisher
-    name      = var.ccvm_image_sku
-    product   = var.ccvm_image_offer
-  }
-
-  identity {
-    type         = "UserAssigned"
-    identity_ids = [var.managed_identity_id]
+resource "azurerm_orchestrated_virtual_machine_scale_set" "cc_vmss" {
+  name                        = "${var.name_prefix}-ccvmss-${var.resource_tag}"
+  location                    = var.location
+  resource_group_name         = var.resource_group
+  platform_fault_domain_count = var.fault_domain_count
+  sku_name                    = var.ccvm_instance_type
+  encryption_at_host_enabled  = var.encryption_at_host_enabled
+  zones                       = var.zones
+  zone_balance                = false
+  instances                   = var.vmss_desired_ccs
+  termination_notification {
+    enabled = true
+    timeout = "PT5M"
   }
 
   network_interface {
@@ -70,9 +42,169 @@ resource "azurerm_linux_virtual_machine_scale_set" "cc_vmss" {
     }
   }
 
+  os_profile {
+    custom_data = base64encode(var.user_data)
+    linux_configuration {
+      admin_username = var.cc_username
+      admin_ssh_key {
+        username   = var.cc_username
+        public_key = "${trimspace(var.ssh_key)} ${var.cc_username}@me.io"
+      }
+    }
+  }
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Premium_LRS"
+  }
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [var.managed_identity_id]
+  }
+
+  plan {
+    publisher = var.ccvm_image_publisher
+    name      = var.ccvm_image_sku
+    product   = var.ccvm_image_offer
+  }
+
+  source_image_reference {
+    publisher = var.ccvm_image_publisher
+    offer     = var.ccvm_image_offer
+    sku       = var.ccvm_image_sku
+    version   = var.ccvm_image_version
+  }
+
   tags = var.global_tags
 
   depends_on = [
     var.backend_address_pool
   ]
+}
+
+
+resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
+  name                = "custom-scale-rule"
+  resource_group_name = var.resource_group
+  location            = var.location
+  target_resource_id  = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.id
+
+  profile {
+    name = "defaultProfile"
+
+    capacity {
+      default = var.vmss_min_ccs
+      minimum = var.vmss_desired_ccs
+      maximum = var.vmss_max_ccs
+    }
+
+    rule {
+      metric_trigger {
+        metric_name        = "cloud_connector_aggr_health"
+        metric_resource_id = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = var.scale_out_evaluation_period
+        time_aggregation   = "Average"
+        operator           = "GreaterThan"
+        threshold          = var.scale_out_threshold
+        metric_namespace   = "Zscaler/CloudConnectors"
+        #dimensions {
+        #  name     = "AppName"
+        #  operator = "Equals"
+        #  values   = ["App1"]
+        #}
+      }
+
+      scale_action {
+        direction = "Increase"
+        type      = "ChangeCount"
+        value     = var.scale_out_count
+        cooldown  = var.scale_out_cooldown
+      }
+    }
+
+    rule {
+      metric_trigger {
+        metric_name        = "cloud_connector_aggr_health"
+        metric_resource_id = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = var.scale_in_evaluation_period
+        time_aggregation   = "Average"
+        operator           = "LessThan"
+        threshold          = var.scale_in_threshold
+        metric_namespace   = "Zscaler/CloudConnectors"
+        #dimensions {
+        #  name     = "AppName"
+        #  operator = "Equals"
+        #  values   = ["App1"]
+        #}
+      }
+
+      scale_action {
+        direction = "Decrease"
+        type      = "ChangeCount"
+        value     = var.scale_in_count
+        cooldown  = var.scale_in_cooldown
+      }
+    }
+  }
+}
+
+
+resource "azurerm_storage_account" "storage_account" {
+  name                     = "${var.resource_tag}storage"
+  resource_group_name      = var.resource_group
+  location                 = var.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+}
+
+resource "azurerm_service_plan" "app_service_plan" {
+  name                = "${var.name_prefix}-ccvmss-${var.resource_tag}-app-service-plan"
+  resource_group_name = var.resource_group
+  location            = var.location
+  os_type             = "Linux"
+  sku_name            = "Y1"
+}
+
+resource "azurerm_application_insights" "orchestration_app_insights" {
+  name                = "${var.name_prefix}-ccvmss-${var.resource_tag}-app-insights"
+  location            = var.location
+  resource_group_name = var.resource_group
+  application_type    = "web"
+}
+
+resource "azurerm_linux_function_app" "orchestration_app" {
+  name                = "${var.name_prefix}-ccvmss-${var.resource_tag}-function-app"
+  resource_group_name = var.resource_group
+  location            = var.location
+
+  storage_account_name       = azurerm_storage_account.storage_account.name
+  storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
+  service_plan_id            = azurerm_service_plan.app_service_plan.id
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [var.managed_identity_id]
+  }
+
+  app_settings = {
+    "SUBSCRIPTION_ID"               = var.susbcription_id,
+    "MANAGED_IDENTITY"              = var.managed_identity_client_id,
+    "RESOURCE_GROUP"                = var.resource_group,
+    "VMSS_NAME"                     = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.name,
+    "TERMINATE_UNHEALTHY_INSTANCES" = var.terminate_unhealthy_instances,
+    "VAULT_URL"                     = var.vault_url,
+    "CC_URL"                        = var.cc_vm_prov_url,
+  }
+
+  site_config {
+    application_stack {
+      python_version = "3.11"
+    }
+    application_insights_connection_string = azurerm_application_insights.orchestration_app_insights.connection_string
+    application_insights_key               = azurerm_application_insights.orchestration_app_insights.instrumentation_key
+  }
 }
