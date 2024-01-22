@@ -69,21 +69,14 @@
 ##    (Default: Standard_D2s_v3)
 
 #ccvm_instance_type                         = "Standard_D2s_v3"
-#ccvm_instance_type                         = "Standard_DS3_v2"
-#ccvm_instance_type                         = "Standard_D8s_v3"
-#ccvm_instance_type                         = "Standard_D16s_v3"
-#ccvm_instance_type                         = "Standard_DS5_v2"
 
 ## 11. Cloud Connector Instance size selection. Uncomment cc_instance_size line with desired vm size to change
 ##    (Default: "small") 
 ##    **** NOTE - There is a dependency between ccvm_instance_type and cc_instance_size selections ****
 ##    If size = "small" any supported Azure VM instance size can be deployed, but "Standard_D2s_v3" is ideal
-##    If size = "medium" only Standard_DS3_v2/Standard_D8s_v3 and up Azure VM instance sizes can be deployed
-##    If size = "large" only Standard_D16s_v3/Standard_DS5_v2 Azure VM instance sizes can be deployed 
+
 
 #cc_instance_size                           = "small"
-#cc_instance_size                           = "medium"
-#cc_instance_size                           = "large" 
 
 ## 12. The number of Cloud Connector appliances to provision. Each incremental Cloud Connector will be created in alternating 
 ##    subnets based on the zones or byo_subnet_names variable and loop through for any deployments where cc_count > zones.
@@ -169,15 +162,6 @@
 
 #encryption_at_host_enabled                 = false
 
-## 21. By default, if Terraform is creating NSGs an outbound rule named Zscaler_Support_Access is configured enabling 
-##     Zscaler remote support access. Without this firewall access, Zscaler Support may not be able to assist as
-##     efficiently if troubleshooting is required. Uncomment if you do not want to enable this rule. 
-##
-##     For more information, refer to: https://config.zscaler.com/zscaler.net/cloud-branch-connector and 
-##     https://help.zscaler.com/cloud-branch-connector/enabling-remote-access
-
-#support_access_enabled                     = false
-
 ## 22. By default, Terraform will lookup the latest Cloud Connector image version from the Azure Marketplace.
 ##     Uncomment and set this value to the path of a local subscription Microsoft.Compute image to override the 
 ##     Cloud Connector deployment with a private VHD instead of using the marketplace publisher.
@@ -185,3 +169,13 @@
 ##     Example: /subscriptions/<id>/resourceGroups/<rg>/providers/Microsoft.Compute/images/<image_name>
 
 #ccvm_source_image_id                       = "<insert path to image>"
+
+# IMPORTANT: vmss_desired_ccs count needs to be set to the current desired count in VMSS to ensure instances are not removed 
+# during upgrade
+#vmss_desired_ccs = 2
+#vmss_min_ccs = 2
+#vmss_max_ccs = 4
+#scale_in_threshold = 30
+#scale_out_threshold = 70
+
+
