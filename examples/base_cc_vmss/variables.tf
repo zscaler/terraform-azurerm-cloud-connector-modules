@@ -310,3 +310,51 @@ variable "terminate_unhealthy_instances" {
   description = "Indicate whether detected unhealthy instances are terminated or not."
   default     = true
 }
+
+variable "scheduled_scaling_enabled" {
+  type        = bool
+  description = "Enable scheduled scaling on top of metric scaling."
+  default     = false
+}
+
+variable "scheduled_scaling_vmss_min_ccs" {
+  type        = number
+  description = "Minimum number of CCs in vmss for scheduled scaling profile."
+  default     = 2
+}
+
+variable "scheduled_scaling_timezone" {
+  type        = string
+  description = "Timezone the times for the scheduled scaling profile are specified in."
+  default     = "Pacific Standard Time"
+}
+
+variable "scheduled_scaling_days_of_week" {
+  type        = list(string)
+  description = "Days of the week to apply scheduled scaling profile."
+  default     = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+}
+
+variable "scheduled_scaling_start_time_hour" {
+  type        = number
+  description = "Hour to start scheduled scaling profile."
+  default     = 9
+}
+
+variable "scheduled_scaling_start_time_min" {
+  type        = number
+  description = "Minute to start scheduled scaling profile."
+  default     = 0
+}
+
+variable "scheduled_scaling_end_time_hour" {
+  type        = number
+  description = "Hour to end scheduled scaling profile."
+  default     = 17
+}
+
+variable "scheduled_scaling_end_time_min" {
+  type        = number
+  description = "Minute to end scheduled scaling profile."
+  default     = 0
+}
