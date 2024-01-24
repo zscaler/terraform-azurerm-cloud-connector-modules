@@ -177,5 +177,15 @@
 #vmss_max_ccs = 4
 #scale_in_threshold = 30
 #scale_out_threshold = 70
+#terminate_unhealthy_instances = false
 
 
+## Variables for enabling scheduled scaling, leaving it commented out will default to no scheduled scaling and will scale 
+## purely off the load on the CCs
+#scheduled_scaling_enabled         = true
+#scheduled_scaling_vmss_min_ccs    = 4
+#scheduled_scaling_days_of_week    = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+#scheduled_scaling_start_time_hour = 8
+#scheduled_scaling_start_time_min  = 30
+#scheduled_scaling_end_time_hour   = 17
+#scheduled_scaling_end_time_min    = 30
