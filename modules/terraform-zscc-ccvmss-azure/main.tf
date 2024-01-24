@@ -95,13 +95,13 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
 
     capacity {
       default = var.vmss_min_ccs
-      minimum = var.vmss_desired_ccs
+      minimum = var.vmss_min_ccs
       maximum = var.vmss_max_ccs
     }
 
     rule {
       metric_trigger {
-        metric_name        = "cloud_connector_aggr_health"
+        metric_name        = "smedge_cpu_util"
         metric_resource_id = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.id
         time_grain         = "PT1M"
         statistic          = "Average"
@@ -127,7 +127,7 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
 
     rule {
       metric_trigger {
-        metric_name        = "cloud_connector_aggr_health"
+        metric_name        = "smedge_cpu_util"
         metric_resource_id = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.id
         time_grain         = "PT1M"
         statistic          = "Average"
@@ -148,6 +148,89 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
         type      = "ChangeCount"
         value     = var.scale_in_count
         cooldown  = var.scale_in_cooldown
+      }
+    }
+
+    dynamic "recurrence" {
+      for_each = var.scheduled_scaling_enabled != false ? ["apply"] : []
+      content {
+        timezone = var.scheduled_scaling_timezone
+        days     = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+        hours    = [var.scheduled_scaling_end_time_hour]
+        minutes  = [var.scheduled_scaling_end_time_min]
+      }
+    }
+
+  }
+
+  dynamic "profile" {
+    for_each = var.scheduled_scaling_enabled != false ? ["apply"] : []
+    content {
+      name = "ScheduledProfile"
+
+      capacity {
+        default = var.scheduled_scaling_vmss_min_ccs
+        minimum = var.scheduled_scaling_vmss_min_ccs
+        maximum = var.vmss_max_ccs
+      }
+
+      rule {
+        metric_trigger {
+          metric_name        = "smedge_cpu_util"
+          metric_resource_id = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.id
+          time_grain         = "PT1M"
+          statistic          = "Average"
+          time_window        = var.scale_out_evaluation_period
+          time_aggregation   = "Average"
+          operator           = "GreaterThan"
+          threshold          = var.scale_out_threshold
+          metric_namespace   = "Zscaler/CloudConnectors"
+          #dimensions {
+          #  name     = "AppName"
+          #  operator = "Equals"
+          #  values   = ["App1"]
+          #}
+        }
+
+        scale_action {
+          direction = "Increase"
+          type      = "ChangeCount"
+          value     = var.scale_out_count
+          cooldown  = var.scale_out_cooldown
+        }
+      }
+
+      rule {
+        metric_trigger {
+          metric_name        = "smedge_cpu_util"
+          metric_resource_id = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.id
+          time_grain         = "PT1M"
+          statistic          = "Average"
+          time_window        = var.scale_in_evaluation_period
+          time_aggregation   = "Average"
+          operator           = "LessThan"
+          threshold          = var.scale_in_threshold
+          metric_namespace   = "Zscaler/CloudConnectors"
+          #dimensions {
+          #  name     = "AppName"
+          #  operator = "Equals"
+          #  values   = ["App1"]
+          #}
+        }
+
+        scale_action {
+          direction = "Decrease"
+          type      = "ChangeCount"
+          value     = var.scale_in_count
+          cooldown  = var.scale_in_cooldown
+        }
+      }
+
+      recurrence {
+        timezone = var.scheduled_scaling_timezone
+        days     = var.scheduled_scaling_days_of_week
+        hours    = [var.scheduled_scaling_start_time_hour]
+        minutes  = [var.scheduled_scaling_start_time_min]
       }
     }
   }
