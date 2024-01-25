@@ -358,3 +358,8 @@ variable "scheduled_scaling_end_time_min" {
   description = "Minute to end scheduled scaling profile."
   default     = 0
 }
+
+variable "zscaler_cc_function_file_path" {
+  type        = string
+  description = "Path to the zscaler_cc_function file."
+}

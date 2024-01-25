@@ -273,14 +273,17 @@ resource "azurerm_linux_function_app" "orchestration_app" {
     identity_ids = [var.managed_identity_id]
   }
 
+  zip_deploy_file = var.zscaler_cc_function_file_path
+
   app_settings = {
-    "SUBSCRIPTION_ID"               = var.susbcription_id,
-    "MANAGED_IDENTITY"              = var.managed_identity_client_id,
-    "RESOURCE_GROUP"                = var.resource_group,
-    "VMSS_NAME"                     = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.name,
-    "TERMINATE_UNHEALTHY_INSTANCES" = var.terminate_unhealthy_instances,
-    "VAULT_URL"                     = var.vault_url,
-    "CC_URL"                        = var.cc_vm_prov_url,
+    "SUBSCRIPTION_ID"                = var.susbcription_id,
+    "MANAGED_IDENTITY"               = var.managed_identity_client_id,
+    "RESOURCE_GROUP"                 = var.resource_group,
+    "VMSS_NAME"                      = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.name,
+    "TERMINATE_UNHEALTHY_INSTANCES"  = var.terminate_unhealthy_instances,
+    "VAULT_URL"                      = var.vault_url,
+    "CC_URL"                         = var.cc_vm_prov_url,
+    "SCM_DO_BUILD_DURING_DEPLOYMENT" = true
   }
 
   site_config {
