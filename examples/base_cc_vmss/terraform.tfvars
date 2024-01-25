@@ -178,7 +178,7 @@
 #scale_in_threshold = 30
 #scale_out_threshold = 70
 #terminate_unhealthy_instances = false
-
+#zscaler_cc_function_file_path = "/path/to/function/zip/file"
 
 ## Variables for enabling scheduled scaling, leaving it commented out will default to no scheduled scaling and will scale 
 ## purely off the load on the CCs
