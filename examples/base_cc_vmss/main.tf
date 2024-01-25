@@ -165,6 +165,7 @@ module "cc_vmss" {
   scheduled_scaling_start_time_min  = var.scheduled_scaling_start_time_min
   scheduled_scaling_end_time_hour   = var.scheduled_scaling_end_time_hour
   scheduled_scaling_end_time_min    = var.scheduled_scaling_end_time_min
+  zscaler_cc_function_file_path     = var.zscaler_cc_function_file_path
 
   depends_on = [
     local_file.user_data_file,
