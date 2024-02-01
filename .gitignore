@@ -49,3 +49,6 @@ override.tf.json
 
 # My stuff
 .todo
+
+examples/base_cc_vmss/terraform.tfvars.sample
+modules/terraform-zscc-ccvmss-azure/zscaler_cc_function_app_*
