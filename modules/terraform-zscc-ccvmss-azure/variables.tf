@@ -307,8 +307,21 @@ variable "scheduled_scaling_end_time_min" {
   default     = 0
 }
 
+variable "zscaler_cc_function_deploy_local_file" {
+  type        = bool
+  description = "Set to True if you wish to deploy a local file using Zip Deploy method."
+  default     = false
+}
+
 variable "zscaler_cc_function_file_path" {
   type        = string
   description = "Path to the zscaler_cc_function file."
+  default     = ""
+}
+
+variable "zscaler_cc_function_public_url" {
+  type        = string
+  description = "Path to the zscaler_cc_function file."
+  default     = ""
 }
 
