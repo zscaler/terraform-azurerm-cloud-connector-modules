@@ -260,6 +260,27 @@ resource "azurerm_application_insights" "orchestration_app_insights" {
   application_type    = "web"
 }
 
+data "local_file" "zscaler_function_app_file" {
+  count    = var.zscaler_cc_function_deploy_local_file ? 1 : 0
+  filename = var.zscaler_cc_function_file_path
+}
+
+resource "random_string" "function_app_hash" {
+  count   = var.zscaler_cc_function_deploy_local_file ? 1 : 0
+  length  = 32
+  special = false
+  upper   = false
+  keepers = {
+    zipped_code = data.local_file.zscaler_function_app_file[0].content_md5
+  }
+}
+
+resource "local_file" "function_app_src_code" {
+  count          = var.zscaler_cc_function_deploy_local_file ? 1 : 0
+  content_base64 = filebase64("${var.zscaler_cc_function_file_path}")
+  filename       = "${path.module}/zscaler_cc_function_app_${random_string.function_app_hash[0].result}.zip"
+}
+
 resource "azurerm_linux_function_app" "orchestration_app" {
   name                = "${var.name_prefix}-ccvmss-${var.resource_tag}-function-app"
   resource_group_name = var.resource_group
@@ -273,18 +294,9 @@ resource "azurerm_linux_function_app" "orchestration_app" {
     identity_ids = [var.managed_identity_id]
   }
 
-  zip_deploy_file = var.zscaler_cc_function_file_path
+  zip_deploy_file = var.zscaler_cc_function_deploy_local_file ? "${path.module}/zscaler_cc_function_app_${random_string.function_app_hash[0].result}.zip" : null
 
-  app_settings = {
-    "SUBSCRIPTION_ID"                = var.susbcription_id,
-    "MANAGED_IDENTITY"               = var.managed_identity_client_id,
-    "RESOURCE_GROUP"                 = var.resource_group,
-    "VMSS_NAME"                      = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.name,
-    "TERMINATE_UNHEALTHY_INSTANCES"  = var.terminate_unhealthy_instances,
-    "VAULT_URL"                      = var.vault_url,
-    "CC_URL"                         = var.cc_vm_prov_url,
-    "SCM_DO_BUILD_DURING_DEPLOYMENT" = true
-  }
+  app_settings = var.zscaler_cc_function_deploy_local_file ? { "SUBSCRIPTION_ID" = var.susbcription_id, "MANAGED_IDENTITY" = var.managed_identity_client_id, "RESOURCE_GROUP" = var.resource_group, "VMSS_NAME" = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.name, "TERMINATE_UNHEALTHY_INSTANCES" = var.terminate_unhealthy_instances, "VAULT_URL" = var.vault_url, "CC_URL" = var.cc_vm_prov_url } : { "SUBSCRIPTION_ID" = var.susbcription_id, "MANAGED_IDENTITY" = var.managed_identity_client_id, "RESOURCE_GROUP" = var.resource_group, "VMSS_NAME" = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.name, "TERMINATE_UNHEALTHY_INSTANCES" = var.terminate_unhealthy_instances, "VAULT_URL" = var.vault_url, "CC_URL" = var.cc_vm_prov_url, "WEBSITE_RUN_FROM_PACKAGE" = var.zscaler_cc_function_public_url }
 
   site_config {
     application_stack {
