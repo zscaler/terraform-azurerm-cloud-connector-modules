@@ -46,7 +46,7 @@ if [[ "$oper" == "up" ]]; then
             ;;
             2)
             echo "Brownfield deployment selected..."
-            deployemt=brownfield
+            deployment=brownfield
             break
             ;;
             *) 

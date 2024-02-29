@@ -1,3 +1,7 @@
+## v0.4.1 (February 29, 2024)
+BUG FIXES:
+* ZSEC bash script fixes
+
 ## v0.4.0 (December 16, 2023)
 
 FEATURES:
