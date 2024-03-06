@@ -302,7 +302,7 @@ variable "scale_out_threshold" {
 variable "scale_in_threshold" {
   type        = number
   description = "Metric threshold for determining scale in."
-  default     = 30
+  default     = 50
 }
 
 variable "terminate_unhealthy_instances" {
