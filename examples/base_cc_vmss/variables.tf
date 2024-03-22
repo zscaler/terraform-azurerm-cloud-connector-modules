@@ -365,14 +365,14 @@ variable "zscaler_cc_function_deploy_local_file" {
   default     = false
 }
 
-variable "zscaler_cc_function_file_path" {
+variable "zscaler_cc_function_public_url" {
   type        = string
   description = "Path to the zscaler_cc_function file."
   default     = ""
 }
 
-variable "zscaler_cc_function_public_url" {
-  type        = string
-  description = "Path to the zscaler_cc_function file."
-  default     = ""
+variable "zonal_vmss_enabled" {
+  type        = bool
+  description = "By default, Terraform will create one VMSS per subnet/logical availability zone if supported by Azure. Set to false if you would rather create a single VMSS containing multiple availability zones"
+  default     = true
 }
