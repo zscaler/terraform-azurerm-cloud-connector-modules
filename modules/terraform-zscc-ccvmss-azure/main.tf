@@ -94,7 +94,7 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
     name = "defaultProfile"
 
     capacity {
-      default = var.vmss_min_ccs
+      default = var.vmss_desired_ccs
       minimum = var.vmss_min_ccs
       maximum = var.vmss_max_ccs
     }
@@ -281,6 +281,10 @@ resource "local_file" "function_app_src_code" {
   filename       = "${path.module}/zscaler_cc_function_app_${random_string.function_app_hash[0].result}.zip"
 }
 
+locals {
+  website_run_from_pkg = var.zscaler_cc_function_deploy_local_file ? "1" : var.zscaler_cc_function_public_url
+}
+
 resource "azurerm_linux_function_app" "orchestration_app" {
   name                = "${var.name_prefix}-ccvmss-${var.resource_tag}-function-app"
   resource_group_name = var.resource_group
@@ -295,14 +299,11 @@ resource "azurerm_linux_function_app" "orchestration_app" {
   }
 
   zip_deploy_file = var.zscaler_cc_function_deploy_local_file ? "${path.module}/zscaler_cc_function_app_${random_string.function_app_hash[0].result}.zip" : null
-
-  app_settings = var.zscaler_cc_function_deploy_local_file ? { "SUBSCRIPTION_ID" = var.susbcription_id, "MANAGED_IDENTITY" = var.managed_identity_client_id, "RESOURCE_GROUP" = var.resource_group, "VMSS_NAME" = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.name, "TERMINATE_UNHEALTHY_INSTANCES" = var.terminate_unhealthy_instances, "VAULT_URL" = var.vault_url, "CC_URL" = var.cc_vm_prov_url } : { "SUBSCRIPTION_ID" = var.susbcription_id, "MANAGED_IDENTITY" = var.managed_identity_client_id, "RESOURCE_GROUP" = var.resource_group, "VMSS_NAME" = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.name, "TERMINATE_UNHEALTHY_INSTANCES" = var.terminate_unhealthy_instances, "VAULT_URL" = var.vault_url, "CC_URL" = var.cc_vm_prov_url, "WEBSITE_RUN_FROM_PACKAGE" = var.zscaler_cc_function_public_url }
+  app_settings    = { "SUBSCRIPTION_ID" = var.susbcription_id, "MANAGED_IDENTITY" = var.managed_identity_client_id, "RESOURCE_GROUP" = var.resource_group, "VMSS_NAME" = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.name, "TERMINATE_UNHEALTHY_INSTANCES" = var.terminate_unhealthy_instances, "VAULT_URL" = var.vault_url, "CC_URL" = var.cc_vm_prov_url, "WEBSITE_RUN_FROM_PACKAGE" = local.website_run_from_pkg, "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.orchestration_app_insights.connection_string }
 
   site_config {
     application_stack {
       python_version = "3.11"
     }
-    application_insights_connection_string = azurerm_application_insights.orchestration_app_insights.connection_string
-    application_insights_key               = azurerm_application_insights.orchestration_app_insights.instrumentation_key
   }
 }
