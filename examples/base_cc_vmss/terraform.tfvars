@@ -194,4 +194,3 @@
 #zscaler_cc_function_deploy_local_file = true
 #zscaler_cc_function_file_path = "/path/to/function/zip/file"
 #zscaler_cc_function_public_url = "<file-url>"
-
