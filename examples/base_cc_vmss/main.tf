@@ -1,4 +1,10 @@
 ################################################################################
+# Get current Subscription ID
+################################################################################
+data "azurerm_subscription" "current" {
+}
+
+################################################################################
 # Generate a unique random string for resource name assignment and key pair
 ################################################################################
 resource "random_string" "suffix" {
@@ -123,51 +129,46 @@ resource "local_file" "user_data_file" {
 
 # Create specified number of CC appliances
 module "cc_vmss" {
-  source                                = "../../modules/terraform-zscc-ccvmss-azure"
-  name_prefix                           = var.name_prefix
-  resource_tag                          = random_string.suffix.result
-  fault_domain_count                    = 1
-  global_tags                           = local.global_tags
-  resource_group                        = module.network.resource_group_name
-  mgmt_subnet_id                        = module.network.cc_subnet_ids[0]
-  service_subnet_id                     = module.network.cc_subnet_ids[0]
-  ssh_key                               = tls_private_key.key.public_key_openssh
-  managed_identity_id                   = module.cc_identity.managed_identity_id
-  managed_identity_client_id            = module.cc_identity.managed_identity_client_id
-  user_data                             = local.userdata
-  backend_address_pool                  = module.cc_lb.lb_backend_address_pool
-  location                              = var.arm_location
-  zones_enabled                         = var.zones_enabled
-  zones                                 = var.zones
-  ccvm_instance_type                    = var.ccvm_instance_type
-  ccvm_image_publisher                  = var.ccvm_image_publisher
-  ccvm_image_offer                      = var.ccvm_image_offer
-  ccvm_image_sku                        = var.ccvm_image_sku
-  ccvm_image_version                    = var.ccvm_image_version
-  mgmt_nsg_id                           = module.cc_nsg.mgmt_nsg_id[0]
-  service_nsg_id                        = module.cc_nsg.service_nsg_id[0]
-  accelerated_networking_enabled        = var.accelerated_networking_enabled
-  encryption_at_host_enabled            = var.encryption_at_host_enabled
-  vmss_desired_ccs                      = var.vmss_desired_ccs
-  vmss_min_ccs                          = var.vmss_min_ccs
-  vmss_max_ccs                          = var.vmss_max_ccs
-  scale_out_threshold                   = var.scale_out_threshold
-  scale_in_threshold                    = var.scale_in_threshold
-  susbcription_id                       = var.env_subscription_id
-  vault_url                             = var.azure_vault_url
-  cc_vm_prov_url                        = var.cc_vm_prov_url
-  terminate_unhealthy_instances         = var.terminate_unhealthy_instances
-  scheduled_scaling_enabled             = var.scheduled_scaling_enabled
-  scheduled_scaling_vmss_min_ccs        = var.scheduled_scaling_vmss_min_ccs
-  scheduled_scaling_timezone            = var.scheduled_scaling_timezone
-  scheduled_scaling_days_of_week        = var.scheduled_scaling_days_of_week
-  scheduled_scaling_start_time_hour     = var.scheduled_scaling_start_time_hour
-  scheduled_scaling_start_time_min      = var.scheduled_scaling_start_time_min
-  scheduled_scaling_end_time_hour       = var.scheduled_scaling_end_time_hour
-  scheduled_scaling_end_time_min        = var.scheduled_scaling_end_time_min
-  zscaler_cc_function_deploy_local_file = var.zscaler_cc_function_deploy_local_file
-  zscaler_cc_function_file_path         = var.zscaler_cc_function_file_path
-  zscaler_cc_function_public_url        = var.zscaler_cc_function_public_url
+  source                         = "../../modules/terraform-zscc-ccvmss-azure"
+  location                       = var.arm_location
+  name_prefix                    = var.name_prefix
+  resource_tag                   = random_string.suffix.result
+  global_tags                    = local.global_tags
+  resource_group                 = module.network.resource_group_name
+  mgmt_subnet_id                 = module.network.cc_subnet_ids[0]
+  service_subnet_id              = module.network.cc_subnet_ids[0]
+  ssh_key                        = tls_private_key.key.public_key_openssh
+  managed_identity_id            = module.cc_identity.managed_identity_id
+  user_data                      = local.userdata
+  backend_address_pool           = module.cc_lb.lb_backend_address_pool
+  zones_enabled                  = var.zones_enabled
+  zones                          = var.zones
+  zonal_vmss_enabled             = var.zonal_vmss_enabled
+  ccvm_instance_type             = var.ccvm_instance_type
+  ccvm_image_publisher           = var.ccvm_image_publisher
+  ccvm_image_offer               = var.ccvm_image_offer
+  ccvm_image_sku                 = var.ccvm_image_sku
+  ccvm_image_version             = var.ccvm_image_version
+  mgmt_nsg_id                    = module.cc_nsg.mgmt_nsg_id[0]
+  service_nsg_id                 = module.cc_nsg.service_nsg_id[0]
+  accelerated_networking_enabled = var.accelerated_networking_enabled
+  encryption_at_host_enabled     = var.encryption_at_host_enabled
+
+  vmss_desired_ccs    = var.vmss_desired_ccs
+  vmss_min_ccs        = var.vmss_min_ccs
+  vmss_max_ccs        = var.vmss_max_ccs
+  scale_out_threshold = var.scale_out_threshold
+  scale_in_threshold  = var.scale_in_threshold
+
+  scheduled_scaling_enabled         = var.scheduled_scaling_enabled
+  scheduled_scaling_vmss_min_ccs    = var.scheduled_scaling_vmss_min_ccs
+  scheduled_scaling_timezone        = var.scheduled_scaling_timezone
+  scheduled_scaling_days_of_week    = var.scheduled_scaling_days_of_week
+  scheduled_scaling_start_time_hour = var.scheduled_scaling_start_time_hour
+  scheduled_scaling_start_time_min  = var.scheduled_scaling_start_time_min
+  scheduled_scaling_end_time_hour   = var.scheduled_scaling_end_time_hour
+  scheduled_scaling_end_time_min    = var.scheduled_scaling_end_time_min
+
 
   depends_on = [
     local_file.user_data_file,
@@ -175,9 +176,34 @@ module "cc_vmss" {
   ]
 }
 
+################################################################################
+# 5. Create Function App and dependencies for VMSS
+################################################################################
+module "cc_functionapp" {
+  source              = "../../modules/terraform-zscc-function-app-azure"
+  name_prefix         = var.name_prefix
+  resource_tag        = random_string.suffix.result
+  resource_group      = module.network.resource_group_name
+  location            = var.arm_location
+  global_tags         = local.global_tags
+  managed_identity_id = module.cc_identity.managed_identity_id
+
+  zscaler_cc_function_deploy_local_file = var.zscaler_cc_function_deploy_local_file
+  zscaler_cc_function_public_url        = var.zscaler_cc_function_public_url
+
+  cc_function_app_settings = {
+    "SUBSCRIPTION_ID"               = data.azurerm_subscription.current.id
+    "MANAGED_IDENTITY"              = module.cc_identity.managed_identity_client_id
+    "RESOURCE_GROUP"                = module.network.resource_group_name
+    "VMSS_NAME"                     = module.cc_vmss.vmss_names
+    "TERMINATE_UNHEALTHY_INSTANCES" = var.terminate_unhealthy_instances
+    "VAULT_URL"                     = var.azure_vault_url
+    "CC_URL"                        = var.cc_vm_prov_url
+  }
+}
 
 ################################################################################
-# 5. Create Network Security Group and rules to be assigned to CC mgmt and 
+# 6. Create Network Security Group and rules to be assigned to CC mgmt and 
 #    service interface(s). Default behavior will create 1 of each resource per
 #    CC VM. Set variable "reuse_nsg" to true if you would like a single NSG 
 #    created and assigned to ALL Cloud Connectors
@@ -194,7 +220,7 @@ module "cc_nsg" {
 
 
 ################################################################################
-# 6. Reference User Managed Identity resource to obtain ID to be assigned to 
+# 7. Reference User Managed Identity resource to obtain ID to be assigned to 
 #    all Cloud Connectors 
 ################################################################################
 module "cc_identity" {
@@ -210,7 +236,7 @@ module "cc_identity" {
 
 
 ################################################################################
-# 7. Create Azure Load Balancer in CC VNet with all Backend Pools, Rules, and 
+# 8. Create Azure Load Balancer in CC VNet with all Backend Pools, Rules, and 
 #    Health Probes
 ################################################################################
 # Azure Load Balancer Module variables
