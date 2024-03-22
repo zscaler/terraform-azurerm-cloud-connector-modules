@@ -12,7 +12,7 @@ variable "resource_tag" {
 
 variable "fault_domain_count" {
   type        = number
-  description = "Number of fault domains to have VMs deployed across"
+  description = "platformFaultDomainCount must be set to 1 for max spreading or 5 for static fixed spreading. Fixed spreading with 2 or 3 fault domains isn't supported for zonal deployments"
   default     = 1
 }
 
@@ -153,14 +153,6 @@ variable "accelerated_networking_enabled" {
   default     = true
 }
 
-# Validation to determine if Azure Region selected supports 3 Fault Domain or just 2.
-# This validation is only relevant if zones_enabled is set to false.
-locals {
-  max_fd_supported_regions = ["eastus", "East US", "eastus2", "East US 2", "westus", "West US", "centralus", "Central US", "northcentralus", "North Central US", "southcentralus", "South Central US", "canadacentral", "Canada Central", "northeurope", "North Europe", "westeurope", "West Europe"]
-  max_fd_supported = (
-    contains(local.max_fd_supported_regions, var.location) && var.zones_enabled == false
-  )
-}
 variable "encryption_at_host_enabled" {
   type        = bool
   description = "User input for enabling or disabling host encryption"
@@ -233,32 +225,6 @@ variable "scale_in_cooldown" {
   default     = "PT15M"
 }
 
-variable "susbcription_id" {
-  type        = string
-  description = "Subscription ID."
-}
-
-variable "managed_identity_client_id" {
-  type        = string
-  description = "Managed Identity Client ID."
-}
-
-variable "vault_url" {
-  type        = string
-  description = "Azure Key Vault URL containing Zscaler credentials."
-}
-
-variable "cc_vm_prov_url" {
-  type        = string
-  description = "Zscaler provisioning template url."
-}
-
-variable "terminate_unhealthy_instances" {
-  type        = string
-  description = "true/false to indicate whether Azure function should terminate instances that are seen to be unhealthy."
-  default     = "true"
-}
-
 variable "scheduled_scaling_enabled" {
   type        = bool
   description = "Enable scheduled scaling on top of metric scaling."
@@ -307,21 +273,8 @@ variable "scheduled_scaling_end_time_min" {
   default     = 0
 }
 
-variable "zscaler_cc_function_deploy_local_file" {
+variable "zonal_vmss_enabled" {
   type        = bool
-  description = "Set to True if you wish to deploy a local file using Zip Deploy method."
-  default     = false
+  description = "By default, Terraform will create one VMSS per subnet/logical availability zone if supported by Azure. Set to false if you would rather create a single VMSS containing multiple availability zones"
+  default     = true
 }
-
-variable "zscaler_cc_function_file_path" {
-  type        = string
-  description = "Path to the zscaler_cc_function file."
-  default     = ""
-}
-
-variable "zscaler_cc_function_public_url" {
-  type        = string
-  description = "Path to the zscaler_cc_function file."
-  default     = ""
-}
-

@@ -35,6 +35,18 @@ ${module.network.resource_group_name}
 LB IP: 
 ${module.cc_lb.lb_ip}
 
+VMSS Names:
+${join("\n", module.cc_vmss.vmss_names)}
+
+VMSS IDs:
+${join("\n", module.cc_vmss.vmss_ids)}
+
+Function App ID:
+${module.cc_functionapp.function_app_id}
+
+Function App Outbound IPs:
+${module.cc_functionapp.function_app_outbound_ip_address_list}
+
 All NAT GW IPs:
 ${join("\n", module.network.public_ip_address)}
 
@@ -54,4 +66,3 @@ resource "local_file" "testbed" {
   content  = local.testbedconfig
   filename = "../testbed.txt"
 }
-

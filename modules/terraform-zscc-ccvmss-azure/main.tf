@@ -1,14 +1,16 @@
 ################################################################################
 # Create Cloud Connector VMSS
 ################################################################################
+# Create VMSS
 resource "azurerm_orchestrated_virtual_machine_scale_set" "cc_vmss" {
+  count                       = local.zones_supported && var.zonal_vmss_enabled ? length(var.zones) : 1
   name                        = "${var.name_prefix}-ccvmss-${var.resource_tag}"
   location                    = var.location
   resource_group_name         = var.resource_group
   platform_fault_domain_count = var.fault_domain_count
   sku_name                    = var.ccvm_instance_type
   encryption_at_host_enabled  = var.encryption_at_host_enabled
-  zones                       = var.zones
+  zones                       = local.zones_supported && var.zonal_vmss_enabled ? [element(var.zones, count.index)] : distinct(var.zones)
   zone_balance                = false
   instances                   = var.vmss_desired_ccs
   termination_notification {
@@ -84,11 +86,13 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "cc_vmss" {
 }
 
 
+# Create scaleset profiles and thresholds
 resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
+  count               = length(azurerm_orchestrated_virtual_machine_scale_set.cc_vmss[*].id)
   name                = "custom-scale-rule"
   resource_group_name = var.resource_group
   location            = var.location
-  target_resource_id  = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.id
+  target_resource_id  = element(azurerm_orchestrated_virtual_machine_scale_set.cc_vmss[*].id, count.index)
 
   profile {
     name = "defaultProfile"
@@ -102,7 +106,7 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
     rule {
       metric_trigger {
         metric_name        = "smedge_cpu_util"
-        metric_resource_id = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.id
+        metric_resource_id = element(azurerm_orchestrated_virtual_machine_scale_set.cc_vmss[*].id, count.index)
         time_grain         = "PT1M"
         statistic          = "Average"
         time_window        = var.scale_out_evaluation_period
@@ -110,11 +114,6 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
         operator           = "GreaterThan"
         threshold          = var.scale_out_threshold
         metric_namespace   = "Zscaler/CloudConnectors"
-        #dimensions {
-        #  name     = "AppName"
-        #  operator = "Equals"
-        #  values   = ["App1"]
-        #}
       }
 
       scale_action {
@@ -128,7 +127,7 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
     rule {
       metric_trigger {
         metric_name        = "smedge_cpu_util"
-        metric_resource_id = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.id
+        metric_resource_id = element(azurerm_orchestrated_virtual_machine_scale_set.cc_vmss[*].id, count.index)
         time_grain         = "PT1M"
         statistic          = "Average"
         time_window        = var.scale_in_evaluation_period
@@ -136,11 +135,6 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
         operator           = "LessThan"
         threshold          = var.scale_in_threshold
         metric_namespace   = "Zscaler/CloudConnectors"
-        #dimensions {
-        #  name     = "AppName"
-        #  operator = "Equals"
-        #  values   = ["App1"]
-        #}
       }
 
       scale_action {
@@ -160,7 +154,6 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
         minutes  = [var.scheduled_scaling_end_time_min]
       }
     }
-
   }
 
   dynamic "profile" {
@@ -177,7 +170,7 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
       rule {
         metric_trigger {
           metric_name        = "smedge_cpu_util"
-          metric_resource_id = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.id
+          metric_resource_id = element(azurerm_orchestrated_virtual_machine_scale_set.cc_vmss[*].id, count.index)
           time_grain         = "PT1M"
           statistic          = "Average"
           time_window        = var.scale_out_evaluation_period
@@ -185,11 +178,6 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
           operator           = "GreaterThan"
           threshold          = var.scale_out_threshold
           metric_namespace   = "Zscaler/CloudConnectors"
-          #dimensions {
-          #  name     = "AppName"
-          #  operator = "Equals"
-          #  values   = ["App1"]
-          #}
         }
 
         scale_action {
@@ -203,7 +191,7 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
       rule {
         metric_trigger {
           metric_name        = "smedge_cpu_util"
-          metric_resource_id = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.id
+          metric_resource_id = element(azurerm_orchestrated_virtual_machine_scale_set.cc_vmss[*].id, count.index)
           time_grain         = "PT1M"
           statistic          = "Average"
           time_window        = var.scale_in_evaluation_period
@@ -211,11 +199,6 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
           operator           = "LessThan"
           threshold          = var.scale_in_threshold
           metric_namespace   = "Zscaler/CloudConnectors"
-          #dimensions {
-          #  name     = "AppName"
-          #  operator = "Equals"
-          #  values   = ["App1"]
-          #}
         }
 
         scale_action {
@@ -232,78 +215,6 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
         hours    = [var.scheduled_scaling_start_time_hour]
         minutes  = [var.scheduled_scaling_start_time_min]
       }
-    }
-  }
-}
-
-
-resource "azurerm_storage_account" "storage_account" {
-  name                     = "${var.resource_tag}storage"
-  resource_group_name      = var.resource_group
-  location                 = var.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-}
-
-resource "azurerm_service_plan" "app_service_plan" {
-  name                = "${var.name_prefix}-ccvmss-${var.resource_tag}-app-service-plan"
-  resource_group_name = var.resource_group
-  location            = var.location
-  os_type             = "Linux"
-  sku_name            = "Y1"
-}
-
-resource "azurerm_application_insights" "orchestration_app_insights" {
-  name                = "${var.name_prefix}-ccvmss-${var.resource_tag}-app-insights"
-  location            = var.location
-  resource_group_name = var.resource_group
-  application_type    = "web"
-}
-
-data "local_file" "zscaler_function_app_file" {
-  count    = var.zscaler_cc_function_deploy_local_file ? 1 : 0
-  filename = var.zscaler_cc_function_file_path
-}
-
-resource "random_string" "function_app_hash" {
-  count   = var.zscaler_cc_function_deploy_local_file ? 1 : 0
-  length  = 32
-  special = false
-  upper   = false
-  keepers = {
-    zipped_code = data.local_file.zscaler_function_app_file[0].content_md5
-  }
-}
-
-resource "local_file" "function_app_src_code" {
-  count          = var.zscaler_cc_function_deploy_local_file ? 1 : 0
-  content_base64 = filebase64("${var.zscaler_cc_function_file_path}")
-  filename       = "${path.module}/zscaler_cc_function_app_${random_string.function_app_hash[0].result}.zip"
-}
-
-locals {
-  website_run_from_pkg = var.zscaler_cc_function_deploy_local_file ? "1" : var.zscaler_cc_function_public_url
-}
-
-resource "azurerm_linux_function_app" "orchestration_app" {
-  name                = "${var.name_prefix}-ccvmss-${var.resource_tag}-function-app"
-  resource_group_name = var.resource_group
-  location            = var.location
-
-  storage_account_name       = azurerm_storage_account.storage_account.name
-  storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
-  service_plan_id            = azurerm_service_plan.app_service_plan.id
-  identity {
-    type         = "UserAssigned"
-    identity_ids = [var.managed_identity_id]
-  }
-
-  zip_deploy_file = var.zscaler_cc_function_deploy_local_file ? "${path.module}/zscaler_cc_function_app_${random_string.function_app_hash[0].result}.zip" : null
-  app_settings    = { "SUBSCRIPTION_ID" = var.susbcription_id, "MANAGED_IDENTITY" = var.managed_identity_client_id, "RESOURCE_GROUP" = var.resource_group, "VMSS_NAME" = azurerm_orchestrated_virtual_machine_scale_set.cc_vmss.name, "TERMINATE_UNHEALTHY_INSTANCES" = var.terminate_unhealthy_instances, "VAULT_URL" = var.vault_url, "CC_URL" = var.cc_vm_prov_url, "WEBSITE_RUN_FROM_PACKAGE" = local.website_run_from_pkg, "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.orchestration_app_insights.connection_string }
-
-  site_config {
-    application_stack {
-      python_version = "3.11"
     }
   }
 }
