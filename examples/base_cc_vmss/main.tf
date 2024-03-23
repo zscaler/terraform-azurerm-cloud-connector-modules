@@ -195,7 +195,7 @@ module "cc_functionapp" {
     "SUBSCRIPTION_ID"               = data.azurerm_subscription.current.id
     "MANAGED_IDENTITY"              = module.cc_identity.managed_identity_client_id
     "RESOURCE_GROUP"                = module.network.resource_group_name
-    "VMSS_NAME"                     = module.cc_vmss.vmss_names
+    "VMSS_NAME"                     = module.cc_vmss.vmss_names[0]
     "TERMINATE_UNHEALTHY_INSTANCES" = var.terminate_unhealthy_instances
     "VAULT_URL"                     = var.azure_vault_url
     "CC_URL"                        = var.cc_vm_prov_url
