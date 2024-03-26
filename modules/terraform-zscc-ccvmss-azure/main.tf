@@ -4,7 +4,7 @@
 # Create VMSS
 resource "azurerm_orchestrated_virtual_machine_scale_set" "cc_vmss" {
   count                       = local.zones_supported && var.zonal_vmss_enabled ? length(var.zones) : 1
-  name                        = "${var.name_prefix}-ccvmss-${var.resource_tag}"
+  name                        = "${var.name_prefix}-ccvmss-${count.index + 1}-${var.resource_tag}"
   location                    = var.location
   resource_group_name         = var.resource_group
   platform_fault_domain_count = var.fault_domain_count
@@ -26,7 +26,7 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "cc_vmss" {
     ip_configuration {
       name      = "${var.name_prefix}-ccvmss-mgmt-nic-conf-${var.resource_tag}"
       primary   = true
-      subnet_id = var.mgmt_subnet_id
+      subnet_id = element(var.mgmt_subnet_id, count.index)
     }
   }
 
@@ -39,7 +39,7 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "cc_vmss" {
     ip_configuration {
       name                                   = "${var.name_prefix}-ccvmss-fwd-nic-conf-${var.resource_tag}"
       primary                                = true
-      subnet_id                              = var.service_subnet_id
+      subnet_id                              = element(var.service_subnet_id, count.index)
       load_balancer_backend_address_pool_ids = [var.backend_address_pool]
     }
   }
@@ -89,7 +89,7 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "cc_vmss" {
 # Create scaleset profiles and thresholds
 resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
   count               = length(azurerm_orchestrated_virtual_machine_scale_set.cc_vmss[*].id)
-  name                = "custom-scale-rule"
+  name                = "custom-scale-rule-az-${count.index + 1}"
   resource_group_name = var.resource_group
   location            = var.location
   target_resource_id  = element(azurerm_orchestrated_virtual_machine_scale_set.cc_vmss[*].id, count.index)
