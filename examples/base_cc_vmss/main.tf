@@ -1,10 +1,4 @@
 ################################################################################
-# Get current Subscription ID
-################################################################################
-data "azurerm_subscription" "current" {
-}
-
-################################################################################
 # Generate a unique random string for resource name assignment and key pair
 ################################################################################
 resource "random_string" "suffix" {
@@ -188,18 +182,16 @@ module "cc_functionapp" {
   global_tags         = local.global_tags
   managed_identity_id = module.cc_identity.managed_identity_id
 
-  zscaler_cc_function_deploy_local_file = var.zscaler_cc_function_deploy_local_file
-  zscaler_cc_function_public_url        = var.zscaler_cc_function_public_url
+  upload_function_app_zip        = var.upload_function_app_zip                      #upload local zip from module to Azure Storage Blob
+  managed_identity_principal_id  = module.cc_identity.managed_identity_principal_id #required if uploading zip to Azure Storage to restrict access
+  zscaler_cc_function_public_url = var.zscaler_cc_function_public_url               #Or pull from pre-existing external URL
 
-  cc_function_app_settings = {
-    "SUBSCRIPTION_ID"               = data.azurerm_subscription.current.id
-    "MANAGED_IDENTITY"              = module.cc_identity.managed_identity_client_id
-    "RESOURCE_GROUP"                = module.network.resource_group_name
-    "VMSS_NAME"                     = module.cc_vmss.vmss_names[0]
-    "TERMINATE_UNHEALTHY_INSTANCES" = var.terminate_unhealthy_instances
-    "VAULT_URL"                     = var.azure_vault_url
-    "CC_URL"                        = var.cc_vm_prov_url
-  }
+  #required app_settings inputs
+  terminate_unhealthy_instances = var.terminate_unhealthy_instances
+  cc_vm_prov_url                = var.cc_vm_prov_url
+  azure_vault_url               = var.azure_vault_url
+  vmss_names                    = module.cc_vmss.vmss_names
+  managed_identity_client_id    = module.cc_identity.managed_identity_client_id
 }
 
 ################################################################################
