@@ -129,8 +129,8 @@ module "cc_vmss" {
   resource_tag                   = random_string.suffix.result
   global_tags                    = local.global_tags
   resource_group                 = module.network.resource_group_name
-  mgmt_subnet_id                 = module.network.cc_subnet_ids[0]
-  service_subnet_id              = module.network.cc_subnet_ids[0]
+  mgmt_subnet_id                 = module.network.cc_subnet_ids
+  service_subnet_id              = module.network.cc_subnet_ids
   ssh_key                        = tls_private_key.key.public_key_openssh
   managed_identity_id            = module.cc_identity.managed_identity_id
   user_data                      = local.userdata
