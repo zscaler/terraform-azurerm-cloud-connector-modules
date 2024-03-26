@@ -26,24 +26,51 @@ variable "location" {
   description = "Cloud Connector Azure Region"
 }
 
-variable "managed_identity_id" {
-  type        = string
-  description = "ID of the User Managed Identity assigned to Cloud Connector VM"
-}
-
-variable "zscaler_cc_function_deploy_local_file" {
+variable "upload_function_app_zip" {
   type        = bool
-  description = "Set to True if you wish to deploy a local file using Zip Deploy method."
-  default     = false
+  description = "By default, this Terraform will create a new Storage Account/Container/Blob to upload the zip file. The function app will pull from the blobl url to run. Setting this value to false will prevent creation/upload of the blob file"
+  default     = true
 }
 
 variable "zscaler_cc_function_public_url" {
   type        = string
-  description = "Path to the zscaler_cc_function file."
+  description = "Publicly accessible URL path where Function App can pull its zip file build from. This is only required when var.upload_function_app_zip is set to false"
   default     = ""
 }
 
-variable "cc_function_app_settings" {
-  type        = map(string)
-  description = "App Setting key-value pair environment variables required for Cloud Connector VMSS App Function"
+variable "cc_vm_prov_url" {
+  type        = string
+  description = "Zscaler Cloud Connector Provisioning URL"
+}
+
+variable "azure_vault_url" {
+  type        = string
+  description = "Azure Vault URL"
+}
+
+variable "terminate_unhealthy_instances" {
+  type        = bool
+  description = "Indicate whether detected unhealthy instances are terminated or not."
+  default     = true
+}
+
+variable "vmss_names" {
+  type        = list(string)
+  description = "Names of Virtual Machine Scale Sets for Function App to monitor"
+}
+
+variable "managed_identity_id" {
+  type        = string
+  description = "ID of the User Managed Identity assigned to Function App"
+}
+
+variable "managed_identity_client_id" {
+  type        = string
+  description = "Client ID of the User Managed Identity for Function App to utilize"
+}
+
+variable "managed_identity_principal_id" {
+  type        = string
+  description = "Object(Principal) ID of the User Managed Identity for Function App to utilize"
+  default     = ""
 }

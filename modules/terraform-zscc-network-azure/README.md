@@ -33,6 +33,7 @@ Subnets used for DNS resolver have the following limitations:
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.7, < 2.0.0 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 3.46, <= 3.74 |
+| <a name="requirement_local"></a> [local](#requirement\_local) | ~> 2.5.0 |
 
 ## Providers
 
