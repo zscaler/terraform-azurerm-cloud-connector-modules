@@ -35,12 +35,12 @@ variable "location" {
 #### module by default pushes the same single subnet ID for both mgmt_subnet_id and service_subnet_id, so they are effectively the same variable
 #### leaving each as unique values should customer choose to deploy mgmt and service as individual subnets for additional isolation
 variable "mgmt_subnet_id" {
-  type        = string
+  type        = list(string)
   description = "Cloud Connector management subnet id. "
 }
 
 variable "service_subnet_id" {
-  type        = string
+  type        = list(string)
   description = "Cloud Connector service subnet id"
 }
 
