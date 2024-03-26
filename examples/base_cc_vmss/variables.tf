@@ -359,15 +359,15 @@ variable "scheduled_scaling_end_time_min" {
   default     = 0
 }
 
-variable "zscaler_cc_function_deploy_local_file" {
+variable "upload_function_app_zip" {
   type        = bool
-  description = "Set to True if you wish to deploy a local file using Zip Deploy method."
-  default     = false
+  description = "By default, this Terraform will create a new Storage Account/Container/Blob to upload the zip file. The function app will pull from the blobl url to run. Setting this value to false will prevent creation/upload of the blob file"
+  default     = true
 }
 
 variable "zscaler_cc_function_public_url" {
   type        = string
-  description = "Path to the zscaler_cc_function file."
+  description = "Publicly accessible URL path where Function App can pull its zip file build from. This is only required when var.upload_function_app_zip is set to false"
   default     = ""
 }
 

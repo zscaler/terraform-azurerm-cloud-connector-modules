@@ -1,17 +1,50 @@
 ################################################################################
+# Get current Subscription ID
+################################################################################
+data "azurerm_subscription" "current" {
+}
+
+################################################################################
 # Create Function App Dependencies
 ################################################################################
 # Create Storage Account to store Function App
-resource "azurerm_storage_account" "storage_account" {
-  name                     = "${var.resource_tag}storage"
+resource "azurerm_storage_account" "cc_function_storage_account" {
+  name                     = "stccvmss${var.resource_tag}"
   resource_group_name      = var.resource_group
   location                 = var.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
 
+# Create Private Storage Container to upload function zip file
+resource "azurerm_storage_container" "cc_function_storage_container" {
+  count                 = var.upload_function_app_zip ? 1 : 0
+  name                  = "function-zip-container"
+  storage_account_name  = azurerm_storage_account.cc_function_storage_account.name
+  container_access_type = "private"
+}
+
+# Create Storage Blob to store function zip file
+resource "azurerm_storage_blob" "cc_function_storage_blob" {
+  count                  = var.upload_function_app_zip ? 1 : 0
+  name                   = "zscaler_cc_function_app.zip"
+  storage_account_name   = azurerm_storage_account.cc_function_storage_account.name
+  storage_container_name = azurerm_storage_container.cc_function_storage_container[0].name
+  type                   = "Block"
+  source                 = "${path.module}/zscaler_cc_function_app.zip"
+  content_md5            = filemd5("${path.module}/zscaler_cc_function_app.zip")
+}
+
+# Restrict storage account blob access to only CC/Function App Managed Identity
+resource "azurerm_role_assignment" "cc_function_role_assignment_storage" {
+  count                = var.upload_function_app_zip ? 1 : 0
+  scope                = azurerm_storage_account.cc_function_storage_account.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = var.managed_identity_principal_id
+}
+
 # Create App Service Plan
-resource "azurerm_service_plan" "app_service_plan" {
+resource "azurerm_service_plan" "vmss_orchestration_app_service_plan" {
   name                = "${var.name_prefix}-ccvmss-${var.resource_tag}-app-service-plan"
   resource_group_name = var.resource_group
   location            = var.location
@@ -27,28 +60,6 @@ resource "azurerm_application_insights" "vmss_orchestration_app_insights" {
   application_type    = "web"
 }
 
-/*
-data "local_file" "zscaler_function_app_file" {
-  count    = var.zscaler_cc_function_deploy_local_file ? 1 : 0
-  filename = "${path.module}/zscaler_cc_function_app.zip"
-}
-
-resource "random_string" "function_app_hash" {
-  count   = var.zscaler_cc_function_deploy_local_file ? 1 : 0
-  length  = 32
-  special = false
-  upper   = false
-  keepers = {
-    zipped_code = data.local_file.zscaler_function_app_file[0].content_md5
-  }
-}
-
-resource "local_file" "function_app_src_code" {
-  count          = var.zscaler_cc_function_deploy_local_file ? 1 : 0
-  content_base64 = filebase64("${var.zscaler_cc_function_file_path}")
-  filename       = "${path.module}/zscaler_cc_function_app_${random_string.function_app_hash[0].result}.zip"
-}
-*/
 
 ################################################################################
 # Create Function App
@@ -58,22 +69,40 @@ resource "azurerm_linux_function_app" "vmss_orchestration_app" {
   resource_group_name = var.resource_group
   location            = var.location
 
-  storage_account_name       = azurerm_storage_account.storage_account.name
-  storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
-  service_plan_id            = azurerm_service_plan.app_service_plan.id
+  storage_account_name       = azurerm_storage_account.cc_function_storage_account.name
+  storage_account_access_key = azurerm_storage_account.cc_function_storage_account.primary_access_key
+  service_plan_id            = azurerm_service_plan.vmss_orchestration_app_service_plan.id
+
   identity {
     type         = "UserAssigned"
     identity_ids = [var.managed_identity_id]
   }
 
-  zip_deploy_file = var.zscaler_cc_function_deploy_local_file ? "${path.module}/zscaler_cc_function_app.zip" : null
-
-  app_settings = merge(var.cc_function_app_settings, { "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.vmss_orchestration_app_insights.connection_string, "WEBSITE_RUN_FROM_PACKAGE" = var.zscaler_cc_function_deploy_local_file ? "1" : var.zscaler_cc_function_public_url })
+  app_settings = {
+    "SUBSCRIPTION_ID"                            = data.azurerm_subscription.current.id
+    "MANAGED_IDENTITY"                           = var.managed_identity_client_id
+    "RESOURCE_GROUP"                             = var.resource_group
+    "VMSS_NAME"                                  = jsonencode(var.vmss_names)
+    "TERMINATE_UNHEALTHY_INSTANCES"              = var.terminate_unhealthy_instances
+    "VAULT_URL"                                  = var.azure_vault_url
+    "CC_URL"                                     = var.cc_vm_prov_url
+    "APPLICATIONINSIGHTS_CONNECTION_STRING"      = azurerm_application_insights.vmss_orchestration_app_insights.connection_string
+    "ApplicationInsightsAgent_EXTENSION_VERSION" = "~3"
+    "XDT_MicrosoftApplicationInsights_Mode"      = "recommended"
+    "WEBSITE_RUN_FROM_PACKAGE"                   = var.upload_function_app_zip ? azurerm_storage_blob.cc_function_storage_blob[0].url : var.zscaler_cc_function_public_url
+  }
 
   site_config {
     application_stack {
       python_version = "3.11"
     }
+    application_insights_connection_string = azurerm_application_insights.vmss_orchestration_app_insights.connection_string
+  }
+
+  lifecycle {
+    ignore_changes = [
+      app_settings["APPLICATIONINSIGHTS_CONNECTION_STRING"],
+    ]
   }
 
   tags = var.global_tags
