@@ -121,7 +121,7 @@ resource "local_file" "user_data_file" {
   filename = "../user_data"
 }
 
-# Create specified number of CC appliances
+# Create Flexible Orchestration VMSS and scaling policies
 module "cc_vmss" {
   source                         = "../../modules/terraform-zscc-ccvmss-azure"
   location                       = var.arm_location
@@ -180,11 +180,11 @@ module "cc_functionapp" {
   resource_group      = module.network.resource_group_name
   location            = var.arm_location
   global_tags         = local.global_tags
-  managed_identity_id = module.cc_identity.managed_identity_id
+  managed_identity_id = module.cc_identity.function_app_managed_identity_id
 
-  upload_function_app_zip        = var.upload_function_app_zip                      #upload local zip from module to Azure Storage Blob
-  managed_identity_principal_id  = module.cc_identity.managed_identity_principal_id #required if uploading zip to Azure Storage to restrict access
-  zscaler_cc_function_public_url = var.zscaler_cc_function_public_url               #Or pull from pre-existing external URL
+  upload_function_app_zip        = var.upload_function_app_zip                                   #upload local zip from module to Azure Storage Blob
+  managed_identity_principal_id  = module.cc_identity.function_app_managed_identity_principal_id #required if uploading zip to Azure Storage to restrict access
+  zscaler_cc_function_public_url = var.zscaler_cc_function_public_url                            #Or pull from pre-existing external URL
   existing_storage_account       = var.existing_storage_account
   existing_storage_account_name  = var.existing_storage_account_name
   existing_storage_account_rg    = var.existing_storage_account_rg
@@ -194,7 +194,7 @@ module "cc_functionapp" {
   cc_vm_prov_url                = var.cc_vm_prov_url
   azure_vault_url               = var.azure_vault_url
   vmss_names                    = module.cc_vmss.vmss_names
-  managed_identity_client_id    = module.cc_identity.managed_identity_client_id
+  managed_identity_client_id    = module.cc_identity.function_app_managed_identity_client_id
 }
 
 ################################################################################
@@ -223,12 +223,15 @@ module "cc_identity" {
   cc_vm_managed_identity_name = var.cc_vm_managed_identity_name
   cc_vm_managed_identity_rg   = var.cc_vm_managed_identity_rg
 
+  vmss_enabled                       = true
+  function_app_managed_identity_name = coalesce(var.function_app_managed_identity_name, var.cc_vm_managed_identity_name)
+  function_app_managed_identity_rg   = coalesce(var.function_app_managed_identity_rg, var.cc_vm_managed_identity_rg)
+
   #optional variable provider block defined in versions.tf to support managed identity resource being in a different subscription
   providers = {
     azurerm = azurerm.managed_identity_sub
   }
 }
-
 
 ################################################################################
 # 8. Create Azure Load Balancer in CC VNet with all Backend Pools, Rules, and 
