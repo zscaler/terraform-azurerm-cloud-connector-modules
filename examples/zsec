@@ -462,9 +462,10 @@ if [[ ! -e ./.zsecrc ]]; then
         echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
         exit 1
     fi
-    echo "Cloud Connector User Managed Identity Information:"
+    echo "IAM/User Managed Identity Information:"
     while true; do
-        read -r -p "${CYAN}Is the Managed Identity in the same Subscription ID? [yes/no]: ${RESET}" response
+        echo "Terraform will lookup an existing User Managed Identity to assign to Cloud Connector resources..."
+        read -r -p "${CYAN}Is the Managed Identity in the same Subscription ID ($azure_subscription_id)? [yes/no]: ${RESET}" response
         case $response in 
             yes|y ) 
                 echo "Managed Identity is in the same Subscription"
@@ -482,7 +483,30 @@ if [[ ! -e ./.zsecrc ]]; then
     echo "export TF_VAR_cc_vm_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
     read -r -p "${CYAN}Enter Managed Identity Resource Group: ${RESET}" cc_vm_managed_identity_rg
     echo "export TF_VAR_cc_vm_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
-    
+
+    if [[ $dtype == *"vmss"* ]]; then
+    echo "Function App User Managed Identity Information:"
+    while true; do
+        read -r -p "${CYAN}Assign the same User Managed Identity ($cc_vm_managed_identity_name) to Function App? [yes/no]: ${RESET}" function_mui_response
+        case $function_mui_response in 
+            yes|y ) 
+                echo "Terraform will associate the same Managed Identity to both the VMSS and Function App"
+                echo "export TF_VAR_function_app_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
+                echo "export TF_VAR_function_app_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
+                break
+                ;;
+            no|n )
+                read -r -p "${CYAN}Enter Function App designated Managed Identity Name: ${RESET}" function_app_managed_identity_name 
+                echo "export TF_VAR_function_app_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
+                read -r -p "${CYAN}Enter Function App designated Managed Identity Resource Group: ${RESET}" function_app_managed_identity_rg
+                echo "export TF_VAR_function_app_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
+                break
+                ;;
+            * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
+        esac
+    done  
+    fi
+
     cc_count_default=2
     if [[ "$dtype" == *"lb"* ]]; then
         read -r -p "${CYAN}Enter how many Cloud Connectors to deploy? [Default=$cc_count_default]: ${RESET}" cc_count_input
