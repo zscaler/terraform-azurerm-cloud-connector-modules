@@ -56,7 +56,7 @@ variable "terminate_unhealthy_instances" {
 
 variable "vmss_names" {
   type        = list(string)
-  description = "Names of Virtual Machine Scale Sets for Function App to monitor"
+  description = "Names of Virtual Machine Scale Sets for Function App to monitor provided as a list"
 }
 
 variable "managed_identity_id" {
@@ -77,7 +77,7 @@ variable "managed_identity_principal_id" {
 
 variable "existing_storage_account" {
   type        = bool
-  description = "Set to True if you wish to use an existing Storage Account to associate with the Function App."
+  description = "Set to True if you wish to use an existing Storage Account to associate with the Function App. Default is false meaning Terraform module will create a new one"
   default     = false
 }
 
