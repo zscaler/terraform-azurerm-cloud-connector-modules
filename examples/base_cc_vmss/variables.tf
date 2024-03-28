@@ -111,9 +111,7 @@ variable "cc_instance_size" {
   default     = "small"
   validation {
     condition = (
-      var.cc_instance_size == "small" ||
-      var.cc_instance_size == "medium" ||
-      var.cc_instance_size == "large"
+      var.cc_instance_size == "small"
     )
     error_message = "Input cc_instance_size must be set to an approved cc instance type."
   }
@@ -156,6 +154,12 @@ variable "ccvm_image_version" {
   default     = "latest"
 }
 
+variable "ccvm_source_image_id" {
+  type        = string
+  description = "Custom Cloud Connector Source Image ID. Set this value to the path of a local subscription Microsoft.Compute image to override the Cloud Connector deployment instead of using the marketplace publisher"
+  default     = null
+}
+
 variable "http_probe_port" {
   type        = number
   description = "Port number for Cloud Connector cloud init to enable listener port for HTTP probe from Azure LB"
@@ -179,16 +183,6 @@ variable "workload_count" {
   }
 }
 
-variable "cc_count" {
-  type        = number
-  description = "The number of Cloud Connectors to deploy.  Validation assumes max for /24 subnet but could be smaller or larger as long as subnet can accommodate"
-  default     = 2
-  validation {
-    condition     = var.cc_count >= 1 && var.cc_count <= 250
-    error_message = "Input cc_count must be a whole number between 1 and 250."
-  }
-}
-
 variable "zones_enabled" {
   type        = bool
   description = "Determine whether to provision Cloud Connector VMs explicitly in defined zones (if supported by the Azure region provided in the location variable). If left false, Azure will automatically choose a zone and module will create an availability set resource instead for VM fault tolerance"
@@ -205,12 +199,6 @@ variable "zones" {
     )
     error_message = "Input zones variable must be a number 1-3."
   }
-}
-
-variable "reuse_nsg" {
-  type        = bool
-  description = "Specifies whether the NSG module should create 1:1 network security groups per instance or 1 network security group for all instances"
-  default     = "false"
 }
 
 variable "accelerated_networking_enabled" {
@@ -275,9 +263,9 @@ variable "encryption_at_host_enabled" {
   default     = true
 }
 
-variable "vmss_desired_ccs" {
+variable "vmss_default_ccs" {
   type        = number
-  description = "Desired number of CCs in vmss. This value should be updated with the current VMSS count every deployment."
+  description = "Default number of CCs in vmss."
   default     = 2
 }
 
@@ -375,4 +363,22 @@ variable "zonal_vmss_enabled" {
   type        = bool
   description = "By default, Terraform will create one VMSS per subnet/logical availability zone if supported by Azure. Set to false if you would rather create a single VMSS containing multiple availability zones"
   default     = true
+}
+
+variable "existing_storage_account" {
+  type        = bool
+  description = "Set to True if you wish to use an existing Storage Account to associate with the Function App."
+  default     = false
+}
+
+variable "existing_storage_account_name" {
+  type        = string
+  description = "Name of existing Storage Account to associate with the Function App."
+  default     = ""
+}
+
+variable "existing_storage_account_rg" {
+  type        = string
+  description = "Resource Group of existing Storage Account to associate with the Function App."
+  default     = ""
 }
