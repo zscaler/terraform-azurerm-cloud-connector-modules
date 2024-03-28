@@ -358,25 +358,6 @@ if [[ ! -e ./.zsecrc ]]; then
     # ---
 
 
-    cc_instance_size=small
-    echo "export TF_VAR_cc_instance_size=${cc_instance_size}" >> .zsecrc
-    #read -r -p "Enter CC Instance Size. Valid input = small, medium, or large. This needs to match the size chosen in the CC provisioning template [Default=$cc_instance_size_default]: " cc_instance_size_input
-    #cc_instance_size=${cc_instance_size_input:-$cc_instance_size_default}
-    #    case $cc_instance_size in
-    #      small|medium|large)
-    #          echo "Cloud Connector size: ${cc_instance_size}"
-    #          echo "export TF_VAR_cc_instance_size=${cc_instance_size}" >> .zsecrc
-    #      ;;
-    #      *)
-    #          echo "Invalid Cloud Connector size: ${cc_instance_size}."
-    #          echo "Delete .zsecrc file and re-run zsecup ..."
-    #          exit 1
-    #      ;;
-    #    esac
-
-
-
-    if [[ $cc_instance_size == "small" ]]; then
         PS3="${CYAN}Select desired Azure VM type for Cloud Connector: ${RESET}"
         if [[ "$azure_location" == "chinanorth" || "$azure_location" == "China North" || "$azure_location" == "ChinaNorth" || "$azure_location" == "chinaeast" || "$azure_location" == "China East" || "$azure_location" == "ChinaEast" ]]; then
             vm_sizes=("Standard_DS2_v2")
@@ -437,16 +418,8 @@ if [[ ! -e ./.zsecrc ]]; then
             done
         fi
 
-    elif [[ $cc_instance_size == "medium" ]]; then
-        echo ""
-    elif [[ $cc_instance_size == "large" ]]; then
-        echo ""
-    else
-        exit 1
-    fi
-
     read -r -p "${CYAN}Enter CC Provisioning URL${RESET} (E.g. connector.zscaler.net/api/v1/provUrl?name=azure_prov_url): " cc_vm_prov_url
-    echo "Provisioning URL entered is: $cc_vm_prov_url. ${YELLOW}Make sure this matches the CC Instance Size $cc_instance_size chosen${RESET}"
+    echo "Provisioning URL entered is: $cc_vm_prov_url${RESET}"
     echo "export TF_VAR_cc_vm_prov_url=${cc_vm_prov_url}" >> .zsecrc
     read -r -p "${CYAN}Enter Azure Key Vault URL${RESET} (E.g https://zscaler-cc-demo.vault.azure.net): " azure_vault_url
     echo "Key Vault URL entered is: $azure_vault_url"
@@ -915,7 +888,7 @@ fi
 
 if [[ $dtype != "base" ]]; then
     echo "Checking Cloud Connector provisioning info"
-    if [ -z "$TF_VAR_cc_vm_prov_url" ] || [ -z "$TF_VAR_azure_vault_url" ] || [ -z "$TF_VAR_http_probe_port" ] || [ -z "$TF_VAR_cc_instance_size" ] || [ -z "$TF_VAR_ccvm_instance_type" ] || [ -z "$TF_VAR_cc_vm_managed_identity_name" ] || [ -z "$TF_VAR_cc_vm_managed_identity_rg" ]; then
+    if [ -z "$TF_VAR_cc_vm_prov_url" ] || [ -z "$TF_VAR_azure_vault_url" ] || [ -z "$TF_VAR_http_probe_port" ] || [ -z "$TF_VAR_ccvm_instance_type" ] || [ -z "$TF_VAR_cc_vm_managed_identity_name" ] || [ -z "$TF_VAR_cc_vm_managed_identity_rg" ]; then
         echo "${RED}Cloud Connector provisioning info is missing. Remove .zsecrc file and rerun $0 $1${RESET}"
         exit 1
     fi
