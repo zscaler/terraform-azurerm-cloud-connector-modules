@@ -17,6 +17,7 @@ resource "azurerm_storage_account" "cc_function_storage_account" {
   account_replication_type = "LRS"
 }
 
+# Or use an existing storage account
 data "azurerm_storage_account" "existing_storage_account" {
   count               = var.existing_storage_account ? 1 : 0
   name                = var.existing_storage_account_name
@@ -52,7 +53,7 @@ resource "azurerm_storage_blob" "cc_function_storage_blob" {
 resource "azurerm_role_assignment" "cc_function_role_assignment_storage" {
   count                = var.upload_function_app_zip ? 1 : 0
   scope                = local.storage_account_id
-  role_definition_name = "Storage Blob Data Contributor"
+  role_definition_name = "Storage Blob Data Reader"
   principal_id         = var.managed_identity_principal_id
 }
 
@@ -63,6 +64,8 @@ resource "azurerm_service_plan" "vmss_orchestration_app_service_plan" {
   location            = var.location
   os_type             = "Linux"
   sku_name            = "Y1"
+
+  tags = var.global_tags
 }
 
 # Create Application Insights resource
@@ -71,6 +74,8 @@ resource "azurerm_application_insights" "vmss_orchestration_app_insights" {
   location            = var.location
   resource_group_name = var.resource_group
   application_type    = "web"
+
+  tags = var.global_tags
 }
 
 
