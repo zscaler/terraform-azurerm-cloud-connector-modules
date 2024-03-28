@@ -56,7 +56,7 @@ module "network" {
   workloads_subnets     = var.workloads_subnets
   public_subnets        = var.public_subnets
   zones_enabled         = var.zones_enabled
-  zones                 = var.zonal_vmss_enabled ? var.zones : [var.zones[0]]
+  zones                 = var.zones
   lb_frontend_ip        = module.cc_lb.lb_ip
   workloads_enabled     = true
   bastion_enabled       = true
@@ -137,7 +137,6 @@ module "cc_vmss" {
   backend_address_pool           = module.cc_lb.lb_backend_address_pool
   zones_enabled                  = var.zones_enabled
   zones                          = var.zones
-  zonal_vmss_enabled             = var.zonal_vmss_enabled
   ccvm_instance_type             = var.ccvm_instance_type
   ccvm_image_publisher           = var.ccvm_image_publisher
   ccvm_image_offer               = var.ccvm_image_offer
