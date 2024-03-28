@@ -278,9 +278,3 @@ variable "scheduled_scaling_end_time_min" {
   description = "Minute to end scheduled scaling profile."
   default     = 0
 }
-
-variable "zonal_vmss_enabled" {
-  type        = bool
-  description = "By default, Terraform will create one VMSS per subnet/logical availability zone if supported by Azure. Set to false if you would rather create a single VMSS containing multiple availability zones"
-  default     = true
-}

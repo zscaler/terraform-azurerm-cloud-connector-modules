@@ -359,12 +359,6 @@ variable "zscaler_cc_function_public_url" {
   default     = ""
 }
 
-variable "zonal_vmss_enabled" {
-  type        = bool
-  description = "By default, Terraform will create one VMSS per subnet/logical availability zone if supported by Azure. Set to false if you would rather create a single VMSS containing multiple availability zones"
-  default     = true
-}
-
 variable "existing_storage_account" {
   type        = bool
   description = "Set to True if you wish to use an existing Storage Account to associate with the Function App."
