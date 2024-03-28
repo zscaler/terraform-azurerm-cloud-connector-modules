@@ -3,16 +3,15 @@
 ################################################################################
 # Create VMSS
 resource "azurerm_orchestrated_virtual_machine_scale_set" "cc_vmss" {
-  count                       = local.zones_supported && var.zonal_vmss_enabled ? length(var.zones) : 1
+  count                       = local.zones_supported ? length(var.zones) : 1
   name                        = "${var.name_prefix}-ccvmss-${count.index + 1}-${var.resource_tag}"
   location                    = var.location
   resource_group_name         = var.resource_group
   platform_fault_domain_count = var.fault_domain_count
   sku_name                    = var.ccvm_instance_type
   encryption_at_host_enabled  = var.encryption_at_host_enabled
-  zones                       = local.zones_supported && var.zonal_vmss_enabled ? [element(var.zones, count.index)] : distinct(var.zones)
+  zones                       = local.zones_supported ? [element(var.zones, count.index)] : null
   zone_balance                = false
-  instances                   = var.vmss_desired_ccs
   termination_notification {
     enabled = true
     timeout = "PT5M"
@@ -65,18 +64,28 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "cc_vmss" {
     identity_ids = [var.managed_identity_id]
   }
 
-  plan {
-    publisher = var.ccvm_image_publisher
-    name      = var.ccvm_image_sku
-    product   = var.ccvm_image_offer
+  dynamic "source_image_reference" {
+    for_each = var.ccvm_source_image_id == null ? [var.ccvm_image_publisher] : []
+
+    content {
+      publisher = var.ccvm_image_publisher
+      offer     = var.ccvm_image_offer
+      sku       = var.ccvm_image_sku
+      version   = var.ccvm_image_version
+    }
   }
 
-  source_image_reference {
-    publisher = var.ccvm_image_publisher
-    offer     = var.ccvm_image_offer
-    sku       = var.ccvm_image_sku
-    version   = var.ccvm_image_version
+  dynamic "plan" {
+    for_each = var.ccvm_source_image_id == null ? [var.ccvm_image_publisher] : []
+
+    content {
+      publisher = var.ccvm_image_publisher
+      name      = var.ccvm_image_sku
+      product   = var.ccvm_image_offer
+    }
   }
+
+  source_image_id = var.ccvm_source_image_id != null ? var.ccvm_source_image_id : null
 
   tags = var.global_tags
 
@@ -98,14 +107,19 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
     name = "defaultProfile"
 
     capacity {
-      default = var.vmss_desired_ccs
+      default = var.vmss_default_ccs
       minimum = var.vmss_min_ccs
       maximum = var.vmss_max_ccs
     }
 
     rule {
       metric_trigger {
-        metric_name        = "smedge_cpu_util"
+        metric_name = "smedge_metrics"
+        dimensions {
+          name     = "metricname"
+          operator = "Equals"
+          values   = ["smedge_cpu_utilization"]
+        }
         metric_resource_id = element(azurerm_orchestrated_virtual_machine_scale_set.cc_vmss[*].id, count.index)
         time_grain         = "PT1M"
         statistic          = "Average"
@@ -126,7 +140,12 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
 
     rule {
       metric_trigger {
-        metric_name        = "smedge_cpu_util"
+        metric_name = "smedge_metrics"
+        dimensions {
+          name     = "metricname"
+          operator = "Equals"
+          values   = ["smedge_cpu_utilization"]
+        }
         metric_resource_id = element(azurerm_orchestrated_virtual_machine_scale_set.cc_vmss[*].id, count.index)
         time_grain         = "PT1M"
         statistic          = "Average"
@@ -169,7 +188,12 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
 
       rule {
         metric_trigger {
-          metric_name        = "smedge_cpu_util"
+          metric_name = "smedge_metrics"
+          dimensions {
+            name     = "metricname"
+            operator = "Equals"
+            values   = ["smedge_cpu_utilization"]
+          }
           metric_resource_id = element(azurerm_orchestrated_virtual_machine_scale_set.cc_vmss[*].id, count.index)
           time_grain         = "PT1M"
           statistic          = "Average"
@@ -190,7 +214,12 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
 
       rule {
         metric_trigger {
-          metric_name        = "smedge_cpu_util"
+          metric_name = "smedge_metrics"
+          dimensions {
+            name     = "metricname"
+            operator = "Equals"
+            values   = ["smedge_cpu_utilization"]
+          }
           metric_resource_id = element(azurerm_orchestrated_virtual_machine_scale_set.cc_vmss[*].id, count.index)
           time_grain         = "PT1M"
           statistic          = "Average"

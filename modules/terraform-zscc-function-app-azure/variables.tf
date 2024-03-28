@@ -74,3 +74,21 @@ variable "managed_identity_principal_id" {
   description = "Object(Principal) ID of the User Managed Identity for Function App to utilize"
   default     = ""
 }
+
+variable "existing_storage_account" {
+  type        = bool
+  description = "Set to True if you wish to use an existing Storage Account to associate with the Function App."
+  default     = false
+}
+
+variable "existing_storage_account_name" {
+  type        = string
+  description = "Name of existing Storage Account to associate with the Function App."
+  default     = ""
+}
+
+variable "existing_storage_account_rg" {
+  type        = string
+  description = "Resource Group of existing Storage Account to associate with the Function App."
+  default     = ""
+}
