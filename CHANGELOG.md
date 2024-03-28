@@ -1,7 +1,15 @@
 ## TBD (UNRELEASED)
 ENHANCEMENTS:
 * add: Standard_D2ds_v4 and Standard_D2ds_v5 size support
-* change: Default recommended small CC instance to Standard_D2ds_v5
+* change: Default recommended CC instance to Standard_D2ds_v5
+* refactor: code cleanup for unused variables and UX
+
+FEATURES:
+* Virtual Machine Scale Sets (VMSS) Support
+    - add: module terraform-zscc-ccvmss-azure for flexible orchestration VMSS and scaling policy template
+    - add: module terraform-zscc-function-app-azure for Function App and dependency resources
+    - add: module terraform-acc-identity-azure support for CC/VMSS and Function App Managed Identity separation
+    - add: zsec script support for VMSS greenfield and brownfield deployments
 
 ## v0.5.0 (May 11, 2024)
 

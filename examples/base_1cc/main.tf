@@ -142,7 +142,6 @@ module "cc_vm" {
   ccvm_image_sku                 = var.ccvm_image_sku
   ccvm_image_version             = var.ccvm_image_version
   ccvm_source_image_id           = var.ccvm_source_image_id
-  cc_instance_size               = var.cc_instance_size
   mgmt_nsg_id                    = module.cc_nsg.mgmt_nsg_id
   service_nsg_id                 = module.cc_nsg.service_nsg_id
   accelerated_networking_enabled = var.accelerated_networking_enabled
@@ -150,7 +149,6 @@ module "cc_vm" {
 
   depends_on = [
     local_file.user_data_file,
-    null_resource.cc_error_checker,
   ]
 }
 
@@ -186,21 +184,5 @@ module "cc_identity" {
   #optional variable provider block defined in versions.tf to support managed identity resource being in a different subscription
   providers = {
     azurerm = azurerm.managed_identity_sub
-  }
-}
-
-
-################################################################################
-# Validation for Cloud Connector instance size and VM Instance Type 
-# compatibilty. Terraform does not have a good/native way to raise an error at 
-# the moment, so this will trigger off an invalid count value if there is an 
-# improper deployment configuration.
-################################################################################
-resource "null_resource" "cc_error_checker" {
-  count = local.valid_cc_create ? 0 : "Cloud Connector parameters were invalid. No appliances were created. Please check the documentation and cc_instance_size / ccvm_instance_type values that were chosen" # 0 means no error is thrown, else throw error
-  provisioner "local-exec" {
-    command = <<EOF
-      echo "Cloud Connector parameters were invalid. No appliances were created. Please check the documentation and cc_instance_size / ccvm_instance_type values that were chosen" >> ../errorlog.txt
-EOF
   }
 }
