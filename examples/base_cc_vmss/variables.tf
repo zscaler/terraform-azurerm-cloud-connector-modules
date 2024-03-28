@@ -361,7 +361,7 @@ variable "zscaler_cc_function_public_url" {
 
 variable "existing_storage_account" {
   type        = bool
-  description = "Set to True if you wish to use an existing Storage Account to associate with the Function App."
+  description = "Set to True if you wish to use an existing Storage Account to associate with the Function App. Default is false meaning Terraform module will create a new one"
   default     = false
 }
 
@@ -374,5 +374,17 @@ variable "existing_storage_account_name" {
 variable "existing_storage_account_rg" {
   type        = string
   description = "Resource Group of existing Storage Account to associate with the Function App."
+  default     = ""
+}
+
+variable "function_app_managed_identity_name" {
+  type        = string
+  description = "Azure Managed Identity name to attach to the Function App. E.g zspreview-66117-mi"
+  default     = ""
+}
+
+variable "function_app_managed_identity_rg" {
+  type        = string
+  description = "Resource Group of the Azure Managed Identity name to attach to the Function App. E.g. edgeconnector_rg_1"
   default     = ""
 }

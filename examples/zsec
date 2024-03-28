@@ -535,6 +535,29 @@ first_run="yes"
         echo "export TF_VAR_cc_vm_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
         read -r -p "${CYAN}Enter Managed Identity Resource Group: ${RESET}" cc_vm_managed_identity_rg
         echo "export TF_VAR_cc_vm_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
+
+        if [[ $dtype == *"vmss"* ]]; then
+            echo "Function App User Managed Identity Information:"
+            while true; do
+                read -r -p "${CYAN}Assign the same User Managed Identity ($cc_vm_managed_identity_name) to Function App? [yes/no]: ${RESET}" function_mui_response
+                case $function_mui_response in 
+                    yes|y ) 
+                        echo "Terraform will associate the same Managed Identity to both the VMSS and Function App"
+                        echo "export TF_VAR_function_app_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
+                        echo "export TF_VAR_function_app_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
+                        break
+                        ;;
+                    no|n )
+                        read -r -p "${CYAN}Enter Function App designated Managed Identity Name: ${RESET}" function_app_managed_identity_name 
+                        echo "export TF_VAR_function_app_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
+                        read -r -p "${CYAN}Enter Function App designated Managed Identity Resource Group: ${RESET}" function_app_managed_identity_rg
+                        echo "export TF_VAR_function_app_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
+                        break
+                        ;;
+                    * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
+                esac
+            done  
+        fi
     
         cc_count_default=2
         if [[ "$dtype" == *"lb"* ]]; then
