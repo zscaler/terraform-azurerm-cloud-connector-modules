@@ -100,6 +100,12 @@ variable "ccvm_image_version" {
   default     = "latest"
 }
 
+variable "ccvm_source_image_id" {
+  type        = string
+  description = "Custom Cloud Connector Source Image ID. Set this value to the path of a local subscription Microsoft.Compute image to override the Cloud Connector deployment instead of using the marketplace publisher"
+  default     = null
+}
+
 variable "backend_address_pool" {
   type        = string
   description = "Azure LB Backend Address Pool ID for NIC association"
@@ -159,9 +165,9 @@ variable "encryption_at_host_enabled" {
   default     = true
 }
 
-variable "vmss_desired_ccs" {
+variable "vmss_default_ccs" {
   type        = number
-  description = "Desired number of CCs in vmss."
+  description = "Default number of CCs in vmss."
   default     = 2
 }
 

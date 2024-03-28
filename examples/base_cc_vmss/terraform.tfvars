@@ -70,21 +70,6 @@
 
 #ccvm_instance_type                         = "Standard_D2s_v3"
 
-## 11. Cloud Connector Instance size selection. Uncomment cc_instance_size line with desired vm size to change
-##    (Default: "small") 
-##    **** NOTE - There is a dependency between ccvm_instance_type and cc_instance_size selections ****
-##    If size = "small" any supported Azure VM instance size can be deployed, but "Standard_D2s_v3" is ideal
-
-
-#cc_instance_size                           = "small"
-
-## 12. The number of Cloud Connector appliances to provision. Each incremental Cloud Connector will be created in alternating 
-##    subnets based on the zones or byo_subnet_names variable and loop through for any deployments where cc_count > zones.
-##    Not configurable for base or base_1cc deployment types. (All others - Default: 2)
-##    E.g. cc_count set to 4 and 2 zones set ['1","2"] will create 2x CCs in AZ1 and 2x CCs in AZ2
-
-#cc_count                                   = 2
-
 ## 13. By default, no zones are specified in any resource creation meaning they are either auto-assigned by Azure 
 ##    (Virtual Machines and NAT Gateways) or Zone-Redundant (Public IP) based on whatever default configuration is.
 ##    Setting this value to true will do the following:
@@ -148,11 +133,6 @@
 
 #environment                                = "Development"
 
-## 19. By default, this script will apply 1 Network Security Group per Cloud Connector instance. 
-##     Uncomment if you want to use the same Network Security Group for ALL Cloud Connectors (true or false. Default: false)
-
-#reuse_nsg                                  = true
-
 ## 20. By default, Host encryption is enabled for Cloud Connector VMs. This does require the EncryptionAtHost feature
 ##     enabled for your subscription though first.
 ##     You can verify this by following the Azure Prerequisites guide here: 
@@ -172,13 +152,12 @@
 
 # IMPORTANT: vmss_desired_ccs count needs to be set to the current desired count in VMSS to ensure instances are not removed 
 # during upgrade
-#vmss_desired_ccs = 2
+#vmss_default_ccs = 2 	# number of CCs VMSS defaults too if no metrics are published, recommended to set to same val as vmss_min_ccs
 #vmss_min_ccs = 2
 #vmss_max_ccs = 4
 #scale_in_threshold = 30
 #scale_out_threshold = 70
 #terminate_unhealthy_instances = false
-#zscaler_cc_function_file_path = "/path/to/function/zip/file"
 
 ## Variables for enabling scheduled scaling, leaving it commented out will default to no scheduled scaling and will scale 
 ## purely off the load on the CCs
@@ -191,6 +170,8 @@
 #scheduled_scaling_end_time_min    = 30
 
 # Azure Function App Source
-#zscaler_cc_function_deploy_local_file = true
-#zscaler_cc_function_file_path = "/path/to/function/zip/file"
+#upload_function_app_zip = true
 #zscaler_cc_function_public_url = "<file-url>"
+#existing_storage_account = false
+#existing_storage_account_name = "<storage-account-name"
+#existing_storage_account_rg = "<storage-account-resource-group"
