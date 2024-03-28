@@ -70,7 +70,7 @@
 
 #ccvm_instance_type                         = "Standard_D2s_v3"
 
-## 13. By default, no zones are specified in any resource creation meaning they are either auto-assigned by Azure 
+## 11. By default, no zones are specified in any resource creation meaning they are either auto-assigned by Azure 
 ##    (Virtual Machines and NAT Gateways) or Zone-Redundant (Public IP) based on whatever default configuration is.
 ##    Setting this value to true will do the following:
 ##    1. will create zonal NAT Gateway resources in order of the zones [1-3] specified in zones variable. 1x per zone
@@ -81,7 +81,7 @@
 
 #zones_enabled                              = true
 
-## 14. By default, this variable is used as a count (1) for resource creation of Public IP, NAT Gateway, and CC Subnets.
+## 12. By default, this variable is used as a count (1) for resource creation of Public IP, NAT Gateway, and CC Subnets.
 ##    This should only be modified if zones_enabled is also set to true
 ##    Doing so will change the default zone aware configuration for the 3 aforementioned resources with the values specified
 ##    
@@ -96,7 +96,7 @@
 #zones                                      = ["1","2"]
 #zones                                      = ["1","2","3"]
 
-## 15. Network Configuration:
+## 13. Network Configuration:
 
 ##    IPv4 CIDR configured with VNet creation. All Subnet resources (Workload, Public, and Cloud Connector) will be created based off this prefix
 ##    /24 subnets are created assuming this cidr is a /16. If you require creating a VNet smaller than /16, you may need to explicitly define all other 
@@ -120,20 +120,20 @@
 #workloads_subnets                          = ["10.x.y.z/24","10.x.y.z/24"]
 #cc_subnets                                 = ["10.x.y.z/24","10.x.y.z/24"]
 
-## 16. Number of Workload VMs to be provisioned in the workload subnet. Only limitation is available IP space
+## 14. Number of Workload VMs to be provisioned in the workload subnet. Only limitation is available IP space
 ##    in subnet configuration. Only applicable for "base" deployment types. Default workload subnet is /24 so 250 max
 
 #workload_count                             = 2
 
-## 17. Tag attribute "Owner" assigned to all resoure creation. (Default: "zscc-admin")
+## 15. Tag attribute "Owner" assigned to all resoure creation. (Default: "zscc-admin")
 
 #owner_tag                                  = "username@company.com"
 
-## 18. Tag attribute "Environment" assigned to all resources created. (Default: "Development")
+## 16. Tag attribute "Environment" assigned to all resources created. (Default: "Development")
 
 #environment                                = "Development"
 
-## 20. By default, Host encryption is enabled for Cloud Connector VMs. This does require the EncryptionAtHost feature
+## 17. By default, Host encryption is enabled for Cloud Connector VMs. This does require the EncryptionAtHost feature
 ##     enabled for your subscription though first.
 ##     You can verify this by following the Azure Prerequisites guide here: 
 ##     https://learn.microsoft.com/en-us/azure/virtual-machines/linux/disks-enable-host-based-encryption-cli#prerequisites
@@ -142,7 +142,7 @@
 
 #encryption_at_host_enabled                 = false
 
-## 22. By default, Terraform will lookup the latest Cloud Connector image version from the Azure Marketplace.
+## 18. By default, Terraform will lookup the latest Cloud Connector image version from the Azure Marketplace.
 ##     Uncomment and set this value to the path of a local subscription Microsoft.Compute image to override the 
 ##     Cloud Connector deployment with a private VHD instead of using the marketplace publisher.
 ##     *** This is recommended only for testing purposes and not supported for production deployments ***
@@ -150,11 +150,17 @@
 
 #ccvm_source_image_id                       = "<insert path to image>"
 
-# IMPORTANT: vmss_desired_ccs count needs to be set to the current desired count in VMSS to ensure instances are not removed 
-# during upgrade
-#vmss_default_ccs = 2 	# number of CCs VMSS defaults too if no metrics are published, recommended to set to same val as vmss_min_ccs
+#vmss_default_ccs = 2 	# number of CCs VMSS defaults too if no metrics are published, recommended to set to same value as vmss_min_ccs
 #vmss_min_ccs = 2
 #vmss_max_ccs = 4
+
+# Note: Per Azure recommended reference architecture/resiliency, the number of Virtual Machine Scale Sets created will be based on region zones support
+#       AND Terraform configuration enablement. e.g. If you set var.zones_enabled to true and specify 2x AZs in var.zones, Terraform will expect
+#       2x separate Cloud Connector private subnets and create 2x separate VMSS resources; one in subnet-1 and the other in subnet-2.
+
+#       Therefore, vmss_default/min/max are PER VMSS. For example if you set vmss_min_ccs to 2 with 2x AZs, you will end up with 2x VMSS each with 2x CCs
+#       for a total of 4x Cloud Connectors in the cluster behind Azure Load Balancer
+
 #scale_in_threshold = 30
 #scale_out_threshold = 70
 #terminate_unhealthy_instances = false
@@ -175,3 +181,13 @@
 #existing_storage_account = false
 #existing_storage_account_name = "<storage-account-name"
 #existing_storage_account_rg = "<storage-account-resource-group"
+
+
+#### Optional inputs: By default, Terraform will use the same Managed Identity as the CC VMSS for the Function App
+# Provide your existing Azure Managed Identity name to attach to the Function App. E.g tunction_app_managed_identity
+
+#function_app_managed_identity_name                = "function_app_managed_identity"
+
+# Provide the existing Resource Group of the Azure Managed Identity name to attach to the CC VM. E.g. function_connector_rg_1
+
+#function_app_managed_identity_rg                  = "function_rg_1"
