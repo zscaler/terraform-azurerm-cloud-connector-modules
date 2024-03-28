@@ -3,14 +3,14 @@
 ################################################################################
 # Create VMSS
 resource "azurerm_orchestrated_virtual_machine_scale_set" "cc_vmss" {
-  count                       = local.zones_supported && var.zonal_vmss_enabled ? length(var.zones) : 1
+  count                       = local.zones_supported ? length(var.zones) : 1
   name                        = "${var.name_prefix}-ccvmss-${count.index + 1}-${var.resource_tag}"
   location                    = var.location
   resource_group_name         = var.resource_group
   platform_fault_domain_count = var.fault_domain_count
   sku_name                    = var.ccvm_instance_type
   encryption_at_host_enabled  = var.encryption_at_host_enabled
-  zones                       = local.zones_supported && var.zonal_vmss_enabled ? [element(var.zones, count.index)] : distinct(var.zones)
+  zones                       = local.zones_supported ? [element(var.zones, count.index)] : null
   zone_balance                = false
   instances                   = var.vmss_default_ccs
   termination_notification {
