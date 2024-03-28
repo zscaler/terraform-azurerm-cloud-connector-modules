@@ -166,7 +166,6 @@ module "cc_vmss" {
 
   depends_on = [
     local_file.user_data_file,
-    null_resource.cc_error_checker,
   ]
 }
 
@@ -253,20 +252,4 @@ module "cc_lb" {
   health_check_interval = var.health_check_interval
   probe_threshold       = var.probe_threshold
   number_of_probes      = var.number_of_probes
-}
-
-
-################################################################################
-# Validation for Cloud Connector instance size and VM Instance Type 
-# compatibilty. Terraform does not have a good/native way to raise an error at 
-# the moment, so this will trigger off an invalid count value if there is an 
-# improper deployment configuration.
-################################################################################
-resource "null_resource" "cc_error_checker" {
-  count = local.valid_cc_create ? 0 : "Cloud Connector parameters were invalid. No appliances were created. Please check the documentation and cc_instance_size / ccvm_instance_type values that were chosen" # 0 means no error is thrown, else throw error
-  provisioner "local-exec" {
-    command = <<EOF
-      echo "Cloud Connector parameters were invalid. No appliances were created. Please check the documentation and cc_instance_size / ccvm_instance_type values that were chosen" >> ../errorlog.txt
-EOF
-  }
 }
