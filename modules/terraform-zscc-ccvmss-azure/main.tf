@@ -12,7 +12,7 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "cc_vmss" {
   encryption_at_host_enabled  = var.encryption_at_host_enabled
   zones                       = local.zones_supported ? [element(var.zones, count.index)] : null
   zone_balance                = false
-  instances                   = var.vmss_default_ccs
+  instances                   = var.vmss_min_ccs
   termination_notification {
     enabled = true
     timeout = "PT5M"
@@ -93,6 +93,11 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "cc_vmss" {
   depends_on = [
     var.backend_address_pool
   ]
+  lifecycle {
+    ignore_changes = [
+      instances
+    ]
+  }
 }
 
 
