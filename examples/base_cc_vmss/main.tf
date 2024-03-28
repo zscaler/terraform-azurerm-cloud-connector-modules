@@ -56,7 +56,7 @@ module "network" {
   workloads_subnets     = var.workloads_subnets
   public_subnets        = var.public_subnets
   zones_enabled         = var.zones_enabled
-  zones                 = var.zones
+  zones                 = var.zonal_vmss_enabled ? var.zones : [var.zones[0]]
   lb_frontend_ip        = module.cc_lb.lb_ip
   workloads_enabled     = true
   bastion_enabled       = true
@@ -143,12 +143,13 @@ module "cc_vmss" {
   ccvm_image_offer               = var.ccvm_image_offer
   ccvm_image_sku                 = var.ccvm_image_sku
   ccvm_image_version             = var.ccvm_image_version
+  ccvm_source_image_id           = var.ccvm_source_image_id
   mgmt_nsg_id                    = module.cc_nsg.mgmt_nsg_id[0]
   service_nsg_id                 = module.cc_nsg.service_nsg_id[0]
   accelerated_networking_enabled = var.accelerated_networking_enabled
   encryption_at_host_enabled     = var.encryption_at_host_enabled
 
-  vmss_desired_ccs    = var.vmss_desired_ccs
+  vmss_default_ccs    = var.vmss_default_ccs
   vmss_min_ccs        = var.vmss_min_ccs
   vmss_max_ccs        = var.vmss_max_ccs
   scale_out_threshold = var.scale_out_threshold
@@ -185,6 +186,9 @@ module "cc_functionapp" {
   upload_function_app_zip        = var.upload_function_app_zip                      #upload local zip from module to Azure Storage Blob
   managed_identity_principal_id  = module.cc_identity.managed_identity_principal_id #required if uploading zip to Azure Storage to restrict access
   zscaler_cc_function_public_url = var.zscaler_cc_function_public_url               #Or pull from pre-existing external URL
+  existing_storage_account       = var.existing_storage_account
+  existing_storage_account_name  = var.existing_storage_account_name
+  existing_storage_account_rg    = var.existing_storage_account_rg
 
   #required app_settings inputs
   terminate_unhealthy_instances = var.terminate_unhealthy_instances
@@ -202,7 +206,7 @@ module "cc_functionapp" {
 ################################################################################
 module "cc_nsg" {
   source         = "../../modules/terraform-zscc-nsg-azure"
-  nsg_count      = var.reuse_nsg == false ? var.cc_count : 1
+  nsg_count      = 1
   name_prefix    = var.name_prefix
   resource_tag   = random_string.suffix.result
   resource_group = module.network.resource_group_name
