@@ -48,14 +48,21 @@ if [[ "$oper" == "up" ]]; then
             break
             ;;
             *) 
-                echo "${RED}invalid response${RESET}"
+                echo "${RED}Invalid response. Please enter a number selection${RESET}"
         esac
     done
 fi
 
 if [[ "$deployment" == "greenfield" ]]; then
     PS3="${CYAN}Select desired deployment type: ${RESET}"
-    dtypes=("Deploy 1 Cloud Connector in a new Resource Group and VNet" "Deploy 1 Cloud Connector in a new Resource Group and VNet w/ Private DNS for ZPA" "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet" "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet w/ Private DNS for ZPA" "Deploy a new Resource Group and VNet only - No Cloud Connector" "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Load Balancer in a new Resource Group and VNet" )
+    dtypes=(
+        "Deploy 1 Cloud Connector in a new Resource Group and VNet"
+        "Deploy 1 Cloud Connector in a new Resource Group and VNet w/ Private DNS for ZPA"
+        "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet"
+        "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet w/ Private DNS for ZPA"
+        "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Load Balancer in a new Resource Group and VNet"
+        "Deploy a new Resource Group and VNet only - No Cloud Connector resources"  
+    )
     select greenfield_type in "${dtypes[@]}"
     do
         case $REPLY in
@@ -80,23 +87,25 @@ if [[ "$deployment" == "greenfield" ]]; then
                 break
                 ;;
             5)
-                echo "Deployment type base selected..."
-                dtype=base
-                break
-                ;;
-            6)
                 echo "Deployment type base_cc_vmss selected..."
                 dtype=base_cc_vmss
                 break
                 ;;
+            6)
+                echo "Deployment type base selected..."
+                dtype=base
+                break
+                ;;
             *) 
-                echo "${RED}invalid response${RESET}"
+                echo "${RED}Invalid response. Please enter a number selection${RESET}"
         esac
     done
 elif [[ "$deployment" == "brownfield" ]]; then
     PS3="${CYAN}Select desired deployment type: ${RESET}"
-    dtypes=("Deploy multiple Cloud Connectors w/ Load Balancer in a new or existing Resource Group and VNet" )
-    select greenfield_type in "${dtypes[@]}"
+    dtypes=(
+        "Deploy multiple Cloud Connectors w/ Load Balancer in a new or existing Resource Group and VNet" 
+    )
+    select brownfield_type in "${dtypes[@]}"
     do
         case $REPLY in
             1)
@@ -105,7 +114,7 @@ elif [[ "$deployment" == "brownfield" ]]; then
                 break
                 ;;
             *) 
-                echo "${RED}invalid response${RESET}"
+                echo "${RED}Invalid response. Please enter a number selection${RESET}"
         esac
     done
 else
@@ -430,6 +439,42 @@ first_run="yes"
         # End of Host Encryption support update
         # ---
 
+            # Convert the user input to lowercase for case-insensitive comparison
+            input=$(echo "$input" | tr '[:upper:]' '[:lower:]')
+
+            if [[ "$input" == "no" || "$input" == "n" ]]; then
+                echo "${YELLOW}**Caution** Setting encryption_at_host_enabled to false...${RESET}"
+                encryption_at_host_enabled=false
+                break
+            elif [[ "$input" == "yes" || "$input" == "y" || -z "$input" ]]; then            
+                echo "Checking if EncryptionAtHost feature is enabled for subscription $ARM_SUBSCRIPTION_ID..."
+                ACCESS_TOKEN=$(curl -s -X POST -H "Content-Type: application/x-www-form-urlencoded" \
+                    -d "grant_type=client_credentials" \
+                    -d "client_id=${ARM_CLIENT_ID}" \
+                    -d "client_secret=${ARM_CLIENT_SECRET}" \
+                    -d "resource=${RESOURCE}" \
+                    "${TOKEN_ENDPOINT}" | grep -o '"access_token":"[^"]*' | awk -F'"' '{print $4}')
+                    
+                response=$(curl -s -X GET -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+                    "$RESOURCE/subscriptions/$ARM_SUBSCRIPTION_ID/providers/Microsoft.Features/providers/Microsoft.Compute/features/EncryptionAtHost?api-version=2021-07-01" \
+                    |grep -o '"state":"[^"]*' | awk -F'"' '{print $4}')
+
+                if [ "$response" = "Registered" ]; then
+                    echo "Setting encryption_at_host_enabled to true..."
+                    encryption_at_host_enabled=true
+                else
+                    echo "${RED}Error: Azure Subscription $ARM_SUBSCRIPTION_ID is not registered to support host encryption. Please refer to documentation.${RESET}"
+                    exit 1    
+                fi
+                break
+            else
+                echo "${RED}Invalid input. Please enter 'yes' or 'no'.${RESET}"
+            fi
+        done
+
+        echo "export TF_VAR_encryption_at_host_enabled=${encryption_at_host_enabled}" >> .zsecrc
+        # End of Host Encryption support update
+        # ---
 
         cc_instance_size=small
         echo "export TF_VAR_cc_instance_size=${cc_instance_size}" >> .zsecrc
@@ -516,6 +561,7 @@ first_run="yes"
         echo "Cloud Connector User Managed Identity Information:"
 
         while true; do
+            echo "Terraform will lookup an existing User Managed Identity to assign to Cloud Connector resources..."
             read -r -p "${CYAN}Is the Managed Identity in the same Subscription ID? [yes/no]: ${RESET}" response
             case $response in 
             yes|y ) 
@@ -527,159 +573,185 @@ first_run="yes"
                 echo "export TF_VAR_managed_identity_subscription_id=${managed_identity_subscription_id}" >> .zsecrc
             break
             ;;
-            * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
+            * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
             esac
         done  
-        
         read -r -p "${CYAN}Enter Managed Identity Name: ${RESET}" cc_vm_managed_identity_name 
         echo "export TF_VAR_cc_vm_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
         read -r -p "${CYAN}Enter Managed Identity Resource Group: ${RESET}" cc_vm_managed_identity_rg
         echo "export TF_VAR_cc_vm_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
 
         if [[ $dtype == *"vmss"* ]]; then
-            echo "Function App User Managed Identity Information:"
+        echo "Function App User Managed Identity Information:"
             while true; do
                 read -r -p "${CYAN}Assign the same User Managed Identity ($cc_vm_managed_identity_name) to Function App? [yes/no]: ${RESET}" function_mui_response
                 case $function_mui_response in 
-                    yes|y ) 
-                        echo "Terraform will associate the same Managed Identity to both the VMSS and Function App"
-                        echo "export TF_VAR_function_app_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
-                        echo "export TF_VAR_function_app_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
-                        break
-                        ;;
-                    no|n )
-                        read -r -p "${CYAN}Enter Function App designated Managed Identity Name: ${RESET}" function_app_managed_identity_name 
-                        echo "export TF_VAR_function_app_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
-                        read -r -p "${CYAN}Enter Function App designated Managed Identity Resource Group: ${RESET}" function_app_managed_identity_rg
-                        echo "export TF_VAR_function_app_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
-                        break
-                        ;;
-                    * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
-                esac
-            done  
-        fi
-    
-        cc_count_default=2
-        if [[ "$dtype" == *"lb"* ]]; then
-            read -r -p "${CYAN}Enter how many Cloud Connectors to deploy? [Default=$cc_count_default]: ${RESET}" cc_count_input
-            cc_count=${cc_count_input:-$cc_count_default}
-            if ((cc_count >= 1 && cc_count <= 20)); then
-                echo "${dtype} will deploy ${cc_count} Cloud Connector in ${azure_location}"
-                echo "export TF_VAR_cc_count=${cc_count}" >> .zsecrc
-            else
-                echo "${RED}invalid cc_count value. Must be a number between 1 and 20${RESET}"
-                echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
-                exit 1
-            fi
-        elif [[ "$dtype" == "base_1cc" ]]; then
-            echo "${dtype} will deploy one Cloud Connector in ${azure_location}"   
-        fi
-
-        az_supported_regions=["australiaeast","Australia East","brazilsouth","Brazil South","canadacentral","Canada Central","centralindia","Central India","centralus","Central US","chinanorth3","China North 3","ChinaNorth3","eastasia","East Asia","eastus","East US","eastus2","East US 2","francecentral","France Central","germanywestcentral","Germany West Central","japaneast","Japan East","koreacentral","Korea Central","northeurope","North Europe","norwayeast","Norway East","southafricanorth","South Africa North","southcentralus","South Central US","southeastasia","Southeast Asia","swedencentral","Sweden Central","switzerlandnorth","Switzerland North","uaenorth","UAE North","uksouth","UK South","westeurope","West Europe","westus2","West US 2","westus3","West US 3","usgovvirginia","US Gov Virginia"]
-        if [[ ${az_supported_regions[*]} =~ $azure_location ]]; then
-        echo "${GREEN}Azure region ${azure_location} supports Zones...${RESET}"
-        zones_enabled_default=no
-            while true; do
-            read -r -p "${CYAN}Deploy Cloud Connectors in dedicated Availability Zones/subnets? (Enter yes or no) [Default=$zones_enabled_default]: ${RESET}" zones_enabled_input
-            zones_enabled=${zones_enabled_input:-$zones_enabled_default}
-                case $zones_enabled in 
-                yes|y )
-                    echo "export TF_VAR_zones_enabled=true" >> .zsecrc
+                yes|y ) 
+                    echo "Terraform will associate the same Managed Identity to both the VMSS and Function App"
+                    echo "export TF_VAR_function_app_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
+                    echo "export TF_VAR_function_app_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
                 break
                 ;;
                 no|n )
-                echo "export TF_VAR_zones_enabled=false" >> .zsecrc
-                echo "${YELLOW}**Caution** No zones defined. Proceeding with availability sets fault tolerance...${RESET}"
+                    read -r -p "${CYAN}Enter Function App designated Managed Identity Name: ${RESET}" function_app_managed_identity_name 
+                    echo "export TF_VAR_function_app_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
+                    read -r -p "${CYAN}Enter Function App designated Managed Identity Resource Group: ${RESET}" function_app_managed_identity_rg
+                    echo "export TF_VAR_function_app_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
                 break
                 ;;
-                * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
+                * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
                 esac
             done  
+        fi
 
-
-            if [[ "$zones_enabled" == "yes" || "$zones_enabled" == "y" ]]; then
-                echo "Choose zones [1-3] to deploy in... "
-                echo "If deploying only one Cloud Connector, enter yes for only one Zone (1, 2, or 3)"
-                while true; do
-                    read -r -p "${CYAN}Zone 1 (yes/no): ${RESET}" zone1_response
-                    case $zone1_response in 
-                    yes|y ) 
-                        echo "Availability Zone 1 selected"
-                        zone1_use=true
-                    break
-                    ;;
-                    no|n )
-                    zone1_use=false
-                    break
-                    ;;
-                    * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
-                    esac
-                done 
-                
-                while true; do
-                    read -r -p "${CYAN}Zone 2 (yes/no): ${RESET}" zone2_response
-                    case $zone2_response in 
-                    yes|y ) 
-                        echo "Availability Zone 2 selected"
-                        zone2_use=true
-                    break
-                    ;;
-                    no|n )
-                        zone2_use=false
-                    break
-                    ;;
-                    * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
-                    esac
-                done
-    
-                while true; do
-                    read -r -p "${CYAN}Zone 3 (yes/no): ${RESET}" zone3_response
-                    case $zone3_response in 
-                    yes|y ) 
-                        echo "Availability Zone 3 selected"
-                        zone3_use=true
-                    break
-                    ;;
-                    no|n )
-                        zone3_use=false
-                    break
-                    ;;
-                    * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
-                    esac
-                done 
-
-                if [[ "$zone1_use" == "true" && "$zone2_use" == "false" && "$zone3_use" == "false" ]]; then
-                    echo "Zones selected: 1"
-                    echo "export TF_VAR_zones='[\"1\"]'" >> .zsecrc
-                elif [[ "$zone1_use" == "false" && "$zone2_use" == "true" && "$zone3_use" == "false" ]]; then
-                    echo "Zones selected: 2"
-                    echo "export TF_VAR_zones='[\"2\"]'" >> .zsecrc
-                elif [[ "$zone1_use" == "false" && "$zone2_use" == "false" && "$zone3_use" == "true" ]]; then
-                    echo "Zones selected: 3"
-                    echo "export TF_VAR_zones='[\"3\"]'" >> .zsecrc
-                elif [[ "$zone1_use" == "true" && "$zone2_use" == "true" && "$zone3_use" == "false" ]]; then
-                    echo "Zones selected: 1 and 2"
-                    echo "export TF_VAR_zones='[\"1\", \"2\"]'" >> .zsecrc
-                elif [[ "$zone1_use" == "true" && "$zone2_use" == "true" && "$zone3_use" == "true" ]]; then
-                    echo "Zones selected: 1, 2, and 3"
-                    echo "export TF_VAR_zones='[\"1\", \"2\", \"3\"]'" >> .zsecrc
-                elif [[ "$zone1_use" == "true" && "$zone2_use" == "false" && "$zone3_use" == "true" ]]; then
-                    echo "Zones selected: 1 and 3"
-                    echo "export TF_VAR_zones='[\"1\", \"3\"]'" >> .zsecrc  
-                elif [[ "$zone1_use" == "false" && "$zone2_use" == "true" && "$zone3_use" == "true" ]]; then
-                    echo "Zones selected: 2 and 3"
-                    echo "export TF_VAR_zones='[\"2\", \"3\"]'" >> .zsecrc   
-                else
-                    echo "${RED}Invalid Zones selection. exiting...${RESET}"
-                    echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
-                    exit 1
-                fi 
+        cc_count_default=2
+        if [[ "$dtype" == "base_1"* ]]; then
+            echo "${GREEN}${dtype} will deploy one Cloud Connector in ${azure_location}${RESET}"
+        elif [[ "$dtype" == *"vmss"* ]]; then
+            echo "Auto Scaling deployment type identified. Proceeding to VMSS configurations..." 
+        elif [[ "$dtype" == *"lb"* ]]; then
+            read -r -p "${CYAN}Enter how many Cloud Connectors to deploy? [Default=$cc_count_default]: ${RESET}" cc_count_input
+            cc_count=${cc_count_input:-$cc_count_default}
+            if ((cc_count >= 1 && cc_count <= 20)); then
+                echo "Terraform will deploy ${GREEN}${cc_count} Cloud Connectors${RESET} in ${azure_location}"
+                echo "export TF_VAR_cc_count=${cc_count}" >> .zsecrc
+            else
+                echo "${RED}Invalid cc_count value. Must be a number between 1 and 20${RESET}"
+                echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
+                exit 1
             fi
+        fi
+
+        az_supported_regions=["australiaeast","brazilsouth","canadacentral","centralindia","centralus","chinanorth3","eastasia","eastus","eastus2","francecentral","germanywestcentral","japaneast","koreacentral","northeurope","norwayeast","southafricanorth","southcentralus","southeastasia","swedencentral","switzerlandnorth","uaenorth","uksouth","westeurope","westus2","westus3"]
+        if [[ ${az_supported_regions[*]} =~ $azure_location ]]; then
+            echo "${GREEN}Azure region ${azure_location} supports Zones deployment...${RESET}"
+            zones_enabled_default=no
+            while true; do
+                read -r -p "${CYAN}Deploy Cloud Connectors in dedicated Availability Zones/subnets? (Enter yes or no) [Default=$zones_enabled_default]: ${RESET}" zones_enabled_input
+                zones_enabled=${zones_enabled_input:-$zones_enabled_default}
+                case $zones_enabled in 
+                yes|y )
+                    echo "export TF_VAR_zones_enabled=true" >> .zsecrc
+                    zones_enabled=true
+                break
+                ;;
+                no|n )
+                    echo "export TF_VAR_zones_enabled=false" >> .zsecrc
+                    echo "${YELLOW}**Caution** No zones defined. Proceeding with availability sets fault tolerance...${RESET}"
+                    break
+                ;;
+                * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
+                esac
+            done  
         else
             echo "${YELLOW}Azure region ${azure_location} does not support Zones. Proceeding...${RESET}"
         fi
+        # Azure number of Availability Zones selection
+        if [[ "$zones_enabled" == "true" ]]; then
+            if [[ "$dtype" == "base_1"* ]]; then
+                echo "Single Cloud Connector Deployment can only specify a single zone"
+                zones_count=1
+            else
+                PS3="${CYAN}Select how many Availability Zone subnets to deploy across: ${RESET}"
+                zones_list=(
+                    "1 availability zone"
+                    "2 availability zones"
+                    "3 availability zones"
+                    )
+                select zone_selection in "${zones_list[@]}"
+                do
+                    case $REPLY in
+                    1 )
+                        echo "One Availability Zone selected..."
+                        zones_count=1
+                    break
+                    ;;
+                    2 )
+                        echo "Two Availability Zones selected..."
+                        zones_count=2
+                    break
+                    ;;
+                    3 )
+                        echo "Three Availability Zones selected..."
+                        zones_count=3
+                    break
+                    ;;
+                    *) 
+                        echo "${RED}Invalid response. Please enter a number selection${RESET}"
+                    esac
+                done
+            fi
+            if [[ "$zones_count" < 3 ]]; then
+                if [[ "$dtype" == "base_1"* ]]; then
+                    PS3="${CYAN}Select which availablity zone to deploy in: ${RESET}"
+                else
+                    PS3="${CYAN}Select which availablity zones to deploy across: ${RESET}"
+                fi
+                if [[ "$zones_count" == 1 ]]; then
+                    zones_options=(
+                        "Zone 1"
+                        "Zone 2"
+                        "Zone 3"
+                        )
+                    select zones_selection in "${zones_options[@]}"
+                    do
+                        case $REPLY in
+                        1 )
+                            echo "Cloud Connector resources will be deployed in AZ 1"
+                            echo "export TF_VAR_zones='[\"1\"]'" >> .zsecrc
+                        break
+                        ;;
+                        2 )
+                            echo "Cloud Connector resources will be deployed in AZ 2"
+                            echo "export TF_VAR_zones='[\"2\"]'" >> .zsecrc
+                        break
+                        ;;
+                        3 )
+                            echo "Cloud Connector resources will be deployed in AZ 3"
+                            echo "export TF_VAR_zones='[\"3\"]'" >> .zsecrc
+                        break
+                        ;;
+                        *) 
+                            echo "${RED}Invalid response. Please enter a number selection${RESET}"
+                        esac
+                    done
+                else
+                    zones_options=(
+                        "Zones 1 and 2"
+                        "Zones 1 and 3"
+                        "Zones 2 and 3"
+                        )
+                    select zones_selection in "${zones_options[@]}"
+                    do
+                        case $REPLY in
+                        1 )
+                            echo "Cloud Connector resources will be deployed in AZ 1 and AZ 2"
+                            echo "export TF_VAR_zones='[\"1\", \"2\"]'" >> .zsecrc
+                        break
+                        ;;
+                        2 )
+                            echo "Cloud Connector resources will be deployed in AZ 1 and AZ 3"
+                            echo "export TF_VAR_zones='[\"1\", \"3\"]'" >> .zsecrc
+                        break
+                        ;;
+                        3 )
+                            echo "Cloud Connector resources will be deployed in AZ 2 and AZ 3"
+                            echo "export TF_VAR_zones='[\"2\", \"3\"]'" >> .zsecrc
+                        break
+                        ;;
+                        *) 
+                            echo "${RED}Invalid response. Please enter a number selection${RESET}"
+                        esac
+                    done
+                fi
+            else
+                echo "Cloud Connector resources will be deployed in AZ1, AZ 2 and AZ 3"
+                echo "export TF_VAR_zones='[\"1\", \"2\", \"3\"]'" >> .zsecrc
+            fi
+        fi
 
-        if [[ "$dtype" == "cc"* ]]; then
+        #Browfield/BYO Networking Options
+        if [[ "$deployment" == "brownfield" ]]; then
             while true; do
                 read -r -p "${CYAN}Enable Azure Private DNS for ZPA? (yes/no): ${RESET}" zpa_response
                 case $zpa_response in 
@@ -695,15 +767,15 @@ first_run="yes"
                     echo "export TF_VAR_zpa_enabled=$zpa_enabled" >> .zsecrc
                 break
                 ;;
-                * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
+                * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
                 esac
             done 
         fi
 
         if [[ "$zpa_enabled" == "true" || "$dtype" == *"zpa" ]]; then
-        array=()
-        domain_names_map="'{ "
-        counter=0
+            array=()
+            domain_names_map="'{ "
+            counter=0
             while true; do
                 read -r -p "${CYAN}How many Domain/FQDN application segments to add to Private DNS Resolver Rules?: ${RESET}" domain_number
                 if [[ $domain_number == 0 ]]; then
@@ -716,28 +788,28 @@ first_run="yes"
                 fi
             done
             for i in $(seq $domain_number); do
-            read -r -p "${CYAN}Enter a single ZPA Domain/FQDN ending with a trailing dot${RESET} ( e.g. azure.company.com. ): " domain_name
-            if [[ $domain_name = *" "* ]]; then
-                echo "${RED}Spaces not allowed. Please enter only one domain at a time. Delete .zsecrc file and re-run zsec up...${RESET}"
-                exit 1
-            elif [[ $domain_name == '' ]]; then
-                echo "${RED}Empty entries are not allowed. Delete .zsecrc file and re-run zsec up...${RESET}"
-                exit 1
-            elif [[ $domain_name == "." ]]; then
-                echo "${YELLOW}You entered '.' dot. While Azure does support this to forward all domain requests, this could have unintended consequences/compatibility issues with Azure services${RESET}"
-            elif [[ $domain_name == "."* ]]; then
-                echo "${RED}Invalid format. Domains cannot start with a dot (.). Delete .zsecrc file and re-run zsec up...${RESET}"
-                exit 1
-            elif [[ $domain_name == "*"* ]]; then
-                echo "${RED}Invalid format. Domains cannot start with a star/wildcard (*). Delete .zsecrc file and re-run zsec up...${RESET}"
-                exit 1
-            elif [[ $domain_name != *"." ]]; then
-                echo "${RED}Invalid format. Domains must end with a dot (.). Delete .zsecrc file and re-run zsec up...${RESET}"
-                exit 1
-            fi
-            array+=("$domain_name")
-            counter=$(( $counter + 1 ))
-            domain_names_map+="appseg$counter: \"$domain_name\", "
+                read -r -p "${CYAN}Enter a single ZPA Domain/FQDN ending with a trailing dot${RESET} ( e.g. azure.company.com. ): " domain_name
+                if [[ $domain_name = *" "* ]]; then
+                    echo "${RED}Spaces not allowed. Please enter only one domain at a time. Delete .zsecrc file and re-run zsec up...${RESET}"
+                    exit 1
+                elif [[ $domain_name == '' ]]; then
+                    echo "${RED}Empty entries are not allowed. Delete .zsecrc file and re-run zsec up...${RESET}"
+                    exit 1
+                elif [[ $domain_name == "." ]]; then
+                    echo "${YELLOW}You entered '.' dot. While Azure does support this to forward all domain requests, this could have unintended consequences/compatibility issues with Azure services${RESET}"
+                elif [[ $domain_name == "."* ]]; then
+                    echo "${RED}Invalid format. Domains cannot start with a dot (.). Delete .zsecrc file and re-run zsec up...${RESET}"
+                    exit 1
+                elif [[ $domain_name == "*"* ]]; then
+                    echo "${RED}Invalid format. Domains cannot start with a star/wildcard (*). Delete .zsecrc file and re-run zsec up...${RESET}"
+                    exit 1
+                elif [[ $domain_name != *"." ]]; then
+                    echo "${RED}Invalid format. Domains must end with a dot (.). Delete .zsecrc file and re-run zsec up...${RESET}"
+                    exit 1
+                fi
+                array+=("$domain_name")
+                counter=$(( $counter + 1 ))
+                domain_names_map+="appseg$counter: \"$domain_name\", "
             done
             domain_names_map+="}'"
             echo "export TF_VAR_domain_names=$domain_names_map" >> .zsecrc
@@ -769,52 +841,62 @@ first_run="yes"
                 fi
             break
             ;;
-            * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
+                * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
             esac
         done
+
         # VMSS specific inputs
         if [[ $dtype == *"vmss"* ]]; then
-        #########################################
-        # Min/Desired/Max VMSS Configuration
-        #########################################
-        # min count
+            if [[ "$zones_enabled" == "true" ]]; then
+                echo "Explicit Availability Zones based deployed detected... Terrafrom will create a total of $zones_count VMSS; one per designated AZ"
+            else
+                echo "No explicit Availbility Zones were specified... Terraform will create a single VMSS"
+            fi
+            #########################################
+            # Min/Desired/Max VMSS Configuration
+            #########################################
+            # min count
             vmss_min_default=2
-            read -r -p "${CYAN}Enter the minimum amount of Cloud Connectors in VMSS? [Default=$vmss_min_default]: ${RESET}" vmss_min_input
+            read -r -p "${CYAN}Enter the minimum amount of Cloud Connectors per VMSS? [Default=$vmss_min_default]: ${RESET}" vmss_min_input
             vmss_min=${vmss_min_input:-$vmss_min_default}
             if (( $vmss_min < 1 || $vmss_min > 20 )); then
-                echo "${RED}invalid vmss_min value. Must be a number between 1 and 20${RESET}"
+                echo "${RED}Invalid vmss_min value. Must be a number between 1 and 20${RESET}"
                 echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
                 exit 1
             fi
 
             # desired count
             vmss_desired_default=2
-            read -r -p "${CYAN}Enter the desired amount of Cloud Connectors in VMSS? [Default=$vmss_desired_default]: ${RESET}" vmss_desired_input
+            read -r -p "${CYAN}Enter the desired amount of Cloud Connectors per VMSS? [Default=$vmss_desired_default]: ${RESET}" vmss_desired_input
             vmss_desired=${vmss_desired_input:-$vmss_desired_default}
             if (( $vmss_desired < 1 || $vmss_desired > 20 )); then
-                echo "${RED}invalid vmss_desired value. Must be a number between 1 and 20${RESET}"
+                echo "${RED}Invalid vmss_desired value. Must be a number between 1 and 20${RESET}"
                 echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
                 exit 1
             fi
 
             # max count
             vmss_max_default=5
-            read -r -p "${CYAN}Enter the maximum amount of Cloud Connectors in VMSS? [Default=$vmss_max_default]: ${RESET}" vmss_max_input
+            read -r -p "${CYAN}Enter the maximum amount of Cloud Connectors per VMSS? [Default=$vmss_max_default]: ${RESET}" vmss_max_input
             vmss_max=${vmss_max_input:-$vmss_max_default}
             if (( $vmss_max < 1 || $vmss_max > 20 )); then
-                echo "${RED}invalid vmss_max value. Must be a number between 1 and 20${RESET}"
+                echo "${RED}Invalid vmss_max value. Must be a number between 1 and 20${RESET}"
                 echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
                 exit 1
             fi
 
             # validate values
             if (( $vmss_desired < $vmss_min || $vmss_desired > $vmss_max )); then
-                echo "${RED}invalid vmss_desired value. Must be a number between vmss_min and vmss_max${RESET}"
+                echo "${RED}Invalid vmss_desired value. Must be a number between vmss_min and vmss_max${RESET}"
                 echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
                 exit 1
             fi
 
-            echo "${dtype} will deploy VMSS with min: ${vmss_min} desired: ${vmss_desired} max: ${vmss_max} Cloud Connectors in ${azure_location}"
+            if [[ "$zones_enabled" == "true" ]]; then
+                echo "${dtype} will deploy $zones_count VMSS each with min: ${vmss_min} desired: ${vmss_desired} max: ${vmss_max} Cloud Connectors in ${azure_location}"
+            else
+                echo "${dtype} will deploy 1 VMSS with min: ${vmss_min} desired: ${vmss_desired} max: ${vmss_max} Cloud Connectors in ${azure_location}"
+            fi
             echo "export TF_VAR_vmss_min_ccs=${vmss_min}" >> .zsecrc
             echo "export TF_VAR_vmss_desired_ccs=${vmss_desired}" >> .zsecrc
             echo "export TF_VAR_vmss_max_ccs=${vmss_max}" >> .zsecrc
@@ -836,11 +918,11 @@ first_run="yes"
                         read -r -p "${CYAN}Enter the minimum amount of scheduled Cloud Connectors in VMSS? [Default=$vmss_sched_min_default]: ${RESET}" vmss_sched_min_input
                         vmss_sched_min=${vmss_sched_min_input:-$vmss_sched_min_default}
                         if (( $vmss_sched_min < 1 || $vmss_sched_min > 20 )); then
-                            echo "${RED}invalid vmss_sched_min value. Must be a number between 1 and 20${RESET}"
+                            echo "${RED}Invalid vmss_sched_min value. Must be a number between 1 and 20${RESET}"
                             echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
                             exit 1
                         elif (( $vmss_sched_min > $vmss_max )); then
-                            echo "${RED}invalid vmss_sched_min value. Must be a number between less than or equal to vmss_max${RESET}"
+                            echo "${RED}Invalid vmss_sched_min value. Must be a number between less than or equal to vmss_max${RESET}"
                             echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
                             exit 1
                         fi
@@ -861,7 +943,7 @@ first_run="yes"
                                         days_of_week+=($day)
                                         break
                                         ;;
-                                    * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
+                                    * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
                                 esac
                             done
                         done
@@ -880,7 +962,7 @@ first_run="yes"
                         read -r -p "${CYAN}Enter the start time hour for the scheduled scaling configuration? [Default=$start_hour_default]: ${RESET}" start_hour_input
                         start_hour=${start_hour_input:-$start_hour_default}
                         if (( $start_hour < 0 || $start_hour > 23 )); then
-                            echo "${RED}invalid start_hour value. Must be a number between 0 and 23${RESET}"
+                            echo "${RED}Invalid start_hour value. Must be a number between 0 and 23${RESET}"
                             echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
                             exit 1
                         fi
@@ -889,7 +971,7 @@ first_run="yes"
                         read -r -p "${CYAN}Enter the start time min for the scheduled scaling configuration? [Default=$start_min_default]: ${RESET}" start_min_input
                         start_min=${start_min_input:-$start_min_default}
                         if (( $start_min < 0 || $start_min > 59 )); then
-                            echo "${RED}invalid start_min value. Must be a number between 0 and 59${RESET}"
+                            echo "${RED}Invalid start_min value. Must be a number between 0 and 59${RESET}"
                             echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
                             exit 1
                         fi
@@ -898,7 +980,7 @@ first_run="yes"
                         read -r -p "${CYAN}Enter the end time hour for the scheduled scaling configuration? [Default=$end_hour_default]: ${RESET}" end_hour_input
                         end_hour=${end_hour_input:-$end_hour_default}
                         if (( $end_hour < 0 || $end_hour > 23 )); then
-                            echo "${RED}invalid end_hour value. Must be a number between 0 and 23${RESET}"
+                            echo "${RED}Invalid end_hour value. Must be a number between 0 and 23${RESET}"
                             echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
                             exit 1
                         fi
@@ -907,7 +989,7 @@ first_run="yes"
                         read -r -p "${CYAN}Enter the end time min for the scheduled scaling configuration? [Default=$end_min_default]: ${RESET}" end_min_input
                         end_min=${end_min_input:-$end_min_default}
                         if (( $end_min < 0 || $end_min > 59 )); then
-                            echo "${RED}invalid end_min value. Must be a number between 0 and 59${RESET}"
+                            echo "${RED}Invalid end_min value. Must be a number between 0 and 59${RESET}"
                             echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
                             exit 1
                         fi
@@ -921,7 +1003,7 @@ first_run="yes"
                         echo "export TF_VAR_scheduled_scaling_end_time_min=${end_min}" >> .zsecrc
                         break
                         ;;
-                    * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
+                    * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
                 esac
             done
 
@@ -930,8 +1012,8 @@ first_run="yes"
             # TODO: Possibly remove this for release
             #########################################
             # Azure Function Public URL
-            func_public_url_default="https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/raw/ZTW-2872/examples/base_cc_vmss/zscaler_cc_function_app.zip"
-            read -r -p "${CYAN}Enter the public url to retrieve Zscaler CC Azure Function Zip from? [Default=$func_public_url_default]: ${RESET}" func_public_url_input
+            #func_public_url_default="https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/raw/ZTW-2872/examples/base_cc_vmss/zscaler_cc_function_app.zip"
+            read -r -p "${CYAN}Enter the public url to retrieve Zscaler CC Azure Function Zip from: ${RESET}" func_public_url_input
             func_public_url=${func_public_url_input:-$func_public_url_default}
             echo "export TF_VAR_zscaler_cc_function_public_url=${func_public_url}" >> .zsecrc
 
@@ -949,7 +1031,7 @@ first_run="yes"
                         echo "export TF_VAR_terminate_unhealthy_instances=true" >> .zsecrc
                         break
                         ;;
-                    * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
+                    * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
                 esac
             done
         fi
@@ -997,6 +1079,7 @@ if [[ "$oper" == "do" ]]; then
     exit 1
 fi
 
+# Terraform apply/destroy
 if [[ "$oper" == "up" ]]; then
     echo "${GREEN}Bringing up Cloud Connector cluster...${RESET}"
     TF_DATA_DIR=../.terraform ./$dir/terraform -chdir="$dtype" init
