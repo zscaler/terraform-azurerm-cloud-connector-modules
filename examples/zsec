@@ -947,17 +947,55 @@ first_run="yes"
 
             #########################################
             # Azure Function Configuration
-            # TODO: Possibly remove this for release
             #########################################
+
+            # Azure Function Storage Account
+            echo "By default, Terraform will create a new Azure Storage Account to store the Function App"
+            while true; do
+                read -r -p "${CYAN}Do you have an existing Storage Account to use instead? [yes/no]: ${RESET}" existing_str_response
+                case $existing_str_response in 
+                    no|n ) 
+                        echo "Terraform will proceed with creating a new Storage Account for Function App"
+                        echo "export TF_VAR_existing_storage_account=false" >> .zsecrc
+                        break
+                        ;;
+                    yes|y )
+                        echo "Terraform will use an existing Storage Account. *Note* - Storage Account must reside in the same Subscription"
+                        echo "export TF_VAR_existing_storage_account=true" >> .zsecrc
+                        read -r -p "${CYAN}Enter the Name of your existing Storage Account: ${RESET}" existing_storage_account_name 
+                        echo "export TF_VAR_existing_storage_account_name =${existing_storage_account_name }" >> .zsecrc
+                        read -r -p "${CYAN}Enter the Resource Group of your existing Storage Account: ${RESET}" existing_storage_account_rg
+                        echo "export TF_VAR_existing_storage_account_rg=${existing_storage_account_rg}" >> .zsecrc
+                        echo "Azure Function App will use Storage Account: $existing_storage_account_name in RG: $existing_storage_account_rg"
+                        break
+                        ;;
+                    * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
+                esac
+            done
+             
             # Azure Function Public URL
-            #func_public_url_default="https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/raw/ZTW-2872/examples/base_cc_vmss/zscaler_cc_function_app.zip"
-            read -r -p "${CYAN}Enter the public url to retrieve Zscaler CC Azure Function Zip from: ${RESET}" func_public_url_input
-            func_public_url=${func_public_url_input:-$func_public_url_default}
-            echo "export TF_VAR_zscaler_cc_function_public_url=${func_public_url}" >> .zsecrc
+            echo "By default, Terraform will upload the Zscaler CC Azure Function Zip to this Storage Account Blob for Function App retrieval"
+            while true; do
+                read -r -p "${CYAN}Do you have a different public URL to retrieve Zscaler CC Azure Function Zip from? [yes/no]: ${RESET}" func_public_url_response
+                case $func_public_url_response in 
+                    no|n ) 
+                        echo "Terraform will proceed with uploading Function Zip file to Azure Storage"
+                        echo "export TF_VAR_upload_function_app_zip=true" >> .zsecrc
+                        break
+                        ;;
+                    yes|y )
+                        echo "Terraform will not upload Function Zip..."
+                        read -r -p "${CYAN}Enter an external URL to retrieve Zscaler CC Azure Function Zip from: ${RESET}" func_public_url_input
+                        echo "export TF_VAR_zscaler_cc_function_public_url=${func_public_url_input}" >> .zsecrc
+                        break
+                        ;;
+                    * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
+                esac
+            done
 
             # Azure function to terminate unhealthy instances
             while true; do
-                read -r -p "${CYAN}Allow Azure Function to terminate unhealthy instnces? [yes/no]: ${RESET}" resp
+                read -r -p "${CYAN}Allow Azure Function to terminate unhealthy instances? [yes/no]: ${RESET}" resp
                 case $resp in 
                     no|n ) 
                         echo "Azure Function will not terminate unhealthy instances."
