@@ -216,7 +216,7 @@ variable "scale_in_evaluation_period" {
 variable "scale_in_threshold" {
   type        = number
   description = "Metric threshold for determining scale in."
-  default     = 30
+  default     = 50
 }
 
 variable "scale_in_count" {
