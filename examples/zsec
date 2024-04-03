@@ -1054,24 +1054,6 @@ first_run="yes"
                     * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
                 esac
             done
-
-            # Azure function to terminate unhealthy instances
-            while true; do
-                read -r -p "${CYAN}Allow Azure Function to terminate unhealthy instances? [yes/no]: ${RESET}" resp
-                case $resp in 
-                    no|n ) 
-                        echo "Azure Function will not terminate unhealthy instances."
-                        echo "export TF_VAR_terminate_unhealthy_instances=false" >> .zsecrc
-                        break
-                        ;;
-                    yes|y )
-                        echo "Azure Function will terminate unhealthy instances."
-                        echo "export TF_VAR_terminate_unhealthy_instances=true" >> .zsecrc
-                        break
-                        ;;
-                    * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
-                esac
-            done
         fi
     fi
 fi
