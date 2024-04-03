@@ -238,6 +238,12 @@ variable "encryption_at_host_enabled" {
   default     = true
 }
 
+variable "support_access_enabled" {
+  type        = bool
+  description = "If Network Security Group is being configured, enable a specific outbound rule for Cloud Connector to be able to establish connectivity for Zscaler support access. Default is true"
+  default     = true
+}
+
 variable "vmss_default_ccs" {
   type        = number
   description = "Default number of CCs in vmss."
