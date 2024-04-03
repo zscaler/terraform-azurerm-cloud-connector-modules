@@ -61,6 +61,7 @@ if [[ "$deployment" == "greenfield" ]]; then
         "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet"
         "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet w/ Private DNS for ZPA"
         "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Load Balancer in a new Resource Group and VNet"
+        "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Load Balancer in a new Resource Group and VNet w/ Private DNS for ZPA"
         "Deploy a new Resource Group and VNet only - No Cloud Connector resources"  
     )
     select greenfield_type in "${dtypes[@]}"
@@ -92,6 +93,11 @@ if [[ "$deployment" == "greenfield" ]]; then
                 break
                 ;;
             6)
+                echo "Deployment type base_cc_vmss_zpa selected..."
+                dtype=base_cc_vmss_zpa
+                break
+                ;;
+            7)
                 echo "Deployment type base selected..."
                 dtype=base
                 break
