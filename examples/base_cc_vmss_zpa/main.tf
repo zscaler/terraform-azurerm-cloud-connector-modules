@@ -55,6 +55,7 @@ module "network" {
   cc_subnets            = var.cc_subnets
   workloads_subnets     = var.workloads_subnets
   public_subnets        = var.public_subnets
+  private_dns_subnet    = var.private_dns_subnet
   zones_enabled         = var.zones_enabled
   zones                 = var.zones
   lb_frontend_ip        = module.cc_lb.lb_ip
@@ -99,11 +100,13 @@ module "workload" {
 
 
 ################################################################################
-# 4. Create specified number of CC VMs per cc_count by default in an
+# 4. Create specified number of CC VMs per vmss_default_ccs by default in an
 #    availability set for Azure Data Center fault tolerance. Optionally, deployed
 #    CCs can automatically span equally across designated availabilty zones 
-#    if enabled via "zones_enabled" and "zones" variables. E.g. cc_count set to 
-#    4 and 2 zones ['1","2"] will create 2x CCs in AZ1 and 2x CCs in AZ2
+#    if enabled via "zones_enabled" and "zones" variables where the number of
+#    VMSS created will equal the number of "zones" specified.
+#    E.g. 2 zones ['1","2"] and vmss_default_ccs of 2 will create 2x Scale Sets
+#    EACH with 2x CCs where VMSS-1 CCs are assigned AZ1 and VMMS-2 CCs in AZ2
 ################################################################################
 # Create the user_data file with necessary bootstrap variables for Cloud Connector registration
 locals {
@@ -204,13 +207,14 @@ module "cc_functionapp" {
 #    created and assigned to ALL Cloud Connectors
 ################################################################################
 module "cc_nsg" {
-  source         = "../../modules/terraform-zscc-nsg-azure"
-  nsg_count      = 1
-  name_prefix    = var.name_prefix
-  resource_tag   = random_string.suffix.result
-  resource_group = module.network.resource_group_name
-  location       = var.arm_location
-  global_tags    = local.global_tags
+  source                 = "../../modules/terraform-zscc-nsg-azure"
+  nsg_count              = 1
+  name_prefix            = var.name_prefix
+  resource_tag           = random_string.suffix.result
+  resource_group         = module.network.resource_group_name
+  location               = var.arm_location
+  global_tags            = local.global_tags
+  support_access_enabled = var.support_access_enabled
 }
 
 
