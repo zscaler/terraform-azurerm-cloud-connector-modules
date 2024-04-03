@@ -1,0 +1,1 @@
+base_cc_vmss_zpa placeholder
