@@ -142,7 +142,16 @@
 
 #encryption_at_host_enabled                 = false
 
-## 18. By default, Terraform will lookup the latest Cloud Connector image version from the Azure Marketplace.
+## 18. By default, if Terraform is creating NSGs an outbound rule named Zscaler_Support_Access is configured enabling 
+##     Zscaler remote support access. Without this firewall access, Zscaler Support may not be able to assist as
+##     efficiently if troubleshooting is required. Uncomment if you do not want to enable this rule. 
+##
+##     For more information, refer to: https://config.zscaler.com/zscaler.net/cloud-branch-connector and 
+##     https://help.zscaler.com/cloud-branch-connector/enabling-remote-access
+
+#support_access_enabled                     = false
+
+## 19. By default, Terraform will lookup the latest Cloud Connector image version from the Azure Marketplace.
 ##     Uncomment and set this value to the path of a local subscription Microsoft.Compute image to override the 
 ##     Cloud Connector deployment with a private VHD instead of using the marketplace publisher.
 ##     *** This is recommended only for testing purposes and not supported for production deployments ***
@@ -154,7 +163,7 @@
 #####################################################################################################################
 ##### ZPA/Azure Private DNS specific variables #####
 #####################################################################################################################
-## 19. Provide the domain names you want Azure Private DNS to redirect to Cloud Connector for ZPA interception. 
+## 20. Provide the domain names you want Azure Private DNS to redirect to Cloud Connector for ZPA interception. 
 ##     Only applicable for base + zpa or zpa_enabled = true deployment types where Outbound DNS subnets, Resolver Ruleset/Rules, 
 ##     and Outbound Endpoints are being created. Two example domains are populated to show the mapping structure and syntax.
 ##     Azure does require a trailing dot "." on all domain entries. ZPA Module will read through each to create a resolver rule per 
@@ -165,7 +174,7 @@
 #  appseg2 = "app2.com."
 #}
 
-## 20. Azure Private DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses.
+## 21. Azure Private DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses.
 ##     The required expectation is that the target should follow VNet/subnet routing towards the configured Cloud Connector Load Balancer VIP for 
 ##     ZPA DNS interception
 
