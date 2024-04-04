@@ -75,6 +75,15 @@ Use the [**Starter Deployment Template with Load Balancer**](examples/base_cc_lb
 
 Use the [**Starter Deployment Template with Load Balancer and ZPA**](examples/base_cc_lb_zpa) to deploy your Cloud Connector in a new resource group and virtual network and to load balance traffic across multiple Cloud Connectors with Azure Private DNS Resolver capability. Zscaler's recommended deployment method is Azure Standard Load Balancer. Azure Load Balancer distributes traffic across multiple Cloud Connectors and achieves high availability.
 
+### **Starter Deployment Template with Virtual Machine Scale Sets (VMSS)**
+
+Use the [**Starter Deployment Template with VMSS**](examples/base_cc_vmss) to deploy your Cloud Connectors in a new resource group and virtual network to load balance traffic across multiple Cloud Connectors. Zscaler's recommended deployment method is Azure Standard Load Balancer. Azure Load Balancer distributes traffic across multiple Cloud Connectors and achieves high availability. For added resiliency and elasticity, Cloud Connectors are deployed in Virtual Machine Scale Sets (VMSS) with accompanying Zscaler Function App packaged zip file.
+
+### **Starter Deployment Template with Virtual Machine Scale Sets (VMSS) and ZPA**
+
+Use the [**Starter Deployment Template with VMSS**](examples/base_cc_vmss_zpa) to deploy your Cloud Connectors in a new resource group and virtual network to load balance traffic across multiple Cloud Connectors with Azure Private DNS Resolver capability. Zscaler's recommended deployment method is Azure Standard Load Balancer. Azure Load Balancer distributes traffic across multiple Cloud Connectors and achieves high availability. For added resiliency and elasticity, Cloud Connectors are deployed in Virtual Machine Scale Sets (VMSS) with accompanying Zscaler Function App packaged zip file.
+
+
 ## **Brownfield Deployment**
 
 Brownfield deployment templates are most applicable for production deployments and have more customization options than a "base" deployment. They also do not include a bastion or workload hosts deployed. See [Modules](modules/) for the Terraform configurations for brownfield deployment.
@@ -82,3 +91,5 @@ Brownfield deployment templates are most applicable for production deployments a
 ### **Custom Deployment Template with Azure Load Balancer**
 
 Use the [**Custom Deployment template with Azure Load Balancer**](examples/cc_lb) to deploy your Cloud Connector in a new or existing VNet and load balance traffic across multiple Cloud Connectors. Zscaler's recommended deployment method is Azure Load Balancer. Azure Load Balancer distributes traffic across multiple Cloud Connectors and achieves high availability. Optional Azure Private DNS Resolver resource creation per variable zpa_enabled.
+
+Use the [**Custom Deployment template with Virtual Machine Scale Sets (VMSS)**](examples/cc_vmss) to deploy your Cloud Connectors in a new or existing VNet and load balance traffic across multiple Cloud Connectors. Zscaler's recommended deployment method is Azure Load Balancer. Azure Load Balancer distributes traffic across multiple Cloud Connectors and achieves high availability. For added resiliency and elasticity, Cloud Connectors are deployed in Virtual Machine Scale Sets (VMSS) with accompanying Zscaler Function App packaged zip file. Optional Azure Private DNS Resolver resource creation per variable zpa_enabled.
