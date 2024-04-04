@@ -109,7 +109,8 @@ if [[ "$deployment" == "greenfield" ]]; then
 elif [[ "$deployment" == "brownfield" ]]; then
     PS3="${CYAN}Select desired deployment type: ${RESET}"
     dtypes=(
-        "Deploy multiple Cloud Connectors w/ Load Balancer in a new or existing Resource Group and VNet" 
+        "Deploy multiple Cloud Connectors w/ Load Balancer in a new or existing Resource Group and VNet"
+        "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Load Balancer in a new or existing Resource Group and VNet"  
     )
     select brownfield_type in "${dtypes[@]}"
     do
@@ -117,6 +118,11 @@ elif [[ "$deployment" == "brownfield" ]]; then
             1)
                 echo "Deployment type cc_lb selected..."
                 dtype=cc_lb
+                break
+                ;;
+            1)
+                echo "Deployment type cc_vmss selected..."
+                dtype=cc_vmss
                 break
                 ;;
             *) 
