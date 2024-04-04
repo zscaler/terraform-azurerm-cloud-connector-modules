@@ -59,7 +59,7 @@ Optional: Edit the terraform.tfvars file under your desired deployment type (ie:
 **Test/Greenfield Deployment Types:**
 
 ```
-Deployment Type: (base | base_1cc | base_1cc_zpa | base_cc_lb | base_cc_lb_zpa):
+Deployment Type: (base | base_1cc | base_1cc_zpa | base_cc_lb | base_cc_lb_zpa | base_cc_vmss | base_cc_vmss_zpa):
 **base** - Creates: 1 Resource Group containing; 1 VNet w/ 2 subnets (bastion + workload); 1 Ubuntu server workload w/ 1 Network Interface + NSG; 1 Ubuntu Bastion Host w/ 1 PIP + 1 Network Interface + NSG; generates local key pair .pem file for ssh access. This does NOT deploy any actual Cloud Connectors.
 
 **base_1cc** - Base deployment + Creates 1 Cloud Connector private subnet; 1 Cloud Connector VM in availability set routing to NAT Gateway; workload private subnet route repointed to the service interface IP of Cloud Connector
@@ -69,7 +69,13 @@ Deployment Type: (base | base_1cc | base_1cc_zpa | base_cc_lb | base_cc_lb_zpa):
 **base_cc_lb** - Everything from base_1cc deployment + Creates 2 Cloud Connectors in availability set behind 1 Internal Azure Load Balancer; Number of Workload and Cloud Connectors deployed customizable within terraform.tfvars cc_count and vm_count variables
 
 **base_cc_lb_zpa** - Everything from base_cc_lb + Creates Azure Private DNS Resolver, Private DNS Resolver Ruleset, Private DNS Resolver rules based on the number of domains entered, Virtual Network Link for Ruleset in the Cloud Connector VNet, and an Outbound Endpoint in a dedicated Outbound DNS subnet with custom UDR default route to CC LB VIP.
+
+**base_cc_vmss** - Base deployment + Creates 1 or more Flexible Orchestration Virtual Machine Scale Sets (VMSS) and scaling policies for Cloud Connector in private subnet(s); and 1 function app for VMSS; Standard Azure Load Balancer; and workload private subnet UDR routing to the Load Balancer Frontend IP.
+
+**base_cc_vmss_zpa** - Everything from base_cc_vmss + Creates Azure Private DNS Resolver, Private DNS Resolver Ruleset, Private DNS Resolver rules based on the number of domains entered, Virtual Network Link for Ruleset in the Cloud Connector VNet, and an Outbound Endpoint in a dedicated Outbound DNS subnet with custom UDR default route to CC LB VIP.
 ```
+
+This deployment type is intended for greenfield/pov/lab purposes. It will deploy a fully functioning sandbox environment in a new Resource Group/VNet with test workload VMs. Full set of resources provisioned listed below; Effectively, this will create all network infrastructure dependencies for an Azure environment. Everything from "Base" deployment type ().<br>
 
 
 **2. Prod/Brownfield Deployments**
@@ -92,13 +98,19 @@ Optional: Edit the terraform.tfvars file under your desired deployment type (ie:
 **Prod/Brownfield Deployment Types**
 
 ```
-Deployment Type: (cc_lb):
+Deployment Type: (cc_lb | cc_vmss):
 **cc_lb** - Creates 1 Resource Group containing: 1 VNet w/ 1 CC subnet; 2 Cloud Connectors in availability set with 1 PIP; 1 NAT Gateway; Mgmt Network Interfaces + NSG, Service Network Interfaces + NSG; 1 Internal Azure LB; generates local key pair .pem file for ssh access. Number of Cloud Connectors deployed and ability to use existing resources (resource group(s), VNet/Subnets, PIP, NAT GW) customizable withing terraform.tfvars custom variables
 
-Deployment type cc_lb provides numerous customization options within terraform.tfvars to enable/disable bring-your-own resources for
-Cloud Connector deployment in existing environments. Custom paramaters include: BYO existing Resource Group, PIPs, NAT Gateways and associations,
-VNet, and subnets. Optional Azure Private DNS Resolver resource creation per variable zpa_enabled.
+**cc_vmss** - Creates a new Resource Group; 1 VNet; at least 1 Cloud Connector private subnet; at least 1 NAT Gateway with Public IP Address association to the Cloud Connector subnets; at least 1 Virtual Machine Scale Set (VMSS); and 1 function app for VMSS; generates local key pair .pem file for ssh access; 1 Standard Azure Load Balancer with all rules, probes, and NIC associations
 ```
+
+<br>
+
+
+Brownfield deployment types provide numerous customization options within terraform.tfvars to enable/disable bring-your-own resources for
+Cloud Connector deployment in existing environments. Custom paramaters include: BYO existing Resource Group, PIPs, NAT Gateways and associations,
+VNet, and subnets. Optional Azure Private DNS Resolver resource creation per variable zpa_enabled. The number of Cloud Connector VMs or Virtual Machine Scale Sets, Cloud Connector subnets, NAT Gateways, and Public IPs can vary based on if zones support is enabled and the amount of zone redundancy chosen.
+
 
 ## Destroying the cluster
 ```
