@@ -147,7 +147,7 @@ elif [[ ! -d $dir ]]; then
     exit 1
 fi
 
-az_regions=["westus","West US","westus2","West US 2","eastus","East US","centralus","Central US","centraluseuap","Central US EUAP","southcentralus","South Central US","northcentralus","North Central US","westcentralus","West Central US","eastus2","East US 2","eastus2euap","East US 2 EUAP","brazilsouth","Brazil South","northeurope","North Europe","westeurope","West Europe","eastasia","East Asia","southeastasia","Southeast Asia","japanwest","Japan West","japaneast","Japan East","koreacentral","Korea Central","koreasouth","Korea South","southindia","South India","westindia","West India","centralindia","Central India","australiaeast","Australia East","australiasoutheast","Australia Southeast","canadacentral","Canada Central","canadaeast","Canada East","uksouth","UK South","ukwest","UK West","francecentral","France Central","francesouth","France South","australiacentral","Australia Central","australiacentral2","Australia Central 2","uaecentral","UAE Central","uaenorth","UAE North","southafricanorth","	South Africa North","southafricawest","South Africa West","switzerlandnorth","Switzerland North","switzerlandwest","Switzerland West","germanynorth","Germany North","germanywestcentral","Germany West Central","norwayeast","Norway East","norwaywest","Norway West","brazilsoutheast","Brazil Southeast","westus3","West US 3","swedencentral","Sweden Central","swedensouth","Sweden South","chinaeast","China East","ChinaEast","chinaeast2","China East 2","ChinaEast2","chinanorth","China North","ChinaNorth","chinanorth2","China North 2","ChinaNorth2","chinanorth3","China North 3","ChinaNorth3"] 
+az_regions=["westus","West US","westus2","West US 2","eastus","East US","centralus","Central US","centraluseuap","Central US EUAP","southcentralus","South Central US","northcentralus","North Central US","westcentralus","West Central US","eastus2","East US 2","eastus2euap","East US 2 EUAP","brazilsouth","Brazil South","northeurope","North Europe","westeurope","West Europe","eastasia","East Asia","southeastasia","Southeast Asia","japanwest","Japan West","japaneast","Japan East","koreacentral","Korea Central","koreasouth","Korea South","southindia","South India","westindia","West India","centralindia","Central India","australiaeast","Australia East","australiasoutheast","Australia Southeast","canadacentral","Canada Central","canadaeast","Canada East","uksouth","UK South","ukwest","UK West","francecentral","France Central","francesouth","France South","australiacentral","Australia Central","australiacentral2","Australia Central 2","uaecentral","UAE Central","uaenorth","UAE North","southafricanorth","	South Africa North","southafricawest","South Africa West","switzerlandnorth","Switzerland North","switzerlandwest","Switzerland West","germanynorth","Germany North","germanywestcentral","Germany West Central","norwayeast","Norway East","norwaywest","Norway West","brazilsoutheast","Brazil Southeast","westus3","West US 3","swedencentral","Sweden Central","swedensouth","Sweden South","chinaeast","China East","ChinaEast","chinaeast2","China East 2","ChinaEast2","chinanorth","China North","ChinaNorth","chinanorth2","China North 2","ChinaNorth2","chinanorth3","China North 3","ChinaNorth3","usgovarizona","US Gov Arizona","usgotexas","US Gov Texas","usgovvirginia","US Gov Virginia","usdodcentral","US DoD Central","usdodeast","US DoD East","usseceast","US Sec East","ussecwest","US Sec West","ussecwestcentral","US Sec West Central"] 
 # if .zsecrc is not present we'll assume that Azure env was never set
 if [[ $dtype == "base" && ! -e ./.zsecrc ]]; then
     echo "Checking Azure Environment Variables..."
@@ -169,6 +169,9 @@ if [[ $dtype == "base" && ! -e ./.zsecrc ]]; then
             echo "${YELLOW} China region detected. Setting ARM_ENVIRONMENT...${RESET}"
             echo "export ARM_ENVIRONMENT=china" >> .zsecrc
             echo "export ARM_SKIP_PROVIDER_REGISTRATION=true" >> .zsecrc
+        elif [[ ${azure_location} = "usgov"* || ${azure_location} = "ussec"* || ${azure_location} = "usdod"* ]]; then
+            echo "${YELLOW} US Gov region detected. Setting ARM_ENVIRONMENT...${RESET}"
+            echo "export ARM_ENVIRONMENT=usgovernment" >> .zsecrc
         fi
     else
     echo "${RED}Invalid Azure region name entered${RESET}"
@@ -246,6 +249,9 @@ if [[ ! -e ./.zsecrc ]]; then
             echo "export ARM_SKIP_PROVIDER_REGISTRATION=true" >> .zsecrc
             read -r -p "${CYAN}Enter full Source Image ID path for your CC image (e.g. /subscriptions/<id>/resourceGroups/<rg>/providers/Microsoft.Compute/images/<image_name>): ${RESET}" ccvm_source_image_id
             echo "export TF_VAR_ccvm_source_image_id='$ccvm_source_image_id'" >> .zsecrc
+        elif [[ ${azure_location} = "usgov"* || ${azure_location} = "ussec"* || ${azure_location} = "usdod"* ]]; then
+            echo "${YELLOW} US Gov region detected. Setting ARM_ENVIRONMENT...${RESET}"
+            echo "export ARM_ENVIRONMENT=usgovernment" >> .zsecrc
         fi
     else
     echo "${RED}Invalid Azure region name entered${RESET}"
@@ -307,6 +313,9 @@ fi
     if grep -q "export ARM_ENVIRONMENT=china" .zsecrc; then
     TOKEN_ENDPOINT="https://login.partner.microsoftonline.cn/${ARM_TENANT_ID}/oauth2/token"
     RESOURCE="https://management.chinacloudapi.cn"
+    elif grep -q "export ARM_ENVIRONMENT=usgovernment" .zsecrc; then
+    TOKEN_ENDPOINT="https://login.microsoftonline.us/${ARM_TENANT_ID}/oauth2/token"
+    RESOURCE="https://management.usgovcloudapi.net"
     else
     TOKEN_ENDPOINT="https://login.microsoftonline.com/${ARM_TENANT_ID}/oauth2/token"
     RESOURCE="https://management.azure.com/"
@@ -462,7 +471,7 @@ elif [[ "$dtype" == "base_1cc" ]]; then
     echo "${dtype} will deploy one Cloud Connector in ${azure_location}"   
 fi
 
-az_supported_regions=["australiaeast","Australia East","brazilsouth","Brazil South","canadacentral","Canada Central","centralindia","Central India","centralus","Central US","chinanorth3","China North 3","ChinaNorth3","eastasia","East Asia","eastus","East US","eastus2","East US 2","francecentral","France Central","germanywestcentral","Germany West Central","japaneast","Japan East","koreacentral","Korea Central","northeurope","North Europe","norwayeast","Norway East","southafricanorth","South Africa North","southcentralus","South Central US","southeastasia","Southeast Asia","swedencentral","Sweden Central","switzerlandnorth","Switzerland North","uaenorth","UAE North","uksouth","UK South","westeurope","West Europe","westus2","West US 2","westus3","West US 3"]
+az_supported_regions=["australiaeast","Australia East","brazilsouth","Brazil South","canadacentral","Canada Central","centralindia","Central India","centralus","Central US","chinanorth3","China North 3","ChinaNorth3","eastasia","East Asia","eastus","East US","eastus2","East US 2","francecentral","France Central","germanywestcentral","Germany West Central","japaneast","Japan East","koreacentral","Korea Central","northeurope","North Europe","norwayeast","Norway East","southafricanorth","South Africa North","southcentralus","South Central US","southeastasia","Southeast Asia","swedencentral","Sweden Central","switzerlandnorth","Switzerland North","uaenorth","UAE North","uksouth","UK South","westeurope","West Europe","westus2","West US 2","westus3","West US 3","usgovvirginia","US Gov Virginia"]
 if [[ ${az_supported_regions[*]} =~ $azure_location ]]; then
 echo "${GREEN}Azure region ${azure_location} supports Zones...${RESET}"
 zones_enabled_default=no

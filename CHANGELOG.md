@@ -1,3 +1,8 @@
+## TBD (UNRELEASED)
+
+FEATURES:
+* add: terraform and zsec support for Azure Government regions US Gov Arizona, US Gov Texas, and US Gov Virginia
+
 ## v0.4.1 (February 29, 2024)
 
 BUG FIXES:
