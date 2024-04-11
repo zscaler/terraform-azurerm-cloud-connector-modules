@@ -803,7 +803,7 @@ first_run="yes"
                 echo "No explicit Availbility Zones were specified... Terraform will create a single VMSS"
             fi
             #########################################
-            # Min/Desired/Max VMSS Configuration
+            # Min/Default/Max VMSS Configuration
             #########################################
             # min count
             vmss_min_default=2
@@ -815,12 +815,12 @@ first_run="yes"
                 exit 1
             fi
 
-            # desired count
-            vmss_desired_default=2
-            read -r -p "${CYAN}Enter the desired amount of Cloud Connectors per VMSS? [Default=$vmss_desired_default]: ${RESET}" vmss_desired_input
-            vmss_desired=${vmss_desired_input:-$vmss_desired_default}
-            if (( $vmss_desired < 1 || $vmss_desired > 20 )); then
-                echo "${RED}Invalid vmss_desired value. Must be a number between 1 and 20${RESET}"
+            # default count
+            vmss_default_default=2
+            read -r -p "${CYAN}Enter the default amount of Cloud Connectors per VMSS? [Default=$vmss_default_default]: ${RESET}" vmss_default_input
+            vmss_default=${vmss_default_input:-$vmss_default_default}
+            if (( $vmss_default < 1 || $vmss_default > 20 )); then
+                echo "${RED}Invalid vmss_default value. Must be a number between 1 and 20${RESET}"
                 echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
                 exit 1
             fi
@@ -836,19 +836,19 @@ first_run="yes"
             fi
 
             # validate values
-            if (( $vmss_desired < $vmss_min || $vmss_desired > $vmss_max )); then
-                echo "${RED}Invalid vmss_desired value. Must be a number between vmss_min and vmss_max${RESET}"
+            if (( $vmss_default < $vmss_min || $vmss_default > $vmss_max )); then
+                echo "${RED}Invalid vmss_default value. Must be a number between vmss_min and vmss_max${RESET}"
                 echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
                 exit 1
             fi
 
             if [[ "$zones_enabled" == "true" ]]; then
-                echo "${dtype} will deploy $zones_count VMSS each with min: ${vmss_min} desired: ${vmss_desired} max: ${vmss_max} Cloud Connectors in ${azure_location}"
+                echo "${dtype} will deploy $zones_count VMSS each with min: ${vmss_min} default: ${vmss_default} max: ${vmss_max} Cloud Connectors in ${azure_location}"
             else
-                echo "${dtype} will deploy 1 VMSS with min: ${vmss_min} desired: ${vmss_desired} max: ${vmss_max} Cloud Connectors in ${azure_location}"
+                echo "${dtype} will deploy 1 VMSS with min: ${vmss_min} default: ${vmss_default} max: ${vmss_max} Cloud Connectors in ${azure_location}"
             fi
             echo "export TF_VAR_vmss_min_ccs=${vmss_min}" >> .zsecrc
-            echo "export TF_VAR_vmss_desired_ccs=${vmss_desired}" >> .zsecrc
+            echo "export TF_VAR_vmss_default_ccs=${vmss_default}" >> .zsecrc
             echo "export TF_VAR_vmss_max_ccs=${vmss_max}" >> .zsecrc
 
             #########################################
