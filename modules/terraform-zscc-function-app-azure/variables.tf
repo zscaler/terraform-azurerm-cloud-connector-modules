@@ -92,3 +92,15 @@ variable "existing_storage_account_rg" {
   description = "Resource Group of existing Storage Account to associate with the Function App."
   default     = ""
 }
+
+variable "log_analytics_sku" {
+  type        = string
+  description = "Log Analytics Workspace SKU"
+  default     = "PerGB2018"
+}
+
+variable "log_analytics_retention_days" {
+  type        = number
+  description = "Log Analytics Workspace retention time in days."
+  default     = 30
+}
