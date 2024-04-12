@@ -68,11 +68,20 @@ resource "azurerm_service_plan" "vmss_orchestration_app_service_plan" {
   tags = var.global_tags
 }
 
+resource "azurerm_log_analytics_workspace" "vmss_orchestration_log_analytics_workspace" {
+  name                = "${var.name_prefix}-ccvmss-${var.resource_tag}-workspace"
+  location            = var.location
+  resource_group_name = var.resource_group
+  sku                 = var.log_analytics_sku
+  retention_in_days   = var.log_analytics_retention_days
+}
+
 # Create Application Insights resource
 resource "azurerm_application_insights" "vmss_orchestration_app_insights" {
   name                = "${var.name_prefix}-ccvmss-${var.resource_tag}-app-insights"
   location            = var.location
   resource_group_name = var.resource_group
+  workspace_id        = azurerm_log_analytics_workspace.vmss_orchestration_log_analytics_workspace.id
   application_type    = "web"
 
   tags = var.global_tags
