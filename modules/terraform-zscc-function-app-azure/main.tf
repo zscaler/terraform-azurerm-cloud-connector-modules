@@ -24,12 +24,6 @@ data "azurerm_storage_account" "existing_storage_account" {
   resource_group_name = var.existing_storage_account_rg
 }
 
-locals {
-  storage_account_name       = var.existing_storage_account ? data.azurerm_storage_account.existing_storage_account[0].name : azurerm_storage_account.cc_function_storage_account[0].name
-  storage_account_id         = var.existing_storage_account ? data.azurerm_storage_account.existing_storage_account[0].id : azurerm_storage_account.cc_function_storage_account[0].id
-  storage_account_access_key = var.existing_storage_account ? data.azurerm_storage_account.existing_storage_account[0].primary_access_key : azurerm_storage_account.cc_function_storage_account[0].primary_access_key
-}
-
 # Create Private Storage Container to upload function zip file
 resource "azurerm_storage_container" "cc_function_storage_container" {
   count                 = var.upload_function_app_zip ? 1 : 0
@@ -69,6 +63,7 @@ resource "azurerm_service_plan" "vmss_orchestration_app_service_plan" {
 }
 
 resource "azurerm_log_analytics_workspace" "vmss_orchestration_log_analytics_workspace" {
+  count               = var.existing_log_analytics_workspace ? 0 : 1
   name                = "${var.name_prefix}-ccvmss-${var.resource_tag}-workspace"
   location            = var.location
   resource_group_name = var.resource_group
@@ -76,12 +71,19 @@ resource "azurerm_log_analytics_workspace" "vmss_orchestration_log_analytics_wor
   retention_in_days   = var.log_analytics_retention_days
 }
 
+locals {
+  storage_account_name       = var.existing_storage_account ? data.azurerm_storage_account.existing_storage_account[0].name : azurerm_storage_account.cc_function_storage_account[0].name
+  storage_account_id         = var.existing_storage_account ? data.azurerm_storage_account.existing_storage_account[0].id : azurerm_storage_account.cc_function_storage_account[0].id
+  storage_account_access_key = var.existing_storage_account ? data.azurerm_storage_account.existing_storage_account[0].primary_access_key : azurerm_storage_account.cc_function_storage_account[0].primary_access_key
+  log_analytics_workspace_id = var.existing_log_analytics_workspace ? var.existing_log_analytics_workspace_id : azurerm_log_analytics_workspace.vmss_orchestration_log_analytics_workspace[0].id
+}
+
 # Create Application Insights resource
 resource "azurerm_application_insights" "vmss_orchestration_app_insights" {
   name                = "${var.name_prefix}-ccvmss-${var.resource_tag}-app-insights"
   location            = var.location
   resource_group_name = var.resource_group
-  workspace_id        = azurerm_log_analytics_workspace.vmss_orchestration_log_analytics_workspace.id
+  workspace_id        = local.log_analytics_workspace_id
   application_type    = "web"
 
   tags = var.global_tags
