@@ -376,6 +376,18 @@ variable "function_app_managed_identity_rg" {
   default     = ""
 }
 
+variable "existing_log_analytics_workspace" {
+  type        = bool
+  description = "Set to True if you wish to use an existing Log Analytics Workspace to associate with the AppInsights Instance. Default is false meaning Terraform module will create a new one"
+  default     = false
+}
+
+variable "existing_log_analytics_workspace_id" {
+  type        = string
+  description = "ID of existing Log Analytics Workspace to associate with the AppInsights Instance."
+  default     = ""
+}
+
 
 # Azure Private DNS specific variables
 variable "zpa_enabled" {
