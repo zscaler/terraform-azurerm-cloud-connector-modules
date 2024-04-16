@@ -369,3 +369,15 @@ variable "function_app_managed_identity_rg" {
   description = "Resource Group of the Azure Managed Identity name to attach to the Function App. E.g. edgeconnector_rg_1"
   default     = ""
 }
+
+variable "existing_log_analytics_workspace" {
+  type        = bool
+  description = "Set to True if you wish to use an existing Log Analytics Workspace to associate with the AppInsights Instance. Default is false meaning Terraform module will create a new one"
+  default     = false
+}
+
+variable "existing_log_analytics_workspace_id" {
+  type        = string
+  description = "ID of existing Log Analytics Workspace to associate with the AppInsights Instance."
+  default     = ""
+}
