@@ -260,6 +260,12 @@ variable "support_access_enabled" {
   default     = true
 }
 
+variable "zssupport_server" {
+  type        = string
+  description = "destination IP address of Zscaler Support access server. IP resolution of remotesupport.<zscaler_customer_cloud>.net"
+  default     = "199.168.148.101" #for commercial clouds
+}
+
 
 # Azure Private DNS specific variables
 variable "zpa_enabled" {

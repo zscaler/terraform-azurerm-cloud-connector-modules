@@ -173,6 +173,7 @@ module "cc_nsg" {
   location               = var.arm_location
   global_tags            = local.global_tags
   support_access_enabled = var.support_access_enabled
+  zssupport_server       = var.zssupport_server
 }
 
 
