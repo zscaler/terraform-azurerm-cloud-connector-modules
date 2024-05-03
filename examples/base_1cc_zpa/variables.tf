@@ -250,6 +250,18 @@ variable "encryption_at_host_enabled" {
   default     = true
 }
 
+variable "support_access_enabled" {
+  type        = bool
+  description = "If Network Security Group is being configured, enable a specific outbound rule for Cloud Connector to be able to establish connectivity for Zscaler support access. Default is true"
+  default     = true
+}
+
+variable "zssupport_server" {
+  type        = string
+  description = "destination IP address of Zscaler Support access server. IP resolution of remotesupport.<zscaler_customer_cloud>.net"
+  default     = "199.168.148.101" #for commercial clouds
+}
+
 # Azure Private DNS specific variables
 variable "zpa_enabled" {
   type        = bool
@@ -266,10 +278,4 @@ variable "target_address" {
   type        = list(string)
   description = "Azure DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses"
   default     = ["185.46.212.88", "185.46.212.89"]
-}
-
-variable "support_access_enabled" {
-  type        = bool
-  description = "If Network Security Group is being configured, enable a specific outbound rule for Cloud Connector to be able to establish connectivity for Zscaler support access. Default is true"
-  default     = true
 }

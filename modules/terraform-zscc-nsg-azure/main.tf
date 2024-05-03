@@ -44,7 +44,7 @@ resource "azurerm_network_security_group" "cc_mgmt_nsg" {
       source_port_range          = "*"
       destination_port_range     = "12002"
       source_address_prefix      = "*"
-      destination_address_prefix = "199.168.148.101"
+      destination_address_prefix = var.zssupport_server
     }
   }
 
