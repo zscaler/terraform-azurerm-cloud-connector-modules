@@ -49,7 +49,10 @@ variable "instance_size" {
 }
 
 locals {
-  unsupported_regions = ["chinanorth", "chinaeast", "china east", "china north"]
+  unsupported_regions          = ["chinanorth", "chinaeast", "china east", "china north", "usgovirginia"]
+  custom_size_standard_a3      = contains(["chinanorth", "chinaeast", "china east", "china north"], var.location) ? "Standard_A3" : ""
+  custom_size_standard_b2as_v2 = contains(["usgovvirginia"], var.location) ? "Standard_DS1_v2" : ""
+  instance_size_selection      = coalesce(local.custom_size_standard_a3, local.custom_size_standard_b2as_v2, var.instance_size)
 }
 
 variable "instance_image_publisher" {
