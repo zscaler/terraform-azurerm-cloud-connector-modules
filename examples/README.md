@@ -20,7 +20,7 @@
 
 ### Terraform client requirements
 7. If executing Terraform via the "zsec" wrapper bash script, it is advised that you run from a MacOS or Linux workstation. Minimum installed application requirements to successfully from the script are:
-    - bash | curl | unzip | rm | cp | find | grep | sed
+    - bash | curl | unzip | rm | cp | find | grep | sed | dig
 
 <p>These can all be installed via your distribution app installer. ie: sudo apt install bash curl unzip</p>
 

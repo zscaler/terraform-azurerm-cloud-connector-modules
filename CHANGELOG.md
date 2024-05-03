@@ -1,7 +1,13 @@
 ## TBD (UNRELEASED)
 
 FEATURES:
-* add: terraform and zsec support for Azure Government regions US Gov Arizona, US Gov Texas, and US Gov Virginia
+* add: terraform and zsec support for Azure Government ARM_ENVIRONMENT and regions
+
+ENHANCEMENTS:
+* add: var zssupport_server to nsg module
+* add: zsec automatic lookup zssupport server IP for destination NSG rule by Zscaler Cloud
+
+
 
 ## v0.4.1 (February 29, 2024)
 
