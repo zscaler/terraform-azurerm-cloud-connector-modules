@@ -84,7 +84,7 @@ resource "azurerm_linux_virtual_machine" "workload_vm" {
   resource_group_name = var.resource_group
 
   network_interface_ids = [azurerm_network_interface.workload_nic[count.index].id]
-  size                  = contains(local.unsupported_regions, lower(var.location)) ? "Standard_A3" : var.instance_size
+  size                  = local.instance_size_selection
   admin_username        = var.server_admin_username
   computer_name         = "${var.name_prefix}-workload-${count.index + 1}-${var.resource_tag}"
   admin_ssh_key {
