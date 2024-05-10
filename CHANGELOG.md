@@ -5,7 +5,6 @@ ENHANCEMENTS:
 BUG FIXES:
 * fix: remove local file depends_on to avoid conflicts if file does not exist or needs recreated
 
-
 ## v0.5.0 (May 22, 2024)
 
 FEATURES:
