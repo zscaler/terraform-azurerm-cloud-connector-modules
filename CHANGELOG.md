@@ -1,4 +1,4 @@
-## TBD (UNRELEASED)
+## v0.5.0 (May 11, 2024)
 
 FEATURES:
 * add: terraform and zsec support for Azure Government ARM_ENVIRONMENT and regions
@@ -6,8 +6,6 @@ FEATURES:
 ENHANCEMENTS:
 * add: var zssupport_server to nsg module
 * add: zsec automatic lookup zssupport server IP for destination NSG rule by Zscaler Cloud
-
-
 
 ## v0.4.1 (February 29, 2024)
 
