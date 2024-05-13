@@ -43,14 +43,6 @@ resource "azurerm_storage_blob" "cc_function_storage_blob" {
   content_md5            = filemd5("${path.module}/zscaler_cc_function_app.zip")
 }
 
-# Restrict storage account blob access to only CC/Function App Managed Identity
-resource "azurerm_role_assignment" "cc_function_role_assignment_storage" {
-  count                = var.upload_function_app_zip ? 1 : 0
-  scope                = local.storage_account_id
-  role_definition_name = "Storage Blob Data Reader"
-  principal_id         = var.managed_identity_principal_id
-}
-
 # Create App Service Plan
 resource "azurerm_service_plan" "vmss_orchestration_app_service_plan" {
   name                = "${var.name_prefix}-ccvmss-${var.resource_tag}-app-service-plan"
