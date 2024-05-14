@@ -128,4 +128,18 @@ resource "azurerm_linux_function_app" "vmss_orchestration_app" {
   }
 
   tags = var.global_tags
+
+  provisioner "local-exec" {
+    command = "${path.module}/manual_sync.sh ${data.azurerm_subscription.current.subscription_id} ${var.resource_group} ${azurerm_linux_function_app.vmss_orchestration_app.name} 2>${path.module}/stderr >${path.module}/stdout; echo $? >${path.module}/exitstatus"
+    when    = create
+  }
+}
+
+
+resource "null_resource" "contents" {
+  triggers = {
+    stdout     = file("${path.module}/stdout")
+    stderr     = file("${path.module}/stderr")
+    exitstatus = file("${path.module}/exitstatus")
+  }
 }
