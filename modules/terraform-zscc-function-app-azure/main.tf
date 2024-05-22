@@ -86,6 +86,53 @@ resource "azurerm_application_insights" "vmss_orchestration_app_insights" {
 # Create Function App
 ################################################################################
 resource "azurerm_linux_function_app" "vmss_orchestration_app" {
+  count               = var.run_manual_sync ? 0 : 1
+  name                = "${var.name_prefix}-ccvmss-${var.resource_tag}-function-app"
+  resource_group_name = var.resource_group
+  location            = var.location
+
+  storage_account_name       = local.storage_account_name
+  storage_account_access_key = local.storage_account_access_key
+  service_plan_id            = azurerm_service_plan.vmss_orchestration_app_service_plan.id
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [var.managed_identity_id]
+  }
+
+  app_settings = {
+    "SUBSCRIPTION_ID"                              = data.azurerm_subscription.current.id
+    "MANAGED_IDENTITY"                             = var.managed_identity_client_id
+    "RESOURCE_GROUP"                               = var.resource_group
+    "VMSS_NAME"                                    = jsonencode(var.vmss_names)
+    "TERMINATE_UNHEALTHY_INSTANCES"                = var.terminate_unhealthy_instances
+    "VAULT_URL"                                    = var.azure_vault_url
+    "CC_URL"                                       = var.cc_vm_prov_url
+    "APPLICATIONINSIGHTS_CONNECTION_STRING"        = azurerm_application_insights.vmss_orchestration_app_insights.connection_string
+    "ApplicationInsightsAgent_EXTENSION_VERSION"   = "~3"
+    "XDT_MicrosoftApplicationInsights_Mode"        = "recommended"
+    "WEBSITE_RUN_FROM_PACKAGE"                     = var.upload_function_app_zip ? azurerm_storage_blob.cc_function_storage_blob[0].url : var.zscaler_cc_function_public_url
+    "WEBSITE_RUN_FROM_PACKAGE_BLOB_MI_RESOURCE_ID" = var.managed_identity_id
+  }
+
+  site_config {
+    application_stack {
+      python_version = "3.11"
+    }
+    application_insights_connection_string = azurerm_application_insights.vmss_orchestration_app_insights.connection_string
+  }
+
+  lifecycle {
+    ignore_changes = [
+      app_settings["APPLICATIONINSIGHTS_CONNECTION_STRING"],
+    ]
+  }
+
+  tags = var.global_tags
+}
+
+resource "azurerm_linux_function_app" "vmss_orchestration_app_with_manual_sync" {
+  count               = var.run_manual_sync ? 1 : 0
   name                = "${var.name_prefix}-ccvmss-${var.resource_tag}-function-app"
   resource_group_name = var.resource_group
   location            = var.location
@@ -130,16 +177,14 @@ resource "azurerm_linux_function_app" "vmss_orchestration_app" {
   tags = var.global_tags
 
   provisioner "local-exec" {
-    command = "${path.module}/manual_sync.sh ${data.azurerm_subscription.current.subscription_id} ${var.resource_group} ${azurerm_linux_function_app.vmss_orchestration_app.name} 2>${path.module}/stderr >${path.module}/stdout; echo $? >${path.module}/exitstatus"
-    when    = create
+    command = "${var.path_to_scripts}/manual_sync.sh ${data.azurerm_subscription.current.subscription_id} ${var.resource_group} ${azurerm_linux_function_app.vmss_orchestration_app_with_manual_sync[0].name} 2>${var.path_to_scripts}/stderr >${var.path_to_scripts}/stdout; echo $? >${var.path_to_scripts}/exitstatus"
   }
 }
 
-
-resource "null_resource" "contents" {
-  triggers = {
-    stdout     = file("${path.module}/stdout")
-    stderr     = file("${path.module}/stderr")
-    exitstatus = file("${path.module}/exitstatus")
-  }
+data "local_file" "manual_sync_exist_status" {
+  count    = var.run_manual_sync && fileexists("${var.path_to_scripts}/exitstatus") ? 1 : 0
+  filename = "${var.path_to_scripts}/exitstatus"
+  depends_on = [
+    azurerm_linux_function_app.vmss_orchestration_app_with_manual_sync[0]
+  ]
 }
