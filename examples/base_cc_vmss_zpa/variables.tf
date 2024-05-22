@@ -406,3 +406,16 @@ variable "target_address" {
   description = "Azure DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses"
   default     = ["185.46.212.88", "185.46.212.89"]
 }
+
+variable "run_manual_sync" {
+  type        = bool
+  description = "Set to True if you would like terraform to run the manual sync operation to start the Function App after creation. The alternative is to navigate to the Function App on the Azure Portal UI or to manually invoke the script yourself."
+  default     = true
+}
+
+variable "path_to_scripts" {
+  type        = string
+  description = "Path to script_directory"
+  default     = "../../scripts"
+}
+
