@@ -1,4 +1,4 @@
-## v0.5.0 (May 11, 2024)
+## v0.5.0 (May 22, 2024)
 
 FEATURES:
 * add: terraform and zsec support for Azure Government ARM_ENVIRONMENT and regions
