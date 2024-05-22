@@ -381,3 +381,15 @@ variable "existing_log_analytics_workspace_id" {
   description = "ID of existing Log Analytics Workspace to associate with the AppInsights Instance."
   default     = ""
 }
+
+variable "run_manual_sync" {
+  type        = bool
+  description = "Set to True if you would like terraform to run the manual sync operation to start the Function App after creation. The alternative is to navigate to the Function App on the Azure Portal UI or to manually invoke the script yourself."
+  default     = true
+}
+
+variable "path_to_scripts" {
+  type        = string
+  description = "Path to script_directory"
+  default     = "../../scripts"
+}

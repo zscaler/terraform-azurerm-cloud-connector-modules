@@ -52,6 +52,6 @@ override.tf.json
 
 examples/base_cc_vmss/terraform.tfvars.sample
 modules/terraform-zscc-ccvmss-azure/zscaler_cc_function_app_*
-modules/terraform-zscc-function-app-azure/exitstatus
-modules/terraform-zscc-function-app-azure/stderr
-modules/terraform-zscc-function-app-azure/stdout
+scripts/exitstatus
+scripts/stderr
+scripts/stdout
