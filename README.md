@@ -14,7 +14,7 @@ This README serves as a quick start guide to deploy Zscaler Cloud Connector reso
 
 ## **Azure Deployment Scripts for Terraform**
 
-Use this repository to create the deployment resources required to deploy and operate Cloud Connector in a new or existing resource group and virtual network. The [examples directory](https://github.com/zscaler/terraform-aws-cloud-connector-modules/tree/main/examples) contains complete automation scripts for both greenfield/POV and brownfield/production use.
+Use this repository to create the deployment resources required to deploy and operate Cloud Connector in a new or existing resource group and virtual network. The [examples directory](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/tree/main/examples) contains complete automation scripts for both greenfield/POV and brownfield/production use.
 
 ## **Prerequisites**
 
