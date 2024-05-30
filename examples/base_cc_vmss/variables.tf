@@ -391,5 +391,5 @@ variable "run_manual_sync" {
 variable "path_to_scripts" {
   type        = string
   description = "Path to script_directory"
-  default     = "../../scripts"
+  default     = ""
 }
