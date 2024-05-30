@@ -201,7 +201,7 @@ module "cc_functionapp" {
   existing_log_analytics_workspace    = var.existing_log_analytics_workspace
   existing_log_analytics_workspace_id = var.existing_log_analytics_workspace_id
   run_manual_sync                     = var.run_manual_sync
-  path_to_scripts                     = var.path_to_scripts
+  path_to_scripts                     = coalesce(var.path_to_scripts, "../../scripts")
 }
 
 ################################################################################
