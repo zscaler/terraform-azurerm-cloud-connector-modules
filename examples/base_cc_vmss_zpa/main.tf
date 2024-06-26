@@ -61,7 +61,6 @@ module "network" {
   lb_frontend_ip        = module.cc_lb.lb_ip
   workloads_enabled     = true
   bastion_enabled       = true
-  lb_enabled            = var.lb_enabled
   zpa_enabled           = var.zpa_enabled
 }
 
@@ -200,6 +199,8 @@ module "cc_functionapp" {
   managed_identity_client_id          = module.cc_identity.function_app_managed_identity_client_id
   existing_log_analytics_workspace    = var.existing_log_analytics_workspace
   existing_log_analytics_workspace_id = var.existing_log_analytics_workspace_id
+  run_manual_sync                     = var.run_manual_sync
+  path_to_scripts                     = coalesce(var.path_to_scripts, "../../scripts")
 }
 
 ################################################################################

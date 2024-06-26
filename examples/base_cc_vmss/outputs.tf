@@ -55,11 +55,21 @@ ${module.bastion.public_ip}
 
 
 TB
+
+  testbedconfig_manual_sync_failed = <<TB
+**IMPORTANT (ONLY APPLICABLE FOR INITIAL CREATE OF FUNCTION APP)**
+Based on the recorded output, the manual sync to start your Azure Function App failed. To perform this manual sync perform one of the following steps:
+  1. Navigate to the Azure Function App ${module.cc_functionapp.function_app_id} on the Azure Portal. The loading of the Function App page triggers the manual sync and will start your Function App.
+  2. Attempt to rerun the manual_sync.sh script manually using the following command (path to file is based on root of the repo):
+      ../../modules/terraform-zscc-function-app-azure/manual_sync.sh ${module.cc_functionapp.subscription_id} ${module.network.resource_group_name} ${module.cc_functionapp.function_app_name}
+**IMPORTANT (ONLY APPLICABLE FOR INITIAL CREATE OF FUNCTION APP)**
+
+TB
 }
 
 output "testbedconfig" {
   description = "Azure Testbed results"
-  value       = local.testbedconfig
+  value       = module.cc_functionapp.manual_sync_exit_status != "1" ? local.testbedconfig : format("%s%s", local.testbedconfig, local.testbedconfig_manual_sync_failed)
 }
 
 resource "local_file" "testbed" {

@@ -202,12 +202,6 @@ variable "load_distribution" {
   }
 }
 
-variable "lb_enabled" {
-  type        = bool
-  description = "Default true. Only relevant for 'base' deployments. Configure Workload Route Table to default route next hop to the CC Load Balancer IP passed from var.lb_frontend_ip. If false, default route next hop directly to the CC Service IP passed from var.cc_service_ip"
-  default     = true
-}
-
 variable "health_check_interval" {
   type        = number
   description = "The interval, in seconds, for how frequently to probe the endpoint for health status. Typically, the interval is slightly less than half the allocated timeout period (in seconds) which allows two full probes before taking the instance out of rotation. The default value is 15, the minimum value is 5"
@@ -379,5 +373,17 @@ variable "existing_log_analytics_workspace" {
 variable "existing_log_analytics_workspace_id" {
   type        = string
   description = "ID of existing Log Analytics Workspace to associate with the AppInsights Instance."
+  default     = ""
+}
+
+variable "run_manual_sync" {
+  type        = bool
+  description = "Set to True if you would like terraform to run the manual sync operation to start the Function App after creation. The alternative is to navigate to the Function App on the Azure Portal UI or to manually invoke the script yourself."
+  default     = true
+}
+
+variable "path_to_scripts" {
+  type        = string
+  description = "Path to script_directory"
   default     = ""
 }
