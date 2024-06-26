@@ -142,16 +142,6 @@ variable "http_probe_port" {
   }
 }
 
-variable "workload_count" {
-  type        = number
-  description = "The number of Workload VMs to deploy"
-  default     = 1
-  validation {
-    condition     = var.workload_count >= 1 && var.workload_count <= 250
-    error_message = "Input workload_count must be a whole number between 1 and 250."
-  }
-}
-
 variable "zones_enabled" {
   type        = bool
   description = "Determine whether to provision Cloud Connector VMs explicitly in defined zones (if supported by the Azure region provided in the location variable). If left false, Azure will automatically choose a zone and module will create an availability set resource instead for VM fault tolerance"
@@ -352,6 +342,29 @@ variable "function_app_managed_identity_rg" {
   default     = ""
 }
 
+variable "existing_log_analytics_workspace" {
+  type        = bool
+  description = "Set to True if you wish to use an existing Log Analytics Workspace to associate with the AppInsights Instance. Default is false meaning Terraform module will create a new one"
+  default     = false
+}
+
+variable "existing_log_analytics_workspace_id" {
+  type        = string
+  description = "ID of existing Log Analytics Workspace to associate with the AppInsights Instance."
+  default     = ""
+}
+
+variable "run_manual_sync" {
+  type        = bool
+  description = "Set to True if you would like terraform to run the manual sync operation to start the Function App after creation. The alternative is to navigate to the Function App on the Azure Portal UI or to manually invoke the script yourself."
+  default     = true
+}
+
+variable "path_to_scripts" {
+  type        = string
+  description = "Path to script_directory"
+  default     = ""
+}
 
 # Azure Private DNS specific variables
 variable "zpa_enabled" {

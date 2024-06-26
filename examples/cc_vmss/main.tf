@@ -170,11 +170,15 @@ module "cc_functionapp" {
   existing_storage_account_rg    = var.existing_storage_account_rg
 
   #required app_settings inputs
-  terminate_unhealthy_instances = var.terminate_unhealthy_instances
-  cc_vm_prov_url                = var.cc_vm_prov_url
-  azure_vault_url               = var.azure_vault_url
-  vmss_names                    = module.cc_vmss.vmss_names
-  managed_identity_client_id    = module.cc_identity.function_app_managed_identity_client_id
+  terminate_unhealthy_instances       = var.terminate_unhealthy_instances
+  cc_vm_prov_url                      = var.cc_vm_prov_url
+  azure_vault_url                     = var.azure_vault_url
+  vmss_names                          = module.cc_vmss.vmss_names
+  managed_identity_client_id          = module.cc_identity.function_app_managed_identity_client_id
+  existing_log_analytics_workspace    = var.existing_log_analytics_workspace
+  existing_log_analytics_workspace_id = var.existing_log_analytics_workspace_id
+  run_manual_sync                     = var.run_manual_sync
+  path_to_scripts                     = coalesce(var.path_to_scripts, "../../scripts")
 }
 
 ################################################################################
