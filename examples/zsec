@@ -482,7 +482,6 @@ first_run="yes"
             else
                 echo "${RED}Invalid input. Please enter 'yes' or 'no'.${RESET}"
             fi
-        done
 
         echo "export TF_VAR_encryption_at_host_enabled=${encryption_at_host_enabled}" >> .zsecrc
         # End of Host Encryption support update
