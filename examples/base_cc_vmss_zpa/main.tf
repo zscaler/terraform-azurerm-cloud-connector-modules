@@ -61,7 +61,6 @@ module "network" {
   lb_frontend_ip        = module.cc_lb.lb_ip
   workloads_enabled     = true
   bastion_enabled       = true
-  lb_enabled            = var.lb_enabled
   zpa_enabled           = var.zpa_enabled
 }
 
