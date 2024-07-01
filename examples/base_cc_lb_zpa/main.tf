@@ -125,7 +125,8 @@ resource "local_file" "user_data_file" {
 
 # Validates which Marketplace to use based on arm location
 locals {
-  is_china                         = can(regex("^china", var.arm_location))
+  arm_location_lower_case          = lower(var.arm_location)
+  is_china                         = can(regex("^china", local.arm_location_lower_case))
   conditional_ccvm_image_publisher = local.is_china ? "cbcnetworks" : var.ccvm_image_publisher
   conditional_ccvm_image_offer     = local.is_china ? "zscaler-cloud-connector" : var.ccvm_image_offer
 }
