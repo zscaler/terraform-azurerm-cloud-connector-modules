@@ -1000,7 +1000,7 @@ first_run="yes"
                         echo "Terraform will use an existing Storage Account. *Note* - Storage Account must reside in the same Subscription"
                         echo "export TF_VAR_existing_storage_account=true" >> .zsecrc
                         read -r -p "${CYAN}Enter the Name of your existing Storage Account: ${RESET}" existing_storage_account_name 
-                        echo "export TF_VAR_existing_storage_account_name =${existing_storage_account_name }" >> .zsecrc
+                        echo "export TF_VAR_existing_storage_account_name=${existing_storage_account_name}" >> .zsecrc
                         read -r -p "${CYAN}Enter the Resource Group of your existing Storage Account: ${RESET}" existing_storage_account_rg
                         echo "export TF_VAR_existing_storage_account_rg=${existing_storage_account_rg}" >> .zsecrc
                         echo "Azure Function App will use Storage Account: $existing_storage_account_name in RG: $existing_storage_account_rg"
