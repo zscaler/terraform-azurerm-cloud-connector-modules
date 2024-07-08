@@ -1,3 +1,11 @@
+## TBD (UNRELEASED)
+ENHANCEMENTS:
+* feat: Official Azure Marketplace support for both usgovernment and china Azure Clouds. Product information for each can be located [here](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/tree/main/modules/terraform-zscc-ccvm-azure/README.md)
+
+BUG FIXES:
+* fix: remove local file depends_on to avoid conflicts if file does not exist or needs recreated
+
+
 ## v0.5.0 (May 22, 2024)
 
 FEATURES:
