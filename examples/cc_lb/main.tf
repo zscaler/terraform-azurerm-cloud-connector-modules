@@ -101,6 +101,14 @@ resource "local_file" "user_data_file" {
   filename = "../user_data"
 }
 
+# Validates which Marketplace to use based on arm location
+locals {
+  arm_location_lower_case          = lower(var.arm_location)
+  is_china                         = can(regex("^china", local.arm_location_lower_case))
+  conditional_ccvm_image_publisher = local.is_china ? "cbcnetworks" : var.ccvm_image_publisher
+  conditional_ccvm_image_offer     = local.is_china ? "zscaler-cloud-connector" : var.ccvm_image_offer
+}
+
 # Create specified number of CC appliances
 module "cc_vm" {
   cc_count                       = var.cc_count
@@ -120,8 +128,8 @@ module "cc_vm" {
   zones_enabled                  = var.zones_enabled
   zones                          = var.zones
   ccvm_instance_type             = var.ccvm_instance_type
-  ccvm_image_publisher           = var.ccvm_image_publisher
-  ccvm_image_offer               = var.ccvm_image_offer
+  ccvm_image_publisher           = local.conditional_ccvm_image_publisher
+  ccvm_image_offer               = local.conditional_ccvm_image_offer
   ccvm_image_sku                 = var.ccvm_image_sku
   ccvm_image_version             = var.ccvm_image_version
   ccvm_source_image_id           = var.ccvm_source_image_id
