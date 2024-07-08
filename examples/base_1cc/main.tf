@@ -157,8 +157,7 @@ module "cc_vm" {
   encryption_at_host_enabled     = var.encryption_at_host_enabled
 
   depends_on = [
-    local_file.user_data_file,
-    null_resource.cc_error_checker,
+    null_resource.cc_error_checker
   ]
 }
 
