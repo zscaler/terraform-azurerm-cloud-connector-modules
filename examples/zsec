@@ -165,7 +165,6 @@ first_run="yes"
 	"centraluseuap"
 	"chinaeast"
 	"chinaeast2"
-	"chinaeast3"
 	"chinanorth"
 	"chinanorth2"
 	"chinanorth3"
@@ -227,8 +226,6 @@ first_run="yes"
             		echo "${YELLOW} US Gov region detected. Setting ARM_ENVIRONMENT...${RESET}"
            	        echo "export ARM_ENVIRONMENT=usgovernment" >> .zsecrc
             		echo "export ARM_SKIP_PROVIDER_REGISTRATION=true" >> .zsecrc
-            		read -r -p "${CYAN}Enter full Source Image ID path for your CC image (e.g. /subscriptions/<id>/resourceGroups/<rg>/providers/Microsoft.Compute/images/<image_name>): ${RESET}" ccvm_source_image_id
-            		echo "export TF_VAR_ccvm_source_image_id='$ccvm_source_image_id'" >> .zsecrc
         	   fi
                    break 2
                 fi
