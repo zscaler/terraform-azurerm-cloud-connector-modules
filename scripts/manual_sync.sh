@@ -24,7 +24,7 @@ if [[ "$ARM_TENANT_ID" != "" ]]; then
         --data-urlencode "client_secret=${client_secret}" \
         --data-urlencode "resource=https://management.azure.com/")
     # extract access token
-    access_token=$(jq --argjson j "$auth_response" -n '$j.accessToken' | cut -d "\"" -f 2)
+    access_token=$(jq --argjson j "$auth_response" -n '$j.access_token' | cut -d "\"" -f 2)
 else
     echo "ARM_TENANT_ID ENV variable is not set, attempting to use AZ CLI to get access token."
     az account set --subscription ${subscription_id}
