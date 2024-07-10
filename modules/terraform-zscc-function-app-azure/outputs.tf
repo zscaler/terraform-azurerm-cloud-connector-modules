@@ -15,7 +15,7 @@ output "function_app_outbound_ip_address_list" {
 
 output "manual_sync_exit_status" {
   description = "Exit status of the operation to manually sync the Azure Function App after deployment."
-  value       = var.run_manual_sync && fileexists("${path.module}/exitstatus") ? chomp(data.local_file.manual_sync_exist_status[0].content) : "0"
+  value       = var.run_manual_sync && fileexists("${var.path_to_scripts}/exitstatus") ? chomp(data.local_file.manual_sync_exist_status[0].content) : "0"
 }
 
 output "subscription_id" {
