@@ -116,7 +116,7 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
       metric_trigger {
         metric_name = "smedge_metrics"
         dimensions {
-          name     = "metricname"
+          name     = "metric_name"
           operator = "Equals"
           values   = ["smedge_cpu_utilization"]
         }
@@ -142,7 +142,7 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
       metric_trigger {
         metric_name = "smedge_metrics"
         dimensions {
-          name     = "metricname"
+          name     = "metric_name"
           operator = "Equals"
           values   = ["smedge_cpu_utilization"]
         }
@@ -190,7 +190,7 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
         metric_trigger {
           metric_name = "smedge_metrics"
           dimensions {
-            name     = "metricname"
+            name     = "metric_name"
             operator = "Equals"
             values   = ["smedge_cpu_utilization"]
           }
@@ -216,7 +216,7 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
         metric_trigger {
           metric_name = "smedge_metrics"
           dimensions {
-            name     = "metricname"
+            name     = "metric_name"
             operator = "Equals"
             values   = ["smedge_cpu_utilization"]
           }
