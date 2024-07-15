@@ -877,6 +877,32 @@ first_run="yes"
             echo "export TF_VAR_vmss_max_ccs=${vmss_max}" >> .zsecrc
 
             #########################################
+            # Scale In/Out Threshold Configuration
+            #########################################
+            # Scale In threshold count
+            scale_in_default=50
+            read -r -p "${CYAN}Enter the scale in threshold for scale sets? This value refers to percent CPU utilization. [Default=$scale_in_default]: ${RESET}" scale_in_input
+            scale_in=${scale_in_input:-$scale_in_default}
+            if (( $scale_in < 1 || $scale_in > 100 )); then
+                echo "${RED}Invalid scale_in value. Must be a number between 1 and 100${RESET}"
+                echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
+                exit 1
+            fi
+
+            # Scale Out threshold count
+            scale_out_default=70
+            read -r -p "${CYAN}Enter the scale out threshold for scale sets? This value refers to percent CPU utilization. [Default=$scale_out_default]: ${RESET}" scale_out_input
+            scale_out=${scale_out_input:-$scale_out_default}
+            if (( $scale_out < 1 || $scale_out > 100 || $scale_out <= $scale_in)); then
+                echo "${RED}Invalid scale_out value. Must be a number between 1 and 100 and be greater than scale_in value${RESET}"
+                echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
+                exit 1
+            fi
+
+            echo "export TF_VAR_scale_in_threshold=${scale_in}" >> .zsecrc
+            echo "export TF_VAR_scale_out_threshold=${scale_out}" >> .zsecrc
+
+            #########################################
             # Scheduled Scaling Configuration
             #########################################
             # enable/disable scheduled scaling
