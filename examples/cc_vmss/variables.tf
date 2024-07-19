@@ -376,6 +376,7 @@ variable "zpa_enabled" {
 variable "domain_names" {
   type        = map(any)
   description = "Domain names fqdn/wildcard to have Azure Private DNS redirect DNS requests to Cloud Connector"
+  default     = {}
 }
 
 variable "target_address" {
