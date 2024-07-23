@@ -7,6 +7,22 @@ Additionally: Depending on the configuration, creates 1 or more Flexible Orchest
 ## Caveats/Considerations
 - WSL2 DNS bug: If you are trying to run these Azure terraform deployments specifically from a Windows WSL2 instance like Ubuntu and receive an error containing a message similar to this "dial tcp: lookup management.azure.com on 172.21.240.1:53: cannot unmarshal DNS message" please refer here for a WSL2 resolv.conf fix. https://github.com/microsoft/WSL/issues/5420#issuecomment-646479747.
 
+## Components
+![VMSS Topology drawio (8)](https://github.com/user-attachments/assets/8f8edea3-f6dd-41d1-aa88-29511e8d0c12)
+
+### Topology Details
+- Security Stack will be deployed into its own Resource Group.
+- Based on zonal needs, a VMSS will be created in each configured zone.
+- An Azure Internal Load Balancer (ILB) is deployed on top of all the Scale Sets and is used as the entry point for the Security Stack.
+- A NAT Gateway will be deployed in each configured zone and will have a dedicated IP associated with it, this will be used for outbound traffic from the Cloud Connectors.
+
+It is recommended that this security stack is deployed into its own VNet (Security VNet) and Workload VNets are peered with it. Once the security stack is deployed, route tables in the Workload VNets should have a User Defined Route steering traffic to the ILB sitting on top of the Cloud Connectors.
+
+### Azure Function App
+The Azure Function App will contain two Azure Functions.
+1. Health Monitoring Function - Responsible for using the custom metrics published by each CC to determine if there are any unhealthy CCs that need to be replaced. If a CC is found to be unhealthy, the function will terminate the instance and will replace it with a new one. This function will run every one minute.
+2. Resource Sync Function - Responsible for ensuring the VMs advertised in your Cloud Connector Group on the Zscaler Cloud Connector Portal match what is existing in your Azure Scale Set. If it finds that a CC exists in the Cloud Connector Group but not in the Azure Scale Set, it will perform the clean up of that instance from the Cloud Connector Group to ensure the two entities are in sync. This function will every every 30 minutes.
+
 ## How to deploy:
 
 ### Option 1 (guided):
@@ -35,6 +51,147 @@ From the examples directory, run the zsec bash script that walks to all required
 ### Option 2 (manual):
 From base_cc_vmss directory execute:
 - terraform destroy
+
+## Special Features
+
+### Isolated Permissions
+This solution includes two entities that will be performing Azure Operations, the Cloud Connectors and the Azure Function App. The Cloud Connector will need a Managed Identity associated with it along with the Azure Function App. For the Azure Function App to be able to perform the operations described above, it will need an increased permission set that is not necessarily required for the Cloud Connector. To enforce proper RBAC we are allowing for two Managed Identities to be used. One specifically for the Cloud Connector with the reduced permissions set and one for the Function App with the expanded permission set.
+
+#### Terraform Configuration
+Set the following variables:
+```
+cc_vm_managed_identity_name         = <cc-managed-identity-name>
+cc_vm_managed_identity_rg           = <cc-managed-identity-resource-group>
+function_app_managed_identity_name  = <function-app-managed-identity-name>
+function_app_managed_identity_rg    = <function-app-managed-identity-resource-group>
+```
+
+#### ZSEC Configuration
+Configure the following options:
+```
+Cloud Connector User Managed Identity Information:
+Is the Managed Identity in the same Subscription ID? [yes/no]: yes
+Managed Identity is in the same Subscription
+Enter Managed Identity Name: <cc-managed-identity-name>
+Enter Managed Identity Resource Group: <cc-managed-identity-resource-group>
+Function App User Managed Identity Information:
+Assign the same User Managed Identity (<cc-managed-identity-name>) to Function App? [yes/no]: no
+Enter Function App designated Managed Identity Name: <function-app-managed-identity-name>
+Enter Function App designated Managed Identity Resource Group: <function-app-managed-identity-resource-group>
+```
+
+### Scheduled Scaling
+- Enables you to redefine minimum Cloud Connectors in Scale Set for specific time periods.
+- Should be used if you have predictable traffic patterns (9am-5pm Monday-Friday).
+
+#### Terraform Configuration
+Setting the following variables:
+```
+scheduled_scaling_enabled         = true
+scheduled_scaling_vmss_min_ccs    = 3
+scheduled_scaling_days_of_week    = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+scheduled_scaling_start_time_hour = 7
+scheduled_scaling_start_time_min  = 30
+scheduled_scaling_end_time_hour   = 18
+scheduled_scaling_end_time_min    = 30
+```
+
+#### ZSEC Configuration
+Configure the following options:
+```
+Do you want to enable scheduled scaling on the VMSS? [yes/no]: yes
+Enter the minimum amount of scheduled Cloud Connectors in VMSS? [Default=2]: 3
+Apply Scheduled Scaling Policy on Sunday? [yes/no]: no
+Not configuring Sunday on Scheduled Scaling configuration.
+Apply Scheduled Scaling Policy on Monday? [yes/no]: yes
+Adding Monday on Scheduled Scaling configuration.
+Apply Scheduled Scaling Policy on Tuesday? [yes/no]: yes
+Adding Tuesday on Scheduled Scaling configuration.
+Apply Scheduled Scaling Policy on Wednesday? [yes/no]: yes
+Adding Wednesday on Scheduled Scaling configuration.
+Apply Scheduled Scaling Policy on Thursday? [yes/no]: yes
+Adding Thursday on Scheduled Scaling configuration.
+Apply Scheduled Scaling Policy on Friday? [yes/no]: yes
+Adding Friday on Scheduled Scaling configuration.
+Apply Scheduled Scaling Policy on Saturday? [yes/no]: no 
+Not configuring Saturday on Scheduled Scaling configuration.
+Configuring the following days on the Scheduled Scaling Policy: Monday Tuesday Wednesday Thursday Friday 
+Enter the start time hour for the scheduled scaling configuration? [Default=9]: 7
+Enter the start time min for the scheduled scaling configuration? [Default=0]: 30
+Enter the end time hour for the scheduled scaling configuration? [Default=17]: 18
+Enter the end time min for the scheduled scaling configuration? [Default=30]: 30
+```
+
+## Debugging Tips
+
+### Viewing Cloud Connector Health Metrics
+Cloud Connector Health metrics are published every 1 minute by the Cloud Connector and are managed by Application Insights. One easy way to view the metrics is to navigate to one of the running instances: Resource Group -> Scale Set -> Instances (tab on left) -> select instance -> Metrics (tab on left). Next create a metric query where:
+- Scope = vm-name
+- Metric Namespace = zscaler/cloudconnectors
+- Metric = cloud_connector_aggr_health
+- Aggregation = average
+![Screenshot 2024-07-23 at 2 16 52 PM](https://github.com/user-attachments/assets/9b19b300-437a-4c9c-ab19-46d8f34688a0)
+
+### Viewing Virtual Machine Scale Set Scaling Metrics
+Cloud Connectors in a Scale Set publish scaling metrics to the Scale Set resource once a minute. These scaling metrics include smedge_cpu_utilization, smedge_mem_utilization, smedge_bytes_in and smedge_bytes_out. The scaling rules in the Scale Set scaling configuration will look at the smedge_cpu_utilization and compare it to the defined threshold.
+
+To view these metrics navigate to the Scale Set you are interested in: Resource Group -> select Scale Set -> Metrics (tab on left). Next create a metrics query where:
+- Scope = scale-set-name
+- Metric Namespace = zscaler/cloudconnectors
+- Metric = smedge_metrics
+- Aggregation = average
+
+Lastly, create a filter where:
+- metric_name = smedge_cpu_utilization
+![Screenshot 2024-07-23 at 2 16 25 PM](https://github.com/user-attachments/assets/7946ab64-0585-4c7c-b56a-f4a2bd472d57)
+
+### Viewing Function App Logs
+There are a couple approaches for viewing logs from a Function inside a Function App.
+#### Recent Invocations
+To view recent invocations you can navigate to the function you are interested in: Resource Group -> select Function App -> select Function (shown on overview page) -> Invocations
+![Screenshot 2024-07-23 at 2 36 37 PM](https://github.com/user-attachments/assets/9809394f-98da-4e86-ba7a-14a3bd8aef8b)
+
+#### Real Time Log Steaming
+To view real time logs from function executing at that time you can navigate to the function you interested in: Resource Group -> select Function App -> select Function (shown on overview page) -> Logs
+![Screenshot 2024-07-23 at 2 30 56 PM](https://github.com/user-attachments/assets/93e7f32a-c07f-4f7e-bc3c-737376803fc3)
+
+#### Viewing through Application Insights
+The more complex but powerful approach for viewing logs would be to use Application Insights. Application Insights will give you the ability to perform queries to view specific log messages, executions, timeframes, etc. One basic example of viewing logs from the Health Monitor function where it has found no instances need to be terminated. You can see that a specific message is defined when querying the logs, this will allow you to refine your search instead of manually going through each invocation or continuously watching the real time streaming.
+
+Navigate to: Resource Group -> Application Insights -> Logs (tab on left)
+Use the following query:
+```
+union traces
+| union exceptions
+| where timestamp > ago(1d)
+| where customDimensions['Category'] == 'Function.healthMonitor.User' or customDimensions['Category'] == 'Function.healthMonitor'
+| where message contains "No instances to terminate on this iteration."
+| order by timestamp asc
+| project
+    timestamp,
+    message = iff(message != '', message, iff(innermostMessage != '', innermostMessage, customDimensions.['prop__{OriginalFormat}']))
+```
+![Screenshot 2024-07-23 at 2 47 42 PM](https://github.com/user-attachments/assets/feeb3850-fa80-4f6a-9996-cfa8f69b59f0)
+
+## FAQs
+
+### How can I stop the Health Monitoring Function from terminating unhealthy instances?
+This can be configured through modifying the following terraform variable and then applying the change:
+```
+terminate_unhealthy_instances = false
+```
+It can also be configured manually on Azure Portal by navigating to the environment variables of the Function App: Resource Group -> select Function App -> Environment variables. Then selecting TERMINATE_UNHEALTHY_INSTANCES and setting the value to false. Once this is done apply the change.
+![Screenshot 2024-07-23 at 2 50 58 PM](https://github.com/user-attachments/assets/a01e2c46-61e2-4959-bf7f-a668db1a2967)
+
+### Can I just use one Managed Identity for both the Cloud Connectors and Azure Function App?
+Yes, this can be done with terraform by not setting the following variables: function_app_managed_identity_name and function_app_managed_identity_rg.
+
+### How can I find the Mgmt IP address of a Cloud Connector in a Scale Set?
+Mgmt IP address will not be printed after the terraform executes because the dynamic nature of a Scale Set results in us not know what the IP address is. Therefore if you wish to SSH into one of the Cloud Connectors you will need to find the instance you are interested in on the Azure Portal to get the IP address to use for the connection. 
+
+To find this Mgmt IP navigate to: Resource Group -> select Scale Set -> Instances (tab on left) -> select Instance -> Network Settings (tab on left). Once here you can check to make sure you are looking at the mgmt interface. This can be confirmed by seeing “mgmt” in the interface name. From there you can copy the IP address.
+![Screenshot 2024-07-23 at 2 59 50 PM](https://github.com/user-attachments/assets/4da74652-26aa-4e39-a82e-5517a476e765)
+
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
