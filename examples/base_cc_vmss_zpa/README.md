@@ -52,8 +52,6 @@ From the examples directory, run the zsec bash script that walks to all required
 From base_cc_vmss_zpa directory execute:
 - terraform destroy
 
-function_app_managed_identity_rg    = <function-app-managed-identity-resource-group>
-```
 
 #### ZSEC Configuration
 Configure the following options:
@@ -180,6 +178,7 @@ Mgmt IP address will not be printed after the terraform executes because the dyn
 
 To find this Mgmt IP navigate to: Resource Group -> select Scale Set -> Instances (tab on left) -> select Instance -> Network Settings (tab on left). Once here you can check to make sure you are looking at the mgmt interface. This can be confirmed by seeing “mgmt” in the interface name. From there you can copy the IP address.
 ![Screenshot 2024-07-23 at 2 59 50 PM](https://github.com/user-attachments/assets/4da74652-26aa-4e39-a82e-5517a476e765)
+
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
