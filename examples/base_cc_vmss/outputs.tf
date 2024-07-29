@@ -73,6 +73,6 @@ output "testbedconfig" {
 }
 
 resource "local_file" "testbed" {
-  content  = local.testbedconfig
+  content  = module.cc_functionapp.manual_sync_exit_status != "1" ? local.testbedconfig : format("%s%s", local.testbedconfig, local.testbedconfig_manual_sync_failed)
   filename = "../testbed.txt"
 }
