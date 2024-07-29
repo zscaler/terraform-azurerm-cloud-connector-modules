@@ -11,7 +11,7 @@ FEATURES:
     - add: module terraform-acc-identity-azure support for CC/VMSS and Function App Managed Identity separation
     - add: zsec script support for VMSS greenfield and brownfield deployments
 
-## v0.5.0 (May 11, 2024)
+## v0.5.0 (May 22, 2024)
 
 FEATURES:
 * add: terraform and zsec support for Azure Government ARM_ENVIRONMENT and regions

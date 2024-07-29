@@ -455,7 +455,7 @@ first_run="yes"
         echo "export TF_VAR_cc_instance_size=${cc_instance_size}" >> .zsecrc
 
         if [[ $cc_instance_size == "small" ]]; then
-            PS3="${CYAN}Select desired Azure VM type for Cloud Connector: ${RESET}"
+             PS3="${CYAN}Select desired Azure VM type for Cloud Connector: ${RESET}"
             if [[ "$azure_location" == "chinanorth" || "$azure_location" == "chinaeast" ]]; then
                 vm_sizes=("Standard_DS2_v2")
                 select ccvm_instance_type in "${vm_sizes[@]}"
@@ -536,7 +536,6 @@ first_run="yes"
         echo "Cloud Connector User Managed Identity Information:"
 
         while true; do
-            echo "Terraform will lookup an existing User Managed Identity to assign to Cloud Connector resources..."
             read -r -p "${CYAN}Is the Managed Identity in the same Subscription ID? [yes/no]: ${RESET}" response
             case $response in 
             yes|y ) 
@@ -548,9 +547,10 @@ first_run="yes"
                 echo "export TF_VAR_managed_identity_subscription_id=${managed_identity_subscription_id}" >> .zsecrc
             break
             ;;
-            * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
+            * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
             esac
         done  
+        
         read -r -p "${CYAN}Enter Managed Identity Name: ${RESET}" cc_vm_managed_identity_name 
         echo "export TF_VAR_cc_vm_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
         read -r -p "${CYAN}Enter Managed Identity Resource Group: ${RESET}" cc_vm_managed_identity_rg
@@ -597,136 +597,111 @@ first_run="yes"
             fi
         fi
 
-        az_supported_regions=["australiaeast","brazilsouth","canadacentral","centralindia","centralus","chinanorth3","eastasia","eastus","eastus2","francecentral","germanywestcentral","japaneast","koreacentral","northeurope","norwayeast","southafricanorth","southcentralus","southeastasia","swedencentral","switzerlandnorth","uaenorth","uksouth","westeurope","westus2","westus3"]
+        az_supported_regions=["australiaeast","Australia East","brazilsouth","Brazil South","canadacentral","Canada Central","centralindia","Central India","centralus","Central US","chinanorth3","China North 3","ChinaNorth3","eastasia","East Asia","eastus","East US","eastus2","East US 2","francecentral","France Central","germanywestcentral","Germany West Central","japaneast","Japan East","koreacentral","Korea Central","northeurope","North Europe","norwayeast","Norway East","southafricanorth","South Africa North","southcentralus","South Central US","southeastasia","Southeast Asia","swedencentral","Sweden Central","switzerlandnorth","Switzerland North","uaenorth","UAE North","uksouth","UK South","westeurope","West Europe","westus2","West US 2","westus3","West US 3","usgovvirginia","US Gov Virginia"]
         if [[ ${az_supported_regions[*]} =~ $azure_location ]]; then
-            echo "${GREEN}Azure region ${azure_location} supports Zones deployment...${RESET}"
-            zones_enabled_default=no
+        echo "${GREEN}Azure region ${azure_location} supports Zones...${RESET}"
+        zones_enabled_default=no
             while true; do
-                read -r -p "${CYAN}Deploy Cloud Connectors in dedicated Availability Zones/subnets? (Enter yes or no) [Default=$zones_enabled_default]: ${RESET}" zones_enabled_input
-                zones_enabled=${zones_enabled_input:-$zones_enabled_default}
+            read -r -p "${CYAN}Deploy Cloud Connectors in dedicated Availability Zones/subnets? (Enter yes or no) [Default=$zones_enabled_default]: ${RESET}" zones_enabled_input
+            zones_enabled=${zones_enabled_input:-$zones_enabled_default}
                 case $zones_enabled in 
                 yes|y )
                     echo "export TF_VAR_zones_enabled=true" >> .zsecrc
-                    zones_enabled=true
                 break
                 ;;
                 no|n )
-                    echo "export TF_VAR_zones_enabled=false" >> .zsecrc
-                    echo "${YELLOW}**Caution** No zones defined. Proceeding with availability sets fault tolerance...${RESET}"
-                    break
+                echo "export TF_VAR_zones_enabled=false" >> .zsecrc
+                echo "${YELLOW}**Caution** No zones defined. Proceeding with availability sets fault tolerance...${RESET}"
+                break
                 ;;
-                * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
+                * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
                 esac
             done  
+
+
+            if [[ "$zones_enabled" == "yes" || "$zones_enabled" == "y" ]]; then
+                echo "Choose zones [1-3] to deploy in... "
+                echo "If deploying only one Cloud Connector, enter yes for only one Zone (1, 2, or 3)"
+                while true; do
+                    read -r -p "${CYAN}Zone 1 (yes/no): ${RESET}" zone1_response
+                    case $zone1_response in 
+                    yes|y ) 
+                        echo "Availability Zone 1 selected"
+                        zone1_use=true
+                    break
+                    ;;
+                    no|n )
+                    zone1_use=false
+                    break
+                    ;;
+                    * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
+                    esac
+                done 
+                
+                while true; do
+                    read -r -p "${CYAN}Zone 2 (yes/no): ${RESET}" zone2_response
+                    case $zone2_response in 
+                    yes|y ) 
+                        echo "Availability Zone 2 selected"
+                        zone2_use=true
+                    break
+                    ;;
+                    no|n )
+                        zone2_use=false
+                    break
+                    ;;
+                    * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
+                    esac
+                done
+    
+                while true; do
+                    read -r -p "${CYAN}Zone 3 (yes/no): ${RESET}" zone3_response
+                    case $zone3_response in 
+                    yes|y ) 
+                        echo "Availability Zone 3 selected"
+                        zone3_use=true
+                    break
+                    ;;
+                    no|n )
+                        zone3_use=false
+                    break
+                    ;;
+                    * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
+                    esac
+                done 
+
+                if [[ "$zone1_use" == "true" && "$zone2_use" == "false" && "$zone3_use" == "false" ]]; then
+                    echo "Zones selected: 1"
+                    echo "export TF_VAR_zones='[\"1\"]'" >> .zsecrc
+                elif [[ "$zone1_use" == "false" && "$zone2_use" == "true" && "$zone3_use" == "false" ]]; then
+                    echo "Zones selected: 2"
+                    echo "export TF_VAR_zones='[\"2\"]'" >> .zsecrc
+                elif [[ "$zone1_use" == "false" && "$zone2_use" == "false" && "$zone3_use" == "true" ]]; then
+                    echo "Zones selected: 3"
+                    echo "export TF_VAR_zones='[\"3\"]'" >> .zsecrc
+                elif [[ "$zone1_use" == "true" && "$zone2_use" == "true" && "$zone3_use" == "false" ]]; then
+                    echo "Zones selected: 1 and 2"
+                    echo "export TF_VAR_zones='[\"1\", \"2\"]'" >> .zsecrc
+                elif [[ "$zone1_use" == "true" && "$zone2_use" == "true" && "$zone3_use" == "true" ]]; then
+                    echo "Zones selected: 1, 2, and 3"
+                    echo "export TF_VAR_zones='[\"1\", \"2\", \"3\"]'" >> .zsecrc
+                elif [[ "$zone1_use" == "true" && "$zone2_use" == "false" && "$zone3_use" == "true" ]]; then
+                    echo "Zones selected: 1 and 3"
+                    echo "export TF_VAR_zones='[\"1\", \"3\"]'" >> .zsecrc  
+                elif [[ "$zone1_use" == "false" && "$zone2_use" == "true" && "$zone3_use" == "true" ]]; then
+                    echo "Zones selected: 2 and 3"
+                    echo "export TF_VAR_zones='[\"2\", \"3\"]'" >> .zsecrc   
+                else
+                    echo "${RED}Invalid Zones selection. exiting...${RESET}"
+                    echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
+                    exit 1
+                fi 
+            fi
         else
             echo "${YELLOW}Azure region ${azure_location} does not support Zones. Proceeding...${RESET}"
         fi
-        # Azure number of Availability Zones selection
-        if [[ "$zones_enabled" == "true" ]]; then
-            if [[ "$dtype" == "base_1"* ]]; then
-                echo "Single Cloud Connector Deployment can only specify a single zone"
-                zones_count=1
-            else
-                PS3="${CYAN}Select how many Availability Zone subnets to deploy across: ${RESET}"
-                zones_list=(
-                    "1 availability zone"
-                    "2 availability zones"
-                    "3 availability zones"
-                    )
-                select zone_selection in "${zones_list[@]}"
-                do
-                    case $REPLY in
-                    1 )
-                        echo "One Availability Zone selected..."
-                        zones_count=1
-                    break
-                    ;;
-                    2 )
-                        echo "Two Availability Zones selected..."
-                        zones_count=2
-                    break
-                    ;;
-                    3 )
-                        echo "Three Availability Zones selected..."
-                        zones_count=3
-                    break
-                    ;;
-                    *) 
-                        echo "${RED}Invalid response. Please enter a number selection${RESET}"
-                    esac
-                done
-            fi
-            if [[ "$zones_count" < 3 ]]; then
-                if [[ "$dtype" == "base_1"* ]]; then
-                    PS3="${CYAN}Select which availablity zone to deploy in: ${RESET}"
-                else
-                    PS3="${CYAN}Select which availablity zones to deploy across: ${RESET}"
-                fi
-                if [[ "$zones_count" == 1 ]]; then
-                    zones_options=(
-                        "Zone 1"
-                        "Zone 2"
-                        "Zone 3"
-                        )
-                    select zones_selection in "${zones_options[@]}"
-                    do
-                        case $REPLY in
-                        1 )
-                            echo "Cloud Connector resources will be deployed in AZ 1"
-                            echo "export TF_VAR_zones='[\"1\"]'" >> .zsecrc
-                        break
-                        ;;
-                        2 )
-                            echo "Cloud Connector resources will be deployed in AZ 2"
-                            echo "export TF_VAR_zones='[\"2\"]'" >> .zsecrc
-                        break
-                        ;;
-                        3 )
-                            echo "Cloud Connector resources will be deployed in AZ 3"
-                            echo "export TF_VAR_zones='[\"3\"]'" >> .zsecrc
-                        break
-                        ;;
-                        *) 
-                            echo "${RED}Invalid response. Please enter a number selection${RESET}"
-                        esac
-                    done
-                else
-                    zones_options=(
-                        "Zones 1 and 2"
-                        "Zones 1 and 3"
-                        "Zones 2 and 3"
-                        )
-                    select zones_selection in "${zones_options[@]}"
-                    do
-                        case $REPLY in
-                        1 )
-                            echo "Cloud Connector resources will be deployed in AZ 1 and AZ 2"
-                            echo "export TF_VAR_zones='[\"1\", \"2\"]'" >> .zsecrc
-                        break
-                        ;;
-                        2 )
-                            echo "Cloud Connector resources will be deployed in AZ 1 and AZ 3"
-                            echo "export TF_VAR_zones='[\"1\", \"3\"]'" >> .zsecrc
-                        break
-                        ;;
-                        3 )
-                            echo "Cloud Connector resources will be deployed in AZ 2 and AZ 3"
-                            echo "export TF_VAR_zones='[\"2\", \"3\"]'" >> .zsecrc
-                        break
-                        ;;
-                        *) 
-                            echo "${RED}Invalid response. Please enter a number selection${RESET}"
-                        esac
-                    done
-                fi
-            else
-                echo "Cloud Connector resources will be deployed in AZ1, AZ 2 and AZ 3"
-                echo "export TF_VAR_zones='[\"1\", \"2\", \"3\"]'" >> .zsecrc
-            fi
-        fi
 
-        #Browfield/BYO Networking Options
-        if [[ "$deployment" == "brownfield" ]]; then
+        if [[ "$dtype" == "cc"* ]]; then
             while true; do
                 read -r -p "${CYAN}Enable Azure Private DNS for ZPA? (yes/no): ${RESET}" zpa_response
                 case $zpa_response in 
@@ -742,7 +717,7 @@ first_run="yes"
                     echo "export TF_VAR_zpa_enabled=$zpa_enabled" >> .zsecrc
                 break
                 ;;
-                * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
+                * ) echo "${RED}invalid response. Please enter yes or no${RESET}";;
                 esac
             done 
         fi
