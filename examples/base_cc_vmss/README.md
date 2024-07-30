@@ -4,8 +4,21 @@ This deployment type is intended for greenfield/pov/lab purposes. It will deploy
 
 Additionally: Depending on the configuration, creates 1 or more Flexible Orchestration Virtual Machine Scale Sets (VMSS) and scaling policies for Cloud Connector in private subnet(s); and 1 function app for VMSS; Standard Azure Load Balancer; and workload private subnet UDR routing to the Load Balancer Frontend IP.
 
+## Terraform client requirements
+If run_manual_sync variable is True (True by default) the bash script scripts/manual_sync.sh is invoked to perform this manual sync (more information in the Caveates section), it is advised that you run from a MacOS or Linux workstation and have the following tools installed:
+    - bash | curl | jq
+
 ## Caveats/Considerations
 - WSL2 DNS bug: If you are trying to run these Azure terraform deployments specifically from a Windows WSL2 instance like Ubuntu and receive an error containing a message similar to this "dial tcp: lookup management.azure.com on 172.21.240.1:53: cannot unmarshal DNS message" please refer here for a WSL2 resolv.conf fix. https://github.com/microsoft/WSL/issues/5420#issuecomment-646479747.
+- Function App Manual Sync: On creation time of the Function App, used for managing Cloud Connectors in the Scale Set, Azure requires that a "Manual Sync" operation is done. This can be done through an API call or through simply navigating to the Function App on the Azure console and having the page load. This action will tell the Function App to load the zip file from the Storage Account and start running the Functions. We have attemped to automate this Manual Sync call through terraform by triggering scripts/manual_sync.sh through a provisioner in the Function App Terraform module. If this attempt fails an output message (shown below) will be displayed in the testbed.txt and printed to the screen at the end of the deployment. If the Manual Sync operation fails during terraform apply, the steps listed in the message can be used to remediate the issue. This is a one time action at Function App creation time.
+```
+**IMPORTANT (ONLY APPLICABLE FOR INITIAL CREATE OF FUNCTION APP)**
+Based on the recorded output, the manual sync to start your Azure Function App failed. To perform this manual sync perform one of the following steps:
+  1. Navigate to the Azure Function App /subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.Web/sites/<function-app> on the Azure Portal. The loading of the Function App page triggers the manual sync and will start your Function App.
+  2. Attempt to rerun the manual_sync.sh script manually using the following command (path to file is based on root of the repo):
+      ../../modules/terraform-zscc-function-app-azure/manual_sync.sh <subscription-id> <resource-group> <function-app>
+**IMPORTANT (ONLY APPLICABLE FOR INITIAL CREATE OF FUNCTION APP)**
+```
 
 ## Components
 ![VMSS Topology drawio (8)](https://github.com/user-attachments/assets/8f8edea3-f6dd-41d1-aa88-29511e8d0c12)
@@ -174,6 +187,16 @@ union traces
 ![Screenshot 2024-07-23 at 2 47 42 PM](https://github.com/user-attachments/assets/feeb3850-fa80-4f6a-9996-cfa8f69b59f0)
 
 ## FAQs
+
+### When is a Cloud Connector considered to be unhealthy and should be replaced?
+Each Cloud Connector will broadcast its health to the Azure Application Insights Instance in the Resource Group (to view these metrics refer to Debugging Tips->Viewing Cloud Connector Health Metrics). The health relates to the dataplanes health and correlates to the active/inactive state you will in the Cloud Connetor Group on the Zscaler Connector Portal. This health is evaluated by a process in the Cloud Connector and a value is published to this metric every 1 minute, 0 indicates unhealthy and 100 indicates healthy. An instance should be replaced in one of the two scenarios:
+1. The Cloud Connector reports unhealty 5 times in a row. This indicates the Cloud Connector is down and should be replaced.
+2. The Cloud Connector reports unhealthy 7 out of 10 times. This indicates the Cloud Connector is flapping and should be replaced.
+
+The Health Monitoring Function in the Function App will perform this evaluation every 1 minute and will determine if any instances should be replaced. When an instance is replaced, it will be terminated and the Health Monitoring Function will ensure a new one is brought up to replace it.
+
+### I am seeing unhealthy instance not being replaced in my Scale Set, what could be the issue?
+In this scenario you should first check to see if the metrics published by the unhealthy instance are of value 0, this indicated unhealthy (100 indicates healthy). Please refer to the Debugging Tips->Viewing Cloud Connector Health Metrics section. If you are seeing the value of this metric at 0 for a long period of time (refer to FAQs->When is a Cloud Connector considered to be unhealthy and should be replaced?), the next thing you should check is to see if the Function App is running. During creation of the Function App, there is a manual sync trigger that needs to be successfully invoked for the Function App to start (refer to Caveats/Considerations->Function App Manual Sync), if the Function App is not running the unhealthy instances will not be replaced. Navigate to the Function App on the Azure Console to invoke the Manual Sync and view the invocations (Debugging Tips->Viewing Function App Logs->Recent Invocations) to see if it has been running.
 
 ### How can I stop the Health Monitoring Function from terminating unhealthy instances?
 This can be configured through modifying the following terraform variable and then applying the change:
