@@ -55,3 +55,5 @@ modules/terraform-zscc-ccvmss-azure/zscaler_cc_function_app_*
 scripts/exitstatus
 scripts/stderr
 scripts/stdout
+scripts/support_bundle/support_bundle*
+*venv*
