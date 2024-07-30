@@ -1,0 +1,11 @@
+azure-common
+azure-core
+azure-identity
+azure-mgmt-resource
+azure-monitor-query
+azure-mgmt-compute
+azure-mgmt-monitor
+azure-monitor-query
+
+msrest
+msrestazure
