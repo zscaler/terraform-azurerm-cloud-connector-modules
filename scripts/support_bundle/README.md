@@ -35,5 +35,3 @@ The script will output a zip file in the same support_bundle directory. This zip
 - config: This directory will hold configuration information for each of the scale sets that are deployed in the Resource Group.
 - logs: This directory will hold logs for the Function Apps that are managed the Scale Sets.
 - metrics: This directory will hold metrics being published by the Cloud Connectors. Metric types include scaling (cpu, mem, bytes in/out) and health metrics.
-
-
