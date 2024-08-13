@@ -12,9 +12,9 @@ az vm image terms accept --urn zscaler1579058425289:zia_cloud_connector:zs_ser_g
 
 | Azure Cloud      | Publisher ID         | Offer/Product ID        | SKU/Plan ID       | Version                              |
 |:----------------:|:--------------------:|:-----------------------:|:-----------------:|:------------------------------------:|
-| public (default) | zscaler1579058425289 | zia_cloud_connector     | zs_ser_gen1_cc_01 | 24.3.1 (Latest - as of May 22, 2024) |
-| usgovernment     | zscaler1579058425289 | zia_cloud_connector     | zs_ser_gen1_cc_01 | 24.3.1 (Latest - as of May 22, 2024) |
-| china            | cbcnetworks          | zscaler-cloud-connector | zs_ser_gen1_cc_01 | 24.3.1 (Latest - as of July 8, 2024) |
+| public (default) | zscaler1579058425289 | zia_cloud_connector     | zs_ser_gen1_cc_01 | 24.4.0 (Latest - as of Aug, 2024) |
+| usgovernment     | zscaler1579058425289 | zia_cloud_connector     | zs_ser_gen1_cc_01 | 24.4.0 (Latest - as of Aug, 2024) |
+| china            | cbcnetworks          | zscaler-cloud-connector | zs_ser_gen1_cc_01 | 24.4.0 (Latest - as of Aug, 2024) |
 
 ## Considerations
 * DO NOT modify the NIC ordering per this reference module for deployments. Cloud Connector explicitly requires that the ordering of network_interface_ids associated to the azurerm_linux_virtual_machine are #1/first "Management". Any number of "Service" interfaces associated are read sequentially thereafter. Cloud Connector associates the first interface with its management services. The "Service" interfaces require IP_Forwarding enabled for traffic processing which is not enabled on the "Management" interface.
