@@ -157,10 +157,6 @@ module "cc_vm" {
   service_nsg_id                 = module.cc_nsg.service_nsg_id
   accelerated_networking_enabled = var.accelerated_networking_enabled
   encryption_at_host_enabled     = var.encryption_at_host_enabled
-
-  depends_on = [
-    null_resource.cc_error_checker
-  ]
 }
 
 
