@@ -69,12 +69,6 @@ variable "managed_identity_client_id" {
   description = "Client ID of the User Managed Identity for Function App to utilize"
 }
 
-variable "managed_identity_principal_id" {
-  type        = string
-  description = "Object(Principal) ID of the User Managed Identity for Function App to utilize"
-  default     = ""
-}
-
 variable "existing_storage_account" {
   type        = bool
   description = "Set to True if you wish to use an existing Storage Account to associate with the Function App. Default is false meaning Terraform module will create a new one"
