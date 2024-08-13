@@ -1,4 +1,4 @@
-## TBD (UNRELEASED)
+## v0.6.0 (August 18th, 2024)
 ENHANCEMENTS:
 * feat: Official Azure Marketplace support for both usgovernment and china Azure Clouds. Product information for each can be located [here](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/tree/main/modules/terraform-zscc-ccvm-azure/README.md)
 * refactor: code cleanup for unused variables and UX
