@@ -143,11 +143,6 @@ module "cc_vmss" {
   scheduled_scaling_start_time_min  = var.scheduled_scaling_start_time_min
   scheduled_scaling_end_time_hour   = var.scheduled_scaling_end_time_hour
   scheduled_scaling_end_time_min    = var.scheduled_scaling_end_time_min
-
-
-  depends_on = [
-    local_file.user_data_file,
-  ]
 }
 
 ################################################################################
@@ -162,10 +157,9 @@ module "cc_functionapp" {
   global_tags         = local.global_tags
   managed_identity_id = module.cc_identity.function_app_managed_identity_id
 
-  upload_function_app_zip        = var.upload_function_app_zip                                   #upload local zip from module to Azure Storage Blob
-  managed_identity_principal_id  = module.cc_identity.function_app_managed_identity_principal_id #required if uploading zip to Azure Storage to restrict access
-  zscaler_cc_function_public_url = var.zscaler_cc_function_public_url                            #Or pull from pre-existing external URL
-  existing_storage_account       = var.existing_storage_account
+  upload_function_app_zip        = var.upload_function_app_zip        #upload local zip from module to Azure Storage Blob
+  zscaler_cc_function_public_url = var.zscaler_cc_function_public_url #required if uploading zip to Azure Storage to restrict access
+  existing_storage_account       = var.existing_storage_account       #Or pull from pre-existing external URL
   existing_storage_account_name  = var.existing_storage_account_name
   existing_storage_account_rg    = var.existing_storage_account_rg
 
