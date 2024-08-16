@@ -120,7 +120,7 @@ elif [[ "$deployment" == "brownfield" ]]; then
                 dtype=cc_lb
                 break
                 ;;
-            1)
+            2)
                 echo "Deployment type cc_vmss selected..."
                 dtype=cc_vmss
                 break
