@@ -927,6 +927,7 @@ first_run="yes"
 
             echo "export TF_VAR_scale_in_threshold=${scale_in}" >> .zsecrc
             echo "export TF_VAR_scale_out_threshold=${scale_out}" >> .zsecrc
+            echo "export TF_VAR_run_manual_sync=true" >> .zsecrc
 
             #########################################
             # Scheduled Scaling Configuration
