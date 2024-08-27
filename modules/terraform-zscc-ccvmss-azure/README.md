@@ -10,6 +10,12 @@ Accept the Cloud Connector VM image terms for the Subscription(s) where Cloud Co
 az vm image terms accept --urn zscaler1579058425289:zia_cloud_connector:zs_ser_gen1_cc_01:latest
 ```
 
+| Azure Cloud      | Publisher ID         | Offer/Product ID        | SKU/Plan ID       | Version                              |
+|:----------------:|:--------------------:|:-----------------------:|:-----------------:|:------------------------------------:|
+| public (default) | zscaler1579058425289 | zia_cloud_connector     | zs_ser_gen1_cc_01 | 24.4.0 (Latest - as of Aug, 2024) |
+| usgovernment     | zscaler1579058425289 | zia_cloud_connector     | zs_ser_gen1_cc_01 | 24.4.0 (Latest - as of Aug, 2024) |
+| china            | cbcnetworks          | zscaler-cloud-connector | zs_ser_gen1_cc_01 | 24.4.0 (Latest - as of Aug, 2024) |
+
 ## Considerations
 * DO NOT modify the NIC ordering per this reference module for deployments. Cloud Connector explicitly requires that the ordering of network_interface_ids associated to the azurerm_linux_virtual_machine are #1/first "Management". Any number of "Service" interfaces associated are read sequentially thereafter. Cloud Connector associates the first interface with its management services. The "Service" interfaces require IP_Forwarding enabled for traffic processing which is not enabled on the "Management" interface.
 
