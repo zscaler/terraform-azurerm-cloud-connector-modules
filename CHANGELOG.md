@@ -1,6 +1,6 @@
-## v0.5.1 (August 26, 2024)
+## v0.6.0 (August 31, 2024)
+
 ENHANCEMENTS:
-* feat: Official Azure Marketplace support for both usgovernment and china Azure Clouds. Product information for each can be located [here](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/tree/main/modules/terraform-zscc-ccvm-azure/README.md)
 * refactor: code cleanup for unused variables and UX
 
 FEATURES:
@@ -9,6 +9,12 @@ FEATURES:
     - add: module terraform-zscc-function-app-azure for Function App and dependency resources
     - add: module terraform-acc-identity-azure support for CC/VMSS and Function App Managed Identity separation
     - add: zsec script support for VMSS greenfield and brownfield deployments
+
+
+## v0.5.1 (August 26, 2024)
+
+ENHANCEMENTS:
+* feat: Official Azure Marketplace support for both usgovernment and china Azure Clouds. Product information for each can be located [here](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/tree/main/modules/terraform-zscc-ccvm-azure/README.md)
 
 BUG FIXES:
 * fix: remove local file depends_on to avoid conflicts if file does not exist or needs recreated
