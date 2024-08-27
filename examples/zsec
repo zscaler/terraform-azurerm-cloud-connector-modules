@@ -30,20 +30,89 @@ fi
 
 
 if [[ "$oper" == "up" ]]; then
+    PS3="${CYAN}Select your Zscaler Cloud: ${RESET}"
+    zs_clouds=("zscloud.net" "zscaler.net" "zscalertwo.net" "zscalerthree.net" "zscalerten.net" "zscalerbeta.net" "other")
+    select zscaler_cloud in "${zs_clouds[@]}"
+    do
+        case $REPLY in
+            1)
+                echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
+                zscaler_cloud=$zscaler_cloud
+                break
+                ;;
+            2)
+                echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
+                zscaler_cloud=$zscaler_cloud
+                break
+                ;;
+            3)
+                echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
+                zscaler_cloud=$zscaler_cloud
+                break
+            ;;
+            4)
+                echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
+                zscaler_cloud=$zscaler_cloud
+                break
+                ;;
+            5)
+                echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
+                zscaler_cloud=$zscaler_cloud
+                break
+                ;;
+             6)
+                echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
+                zscaler_cloud=$zscaler_cloud
+                break
+                ;;
+            7)
+                echo "Zscaler Cloud ${YELLOW}$zscaler_cloud${RESET} selected"
+                while true; do
+                    read -r -p "${CYAN}Enter your desired Zscaler Cloud name (e.g. zscalerbeta.net): ${RESET}" manual_cloud_name_response
+                    case $manual_cloud_name_response in
+                        zspreview|zscalerpreview|preview|zspreview.net|zscalerpreview.net|preview.net )
+                            echo "Setting zspreview.net"
+                            zscaler_cloud=zspreview.net
+                            zs_env=development
+                            break
+                            ;;
+                        zsdevel|zscalerdevel|devel|zsdevel.net|zscalerdevel.net|devel.net )
+                            echo "Setting zsdevel.net"
+                            zscaler_cloud=zsdevel.net
+                            zs_env=development
+                            break
+                            ;;
+                        zsqa|zscalerqa|qa|zsqa.net|zscalerqa.net|qa.net )
+                            echo "Setting zsqa.net"
+                            zscaler_cloud=zsqa.net
+                            zs_env=development
+                            break
+                            ;;
+                        *) 
+                            echo "${RED}Invalid response. Please enter a valid Zscaler Cloud name${RESET}"
+                    esac
+                done
+                break
+                ;;
+                *) 
+                    echo "${RED}Invalid response. Please enter a number selection${RESET}"
+            esac
+        done
+
     PS3="${CYAN}Select desired deployment: ${RESET}"
     deployments=("greenfield - Recommended for isolated test/POV deployments. Creates new network infrastructure, test workloads, and a public jump host" "brownfield - Recommended for prod deployments. Bring-your-own existing network infrastructure customizations + no workload/bastion creation")
     select deployment in "${deployments[@]}"
     do
         case $REPLY in
             1)
-                echo "Greenfield deployment selected..."
+                echo "${GREEN}Greenfield deployment selected...${RESET}"
                 echo "${YELLOW}**Caution** These deployments include test workloads and publicly accessible jump hosts and are intended primarily for lab/test environments${RESET}"
                 echo ""
                 deployment=greenfield
             break
             ;;
             2)
-                echo "Brownfield deployment selected..."
+                echo "${GREEN}Brownfield deployment selected...${RESET}"
                 deployment=brownfield
             break
             ;;
@@ -51,84 +120,116 @@ if [[ "$oper" == "up" ]]; then
                 echo "${RED}Invalid response. Please enter a number selection${RESET}"
         esac
     done
+    
+    if [[ "$zscaler_cloud" == "zscalerten.net" ]]; then
+        echo "${YELLOW}Zscalerten does not currently support Auto Scaling VMSS. Proceeding with standard deployment options...${RESET}"
+        if [[ "$deployment" == "greenfield" ]]; then 
+            vmss_enabled=false
+        elif [[ "$deployment" == "brownfield" ]]; then
+            echo "${GREEN}Proceeding with brownfield manual scaling with load balancer configuration...${RESET}"
+            vmss_enabled=false
+            #implicitly set dtype as cc_lb for brownfield + no vmss
+            dtype=cc_lb
+        fi
+    else
+        while true; do
+            read -r -p "${CYAN}Deploy Cloud Connectors in Auto Scaling VMSS? [yes/no]: ${RESET}" response
+            case $response in 
+            yes|y )
+                if [[ "$deployment" == "greenfield" ]]; then 
+                    echo "${GREEN}Proceeding with greenfield Virtual Machine Scale Sets configuration...${RESET}"
+                    vmss_enabled=true
+                elif [[ "$deployment" == "brownfield" ]]; then
+                    echo "${GREEN}Proceeding with brownfield Virtual Machine Scale Sets configuration...${RESET}"
+                    vmss_enabled=true
+                    #implicitly set dtype as cc_vmss for brownfield + vmss
+                    dtype=cc_vmss
+                fi
+            break
+            ;;
+            no|n )
+                if [[ "$deployment" == "greenfield" ]]; then 
+                    echo "${GREEN}Proceeding with greenfield manual scaling configuration...${RESET}"
+                    vmss_enabled=false
+                elif [[ "$deployment" == "brownfield" ]]; then
+                    echo "${GREEN}Proceeding with brownfield manual scaling with load balancer configuration...${RESET}"
+                    vmss_enabled=false
+                    #implicitly set dtype as cc_lb for brownfield + no vmss
+                    dtype=cc_lb
+                fi
+            break
+            ;;
+                * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
+            esac
+        done
+    fi  
 fi
 
 if [[ "$deployment" == "greenfield" ]]; then
     PS3="${CYAN}Select desired deployment type: ${RESET}"
-    dtypes=(
-        "Deploy 1 Cloud Connector in a new Resource Group and VNet"
-        "Deploy 1 Cloud Connector in a new Resource Group and VNet w/ Private DNS for ZPA"
-        "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet"
-        "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet w/ Private DNS for ZPA"
-        "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Load Balancer in a new Resource Group and VNet"
-        "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Load Balancer in a new Resource Group and VNet w/ Private DNS for ZPA"
-        "Deploy a new Resource Group and VNet only - No Cloud Connector resources"  
-    )
-    select greenfield_type in "${dtypes[@]}"
-    do
-        case $REPLY in
-            1)
-                echo "Deployment type base_1cc selected..."
-                dtype=base_1cc
-                break
-                ;;
-            2)
-                echo "Deployment type base_1cc_zpa selected..."
-                dtype=base_1cc_zpa
-                break
-                ;;
-            3)
-                echo "Deployment type base_cc_lb selected..."
-                dtype=base_cc_lb
-                break
-                ;;
-            4)
-                echo "Deployment type base_cc_lb_zpa selected..."
-                dtype=base_cc_lb_zpa
-                break
-                ;;
-            5)
-                echo "Deployment type base_cc_vmss selected..."
-                dtype=base_cc_vmss
-                break
-                ;;
-            6)
-                echo "Deployment type base_cc_vmss_zpa selected..."
-                dtype=base_cc_vmss_zpa
-                break
-                ;;
-            7)
-                echo "Deployment type base selected..."
-                dtype=base
-                break
-                ;;
-            *) 
-                echo "${RED}Invalid response. Please enter a number selection${RESET}"
-        esac
-    done
-elif [[ "$deployment" == "brownfield" ]]; then
-    PS3="${CYAN}Select desired deployment type: ${RESET}"
-    dtypes=(
-        "Deploy multiple Cloud Connectors w/ Load Balancer in a new or existing Resource Group and VNet"
-        "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Load Balancer in a new or existing Resource Group and VNet"  
-    )
-    select brownfield_type in "${dtypes[@]}"
-    do
-        case $REPLY in
-            1)
-                echo "Deployment type cc_lb selected..."
-                dtype=cc_lb
-                break
-                ;;
-            2)
-                echo "Deployment type cc_vmss selected..."
-                dtype=cc_vmss
-                break
-                ;;
-            *) 
-                echo "${RED}Invalid response. Please enter a number selection${RESET}"
-        esac
-    done
+    if [[ "$vmss_enabled" == "false" ]]; then
+        dtypes=(
+            "Deploy 1 Cloud Connector in a new Resource Group and VNet"
+            "Deploy 1 Cloud Connector in a new Resource Group and VNet w/ Private DNS for ZPA"
+            "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet"
+            "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet w/ Private DNS for ZPA"
+            "Deploy a new Resource Group and VNet only - No Cloud Connector resources"  
+        )
+        select greenfield_type in "${dtypes[@]}"
+        do
+            case $REPLY in
+                1)
+                    echo "Deployment type base_1cc selected..."
+                    dtype=base_1cc
+                    break
+                    ;;
+                2)
+                    echo "Deployment type base_1cc_zpa selected..."
+                    dtype=base_1cc_zpa
+                    break
+                    ;;
+                3)
+                    echo "Deployment type base_cc_lb selected..."
+                    dtype=base_cc_lb
+                    break
+                    ;;
+                4)
+                    echo "Deployment type base_cc_lb_zpa selected..."
+                    dtype=base_cc_lb_zpa
+                    break
+                    ;;
+                5)
+                    echo "Deployment type base selected..."
+                    dtype=base
+                    break
+                    ;;
+                *) 
+                    echo "${RED}Invalid response. Please enter a number selection${RESET}"
+            esac
+        done
+    elif [[ "$vmss_enabled" == "true" ]]; then
+        dtypes=(
+            "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Load Balancer in a new Resource Group and VNet"
+            "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Load Balancer in a new Resource Group and VNet w/ Private DNS for ZPA"
+        )
+        select greenfield_type in "${dtypes[@]}"
+        do
+            case $REPLY in
+                1)
+                    echo "Deployment type base_cc_vmss selected..."
+                    dtype=base_cc_vmss
+                    break
+                    ;;
+                2)
+                    echo "Deployment type base_cc_vmss_zpa selected..."
+                    dtype=base_cc_vmss_zpa
+                    break
+                    ;;
+                *) 
+                    echo "${RED}Invalid response. Please enter a number selection${RESET}"
+            esac
+        done
+    fi
 else
     dtype=$dtype
 fi
@@ -174,7 +275,7 @@ fi
 echo "Checking Azure Environment Variables and Cloud Connector bootstrap requirements... For ZPA or custom/byo deployments, please stop and refer to the README and terraform.tfvars file instructions"
 if [[ "$oper" == "up" && ! -e ./.zsecrc ]]; then
 first_run="yes"
-
+    echo "export zscaler_cloud='$zscaler_cloud'" > .zsecrc   
     # Azure Region selection
     PS3="${CYAN}Select desired Azure region: ${RESET}"
     region_list=(
@@ -238,26 +339,26 @@ first_run="yes"
 	"westus"
 	"westus2"
 	"westus3"
-        )
-        select region_selection in "${region_list[@]}"; do
-            for region_choice in "${region_list[@]}"; do
-                if [[ $region_choice == $region_selection ]]; then
-                    azure_location=$region_selection
-                    echo "Azure region ${GREEN}$azure_location${RESET} selected..."
-                    echo "export TF_VAR_arm_location='$azure_location'" > .zsecrc
-		    if [[ ${azure_location} = "china"*  ]]; then
+    )
+    select region_selection in "${region_list[@]}"; do
+        for region_choice in "${region_list[@]}"; do
+            if [[ $region_choice == $region_selection ]]; then
+                azure_location=$region_selection
+                echo "Azure region ${GREEN}$azure_location${RESET} selected..."
+                echo "export TF_VAR_arm_location='$azure_location'" >> .zsecrc
+		        if [[ ${azure_location} = "china"*  ]]; then
             		echo "${YELLOW}Azure China region detected. Setting ARM_ENVIRONMENT...${RESET}"
             		echo "export ARM_ENVIRONMENT=china" >> .zsecrc
             		echo "export ARM_SKIP_PROVIDER_REGISTRATION=true" >> .zsecrc
-        	   elif [[ ${azure_location} = "usgov"* || ${azure_location} = "ussec"* || ${azure_location} = "usdod"* ]]; then
+        	    elif [[ ${azure_location} = "usgov"* || ${azure_location} = "ussec"* || ${azure_location} = "usdod"* ]]; then
             		echo "${YELLOW} US Gov region detected. Setting ARM_ENVIRONMENT...${RESET}"
            	        echo "export ARM_ENVIRONMENT=usgovernment" >> .zsecrc
             		echo "export ARM_SKIP_PROVIDER_REGISTRATION=true" >> .zsecrc
-        	   fi
-                   break 2
-                fi
-            done
+        	    fi
+                break 2
+            fi
         done
+    done
 
     echo "Checking Azure Environment Variables..."
     read -r -p "${CYAN}Enter Azure Subcription ID: ${RESET}" azure_subscription_id
@@ -269,78 +370,6 @@ first_run="yes"
     echo "export ARM_CLIENT_ID=${azure_client_id}" >> .zsecrc
     read -r -p "${CYAN}Enter Client Secret Value of Service Principal: ${RESET}" azure_client_secret
     echo "export ARM_CLIENT_SECRET='${azure_client_secret}'" >> .zsecrc
-
-    if [[ "$dtype" != "base" ]]; then
-        PS3="${CYAN}Select your Zscaler Cloud: ${RESET}"
-        zs_clouds=("zscloud.net" "zscaler.net" "zscalertwo.net" "zscalerthree.net" "zscalerten.net" "zscalerbeta.net" "other")
-        select zscaler_cloud in "${zs_clouds[@]}"
-        do
-            case $REPLY in
-                1)
-                    echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
-                    zscaler_cloud=$zscaler_cloud
-                break
-                ;;
-                2)
-                    echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
-                    zscaler_cloud=$zscaler_cloud
-                break
-                ;;
-                3)
-                    echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
-                    zscaler_cloud=$zscaler_cloud
-                break
-                ;;
-                4)
-                    echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
-                    zscaler_cloud=$zscaler_cloud
-                break
-                ;;
-                5)
-                    echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
-                    zscaler_cloud=$zscaler_cloud
-                break
-                ;;
-                6)
-                    echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
-                    zscaler_cloud=$zscaler_cloud
-                break
-                ;;
-                7)
-                    echo "Zscaler Cloud ${YELLOW}$zscaler_cloud${RESET} selected"
-                    while true; do
-                        read -r -p "${CYAN}Enter your desired Zscaler Cloud name (e.g. zscalerbeta.net): ${RESET}" manual_cloud_name_response
-                        case $manual_cloud_name_response in
-                        zspreview|zscalerpreview|preview|zspreview.net|zscalerpreview.net|preview.net )
-                            echo "Setting zspreview.net"
-                            zscaler_cloud=zspreview.net
-                            zs_env=development
-                        break
-                        ;;
-                        zsdevel|zscalerdevel|devel|zsdevel.net|zscalerdevel.net|devel.net )
-                            echo "Setting zsdevel.net"
-                            zscaler_cloud=zsdevel.net
-                            zs_env=development
-                        break
-                        ;;
-                        zsqa|zscalerqa|qa|zsqa.net|zscalerqa.net|qa.net )
-                            echo "Setting zsqa.net"
-                            zscaler_cloud=zsqa.net
-                            zs_env=development
-                        break
-                        ;;
-                        *) 
-                            echo "${RED}Invalid response. Please enter a valid Zscaler Cloud name${RESET}"
-                        esac
-                    done
-                break
-                ;;
-                *) 
-                    echo "${RED}Invalid response. Please enter a number selection${RESET}"
-            esac
-        done
-        echo "export zscaler_cloud='$zscaler_cloud'" >> .zsecrc
-    fi
 
     if [[ "$deployment" == "greenfield" ]]; then    
         while true; do
