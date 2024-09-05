@@ -1,4 +1,4 @@
-## v0.6.0 (August 31, 2024)
+## v0.6.0 (September 5, 2024)
 
 ENHANCEMENTS:
 * refactor: code cleanup for unused variables and UX
