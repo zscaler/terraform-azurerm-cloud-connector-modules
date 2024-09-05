@@ -4,7 +4,7 @@ ENHANCEMENTS:
 * refactor: code cleanup for unused variables and UX
 
 FEATURES:
-* Virtual Machine Scale Sets (VMSS) Support
+* Virtual Machine Scale Sets (VMSS) Support - (Requires new VHD version 24.3.2)
     - add: module terraform-zscc-ccvmss-azure for flexible orchestration VMSS and scaling policy template
     - add: module terraform-zscc-function-app-azure for Function App and dependency resources
     - add: module terraform-acc-identity-azure support for CC/VMSS and Function App Managed Identity separation
