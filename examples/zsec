@@ -28,8 +28,7 @@ else
     esac
 fi
 
-
-if [[ "$oper" == "up" ]]; then
+if [[ "$oper" == "up" && ! -e ./.zsecrc ]]; then
     PS3="${CYAN}Select your Zscaler Cloud: ${RESET}"
     zs_clouds=("zscloud.net" "zscaler.net" "zscalertwo.net" "zscalerthree.net" "zscalerten.net" "zscalerbeta.net" "other")
     select zscaler_cloud in "${zs_clouds[@]}"
@@ -94,144 +93,153 @@ if [[ "$oper" == "up" ]]; then
                 done
                 break
                 ;;
-                *) 
-                    echo "${RED}Invalid response. Please enter a number selection${RESET}"
-            esac
-        done
-
-    PS3="${CYAN}Select desired deployment: ${RESET}"
-    deployments=("greenfield - Recommended for isolated test/POV deployments. Creates new network infrastructure, test workloads, and a public jump host" "brownfield - Recommended for prod deployments. Bring-your-own existing network infrastructure customizations + no workload/bastion creation")
-    select deployment in "${deployments[@]}"
-    do
-        case $REPLY in
-            1)
-                echo "${GREEN}Greenfield deployment selected...${RESET}"
-                echo "${YELLOW}**Caution** These deployments include test workloads and publicly accessible jump hosts and are intended primarily for lab/test environments${RESET}"
-                echo ""
-                deployment=greenfield
-            break
-            ;;
-            2)
-                echo "${GREEN}Brownfield deployment selected...${RESET}"
-                deployment=brownfield
-            break
-            ;;
             *) 
                 echo "${RED}Invalid response. Please enter a number selection${RESET}"
         esac
     done
-    
-    if [[ "$zscaler_cloud" == "zscalerten.net" ]]; then
-        echo "${YELLOW}Zscalerten does not currently support Auto Scaling VMSS. Proceeding with standard deployment options...${RESET}"
-        if [[ "$deployment" == "greenfield" ]]; then 
-            vmss_enabled=false
-        elif [[ "$deployment" == "brownfield" ]]; then
-            echo "${GREEN}Proceeding with brownfield manual scaling with load balancer configuration...${RESET}"
-            vmss_enabled=false
-            #implicitly set dtype as cc_lb for brownfield + no vmss
-            dtype=cc_lb
-        fi
-    else
-        while true; do
-            read -r -p "${CYAN}Deploy Cloud Connectors in Auto Scaling VMSS? [yes/no]: ${RESET}" response
-            case $response in 
-            yes|y )
-                if [[ "$deployment" == "greenfield" ]]; then 
-                    echo "${GREEN}Proceeding with greenfield Virtual Machine Scale Sets configuration...${RESET}"
-                    vmss_enabled=true
-                elif [[ "$deployment" == "brownfield" ]]; then
-                    echo "${GREEN}Proceeding with brownfield Virtual Machine Scale Sets configuration...${RESET}"
-                    vmss_enabled=true
-                    #implicitly set dtype as cc_vmss for brownfield + vmss
-                    dtype=cc_vmss
-                fi
-            break
-            ;;
-            no|n )
-                if [[ "$deployment" == "greenfield" ]]; then 
-                    echo "${GREEN}Proceeding with greenfield manual scaling configuration...${RESET}"
-                    vmss_enabled=false
-                elif [[ "$deployment" == "brownfield" ]]; then
-                    echo "${GREEN}Proceeding with brownfield manual scaling with load balancer configuration...${RESET}"
-                    vmss_enabled=false
-                    #implicitly set dtype as cc_lb for brownfield + no vmss
-                    dtype=cc_lb
-                fi
-            break
-            ;;
-                * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
-            esac
-        done
-    fi  
 fi
 
-if [[ "$deployment" == "greenfield" ]]; then
-    PS3="${CYAN}Select desired deployment type: ${RESET}"
-    if [[ "$vmss_enabled" == "false" ]]; then
-        dtypes=(
-            "Deploy 1 Cloud Connector in a new Resource Group and VNet"
-            "Deploy 1 Cloud Connector in a new Resource Group and VNet w/ Private DNS for ZPA"
-            "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet"
-            "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet w/ Private DNS for ZPA"
-            "Deploy a new Resource Group and VNet only - No Cloud Connector resources"  
-        )
-        select greenfield_type in "${dtypes[@]}"
+if [[ "$oper" == "up" ]]; then
+    if [[ -e ./.zsecrc ]]; then
+        echo "${YELLOW}Existing deployment configuration file identified...${RESET}"
+        # initialize environment variables
+        . ./.zsecrc
+        echo "Refreshing Deployment Type: ${GREEN}$dtype${RESET}..." 
+    else #Prompt for deployment selection
+        PS3="${CYAN}Select desired deployment: ${RESET}"
+        deployments=("greenfield - Recommended for isolated test/POV deployments. Creates new network infrastructure, test workloads, and a public jump host" "brownfield - Recommended for prod deployments. Bring-your-own existing network infrastructure customizations + no workload/bastion creation")
+        select deployment in "${deployments[@]}"
         do
             case $REPLY in
                 1)
-                    echo "Deployment type base_1cc selected..."
-                    dtype=base_1cc
-                    break
-                    ;;
+                    echo "${GREEN}Greenfield deployment selected...${RESET}"
+                    echo "${YELLOW}**Caution** These deployments include test workloads and publicly accessible jump hosts and are intended primarily for lab/test environments${RESET}"
+                    echo ""
+                    deployment=greenfield
+                break
+                ;;
                 2)
-                    echo "Deployment type base_1cc_zpa selected..."
-                    dtype=base_1cc_zpa
-                    break
-                    ;;
-                3)
-                    echo "Deployment type base_cc_lb selected..."
-                    dtype=base_cc_lb
-                    break
-                    ;;
-                4)
-                    echo "Deployment type base_cc_lb_zpa selected..."
-                    dtype=base_cc_lb_zpa
-                    break
-                    ;;
-                5)
-                    echo "Deployment type base selected..."
-                    dtype=base
-                    break
-                    ;;
+                    echo "${GREEN}Brownfield deployment selected...${RESET}"
+                    deployment=brownfield
+                break
+                ;;
                 *) 
                     echo "${RED}Invalid response. Please enter a number selection${RESET}"
             esac
         done
-    elif [[ "$vmss_enabled" == "true" ]]; then
-        dtypes=(
-            "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Load Balancer in a new Resource Group and VNet"
-            "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Load Balancer in a new Resource Group and VNet w/ Private DNS for ZPA"
-        )
-        select greenfield_type in "${dtypes[@]}"
-        do
-            case $REPLY in
-                1)
-                    echo "Deployment type base_cc_vmss selected..."
-                    dtype=base_cc_vmss
-                    break
-                    ;;
-                2)
-                    echo "Deployment type base_cc_vmss_zpa selected..."
-                    dtype=base_cc_vmss_zpa
-                    break
-                    ;;
-                *) 
-                    echo "${RED}Invalid response. Please enter a number selection${RESET}"
-            esac
-        done
+        
+        if [[ "$zscaler_cloud" == "zscalerten.net" ]]; then
+            echo "${YELLOW}Zscalerten does not currently support Auto Scaling VMSS. Proceeding with standard deployment options...${RESET}"
+            if [[ "$deployment" == "greenfield" ]]; then 
+                vmss_enabled=false
+            elif [[ "$deployment" == "brownfield" ]]; then
+                echo "${GREEN}Proceeding with brownfield manual scaling with load balancer configuration...${RESET}"
+                vmss_enabled=false
+                #implicitly set dtype as cc_lb for brownfield + no vmss
+                dtype=cc_lb
+            fi
+        else
+            while true; do
+                read -r -p "${CYAN}Deploy Cloud Connectors in Auto Scaling VMSS? [yes/no]: ${RESET}" response
+                case $response in 
+                yes|y )
+                    if [[ "$deployment" == "greenfield" ]]; then 
+                        echo "${GREEN}Proceeding with greenfield Virtual Machine Scale Sets configuration...${RESET}"
+                        vmss_enabled=true
+                    elif [[ "$deployment" == "brownfield" ]]; then
+                        echo "${GREEN}Proceeding with brownfield Virtual Machine Scale Sets configuration...${RESET}"
+                        vmss_enabled=true
+                        #implicitly set dtype as cc_vmss for brownfield + vmss
+                        dtype=cc_vmss
+                    fi
+                break
+                ;;
+                no|n )
+                    if [[ "$deployment" == "greenfield" ]]; then 
+                        echo "${GREEN}Proceeding with greenfield manual scaling configuration...${RESET}"
+                        vmss_enabled=false
+                    elif [[ "$deployment" == "brownfield" ]]; then
+                        echo "${GREEN}Proceeding with brownfield manual scaling with load balancer configuration...${RESET}"
+                        vmss_enabled=false
+                        #implicitly set dtype as cc_lb for brownfield + no vmss
+                        dtype=cc_lb
+                    fi
+                break
+                ;;
+                    * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
+                esac
+            done
+        fi
+    fi      
+
+    if [[ "$deployment" == "greenfield" ]]; then
+        PS3="${CYAN}Select desired deployment type: ${RESET}"
+        if [[ "$vmss_enabled" == "false" ]]; then
+            dtypes=(
+                "Deploy 1 Cloud Connector in a new Resource Group and VNet"
+                "Deploy 1 Cloud Connector in a new Resource Group and VNet w/ Private DNS for ZPA"
+                "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet"
+                "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet w/ Private DNS for ZPA"
+                "Deploy a new Resource Group and VNet only - No Cloud Connector resources"  
+            )
+            select greenfield_type in "${dtypes[@]}"
+            do
+                case $REPLY in
+                    1)
+                        echo "Deployment type base_1cc selected..."
+                        dtype=base_1cc
+                        break
+                        ;;
+                    2)
+                        echo "Deployment type base_1cc_zpa selected..."
+                        dtype=base_1cc_zpa
+                        break
+                        ;;
+                    3)
+                        echo "Deployment type base_cc_lb selected..."
+                        dtype=base_cc_lb
+                        break
+                        ;;
+                    4)
+                        echo "Deployment type base_cc_lb_zpa selected..."
+                        dtype=base_cc_lb_zpa
+                        break
+                        ;;
+                    5)
+                        echo "Deployment type base selected..."
+                        dtype=base
+                        break
+                        ;;
+                    *) 
+                        echo "${RED}Invalid response. Please enter a number selection${RESET}"
+                esac
+            done
+        elif [[ "$vmss_enabled" == "true" ]]; then
+            dtypes=(
+                "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Load Balancer in a new Resource Group and VNet"
+                "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Load Balancer in a new Resource Group and VNet w/ Private DNS for ZPA"
+            )
+            select greenfield_type in "${dtypes[@]}"
+            do
+                case $REPLY in
+                    1)
+                        echo "Deployment type base_cc_vmss selected..."
+                        dtype=base_cc_vmss
+                        break
+                        ;;
+                    2)
+                        echo "Deployment type base_cc_vmss_zpa selected..."
+                        dtype=base_cc_vmss_zpa
+                        break
+                        ;;
+                    *) 
+                        echo "${RED}Invalid response. Please enter a number selection${RESET}"
+                esac
+            done
+        fi
+    else
+        dtype=$dtype
     fi
-else
-    dtype=$dtype
 fi
 
 echo "Discovering processor architecture..."
