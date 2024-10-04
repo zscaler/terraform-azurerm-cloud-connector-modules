@@ -7,7 +7,7 @@ BUG FIXES:
     - azurerm_route_table: disable_bgp_route_propagation (default true) change to bgp_route_propagation_enabled (default false)
 
 ENHANCEMENTS:
-* zsec support server lookup resiliency impreovements
+* zsec support server lookup resiliency improvements
 
 ## v0.6.0 (September 5, 2024)
 
