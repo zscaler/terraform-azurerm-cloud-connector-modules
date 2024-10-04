@@ -1,3 +1,14 @@
+## v0.6.1 (October 5, 2024)
+
+BUG FIXES:
+* AzureRM Provider version bump to 3.116.x default to address provider: skip registration for resource providers that are unavailable
+* refactor: update Azure deprecated arguments:
+    - azurerm_network_interface: enable_ip_forwarding change to ip_forwarding_enabled and enable_accelerated_networking to accelerated_networking_enabled
+    - azurerm_route_table: disable_bgp_route_propagation (default true) change to bgp_route_propagation_enabled (default false)
+
+ENHANCEMENTS:
+* zsec support server lookup resiliency impreovements
+
 ## v0.6.0 (September 5, 2024)
 
 ENHANCEMENTS:
