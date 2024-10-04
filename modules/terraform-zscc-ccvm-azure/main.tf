@@ -36,12 +36,12 @@ resource "azurerm_network_interface_security_group_association" "cc_mgmt_nic_ass
 # This interface becomes LB0 interface for Medium/Large Cloud Connector sizes
 ################################################################################
 resource "azurerm_network_interface" "cc_service_nic" {
-  count                         = var.cc_count
-  name                          = "${var.name_prefix}-ccvm-${count.index + 1}-fwd-nic-${var.resource_tag}"
-  location                      = var.location
-  resource_group_name           = var.resource_group
-  enable_ip_forwarding          = true
-  enable_accelerated_networking = var.accelerated_networking_enabled
+  count                          = var.cc_count
+  name                           = "${var.name_prefix}-ccvm-${count.index + 1}-fwd-nic-${var.resource_tag}"
+  location                       = var.location
+  resource_group_name            = var.resource_group
+  ip_forwarding_enabled          = true
+  accelerated_networking_enabled = var.accelerated_networking_enabled
 
   ip_configuration {
     name                          = "${var.name_prefix}-ccvm-fwd-nic-conf-${var.resource_tag}"
