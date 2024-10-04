@@ -151,7 +151,7 @@ resource "azurerm_route_table" "workload_rt" {
   location            = var.location
   resource_group_name = try(data.azurerm_resource_group.rg_selected[0].name, azurerm_resource_group.rg[0].name)
 
-  disable_bgp_route_propagation = true
+  bgp_route_propagation_enabled = false
 
   route {
     name                   = "default-route"
@@ -209,7 +209,7 @@ resource "azurerm_route_table" "private_dns_rt" {
   location            = var.location
   resource_group_name = try(data.azurerm_resource_group.rg_selected[0].name, azurerm_resource_group.rg[0].name)
 
-  disable_bgp_route_propagation = true
+  bgp_route_propagation_enabled = false
 
   route {
     name                   = "default-route"
