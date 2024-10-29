@@ -225,3 +225,22 @@ variable "zssupport_server" {
   description = "destination IP address of Zscaler Support access server. IP resolution of remotesupport.<zscaler_customer_cloud>.net"
   default     = "199.168.148.101" #for commercial clouds
 }
+
+variable "deploy_cca_vdi" {
+  type        = bool
+  description = "Variable to enable or disable VDI bringup during deployment"
+  default     = false
+}
+
+
+variable "cca_template_url" {
+    type = string
+    description = "Create a set of configurations that are applied to the VDI and dictate the VDI's behavior."
+    default = null
+}
+
+variable "cca_token" {
+    type = string
+    description = "Generated Token for VDI Template URL"
+    default = null
+}

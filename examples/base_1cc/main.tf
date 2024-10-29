@@ -190,3 +190,22 @@ module "cc_identity" {
     azurerm = azurerm.managed_identity_sub
   }
 }
+
+################################################################################
+# 7. Windows VM VDI deployment for Cloud Connectors 
+################################################################################
+module "cc_vdi" {
+  count  = var.deploy_cca_vdi == true ? 1 : 0
+  source                      = "../../modules/terraform-zscc-vdi-azure"
+  resource_group_name = module.network.resource_group_name
+  resource_group_location = var.arm_location
+  prefix = var.name_prefix
+  resource_tag = random_string.suffix.result
+  subnet_id = module.network.cc_subnet_ids[0]
+  primary_service_ip = module.cc_vm.service_ip[0]
+  cca_template_url = var.cca_template_url
+  cca_token = var.cca_token
+  providers = {
+    azurerm = azurerm.managed_identity_sub
+  }
+}

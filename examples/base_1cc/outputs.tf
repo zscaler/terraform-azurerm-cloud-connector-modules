@@ -44,6 +44,7 @@ ${join("\n", module.network.public_ip_address)}
 Bastion Public IP: 
 ${module.bastion.public_ip}
 
+
 TB
 }
 
