@@ -1,3 +1,25 @@
+
+locals {
+  admin_password = (
+    try(
+      module.cc_vdi[0].admin_password,
+      (sensitive("NA"))
+    )
+  )
+  admin_username = (
+    try(
+      module.cc_vdi[0].admin_username,
+      "NA"
+    )
+  )
+  public_ip_address = (
+    try(
+      module.cc_vdi[0].public_ip_address,
+      "NA"
+    )
+  )
+}
+
 locals {
 
   testbedconfig = <<TB
@@ -44,6 +66,14 @@ ${join("\n", module.network.public_ip_address)}
 Bastion Public IP: 
 ${module.bastion.public_ip}
 
+VDI Public IP:
+${local.public_ip_address}
+
+VDI Username:
+${local.admin_username}
+
+VDI Password:
+${nonsensitive(local.admin_password)}
 
 TB
 }

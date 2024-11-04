@@ -1,3 +1,13 @@
+resource "random_password" "password" {
+  length      = 20
+  min_lower   = 1
+  min_upper   = 1
+  min_numeric = 1
+  min_special = 1
+  special     = true
+}
+
+
 resource "azurerm_public_ip" "public_ip" {
     name                = "${var.prefix}-vdi-public-ip-${var.resource_tag}"
     resource_group_name = var.resource_group_name
@@ -23,7 +33,7 @@ resource "azurerm_public_ip" "public_ip" {
 resource "azurerm_windows_virtual_machine" "cca-vdi" {
   name                  = "${var.resource_tag}-vdi"
   admin_username        = var.admin_username
-  admin_password        = var.admin_password
+  admin_password        = random_password.password.result
   location              = var.resource_group_location
   resource_group_name   = var.resource_group_name
   network_interface_ids = [azurerm_network_interface.cca-vdi-network.id]

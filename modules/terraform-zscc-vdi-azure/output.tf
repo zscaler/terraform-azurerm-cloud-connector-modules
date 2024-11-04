@@ -3,6 +3,7 @@ output "public_ip_address" {
 }
 
 output "admin_password" {
+  sensitive = true
   value     = azurerm_windows_virtual_machine.cca-vdi.admin_password
 }
 
