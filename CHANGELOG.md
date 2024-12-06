@@ -1,3 +1,11 @@
+## v0.6.2 (December 6, 2024)
+
+BUG FIXES:
+* fix: VMSS improvements with new [Zscaler Function Zip file v0.1.1](modules/terraform-zscc-function-app-azure/zscaler_cc_function_app.zip)
+
+ENHANCEMENTS:
+* zsec support for Zscaler Cloud: zscalergov.net
+
 ## v0.6.1 (October 5, 2024)
 
 BUG FIXES:
