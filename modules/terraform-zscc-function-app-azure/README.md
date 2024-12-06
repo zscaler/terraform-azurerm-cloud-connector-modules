@@ -2,6 +2,12 @@
 
 This module provides the necessary resource creation and configuration parameters to deploy the Zscaler generated Azure Function App and dependencies required for management and health monitoring of Cloud Connectors deployed in a Virtual Machine Scale Set (VMSS). Recommended configuration includes the creation of a new Azure Storage Account for Function App zip file upload/storage and runtime. For full functionality, a dedicate App Service Plan and Application Insights resource are required for custom metric ingestion and processing.
 
+| Function ZIP Version | SHA256 Hash | GitHub Release Date/Tag |
+| ----------- | --------| ------------ |
+| 0.1.1| c3a1e174e5cd77498459d7d6f410250b0dd0c1f62687caa763eae3bb124e2635 | 12/06/2024 - [v0.6.2](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/releases/tag/v0.6.2) |
+| 0.1.0 | 8de1144256df20f970f9c382c001bad14d2de1407a9d8b7a6edd3a6c5143d3bc | 09/05/2024 - [v0.6.0](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/releases/tag/v0.6.0) |
+
+
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
