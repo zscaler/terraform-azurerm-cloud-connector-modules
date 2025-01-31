@@ -12,6 +12,7 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "cc_vmss" {
   encryption_at_host_enabled  = var.encryption_at_host_enabled
   zones                       = local.zones_supported ? [element(var.zones, count.index)] : null
   zone_balance                = false
+  user_data_base64            = base64encode(var.user_data)
   termination_notification {
     enabled = true
     timeout = "PT5M"
