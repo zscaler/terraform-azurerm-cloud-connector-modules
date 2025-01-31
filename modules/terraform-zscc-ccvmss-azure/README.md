@@ -79,7 +79,7 @@ No modules.
 | <a name="input_scale_out_count"></a> [scale\_out\_count](#input\_scale\_out\_count) | Number of CCs to bring up on scale out event. | `string` | `"1"` | no |
 | <a name="input_scale_out_evaluation_period"></a> [scale\_out\_evaluation\_period](#input\_scale\_out\_evaluation\_period) | Amount of time the average of scaling metric is evaluated over. | `string` | `"PT5M"` | no |
 | <a name="input_scale_out_threshold"></a> [scale\_out\_threshold](#input\_scale\_out\_threshold) | Metric threshold for determining scale out. | `number` | `70` | no |
-| <a name="input_scheduled_scaling_days_of_week"></a> [scheduled\_scaling\_days\_of\_week](#input\_scheduled\_scaling\_days\_of\_week) | Days of the week to apply scheduled scaling profile. | `list(string)` | <pre>[<br>  "Monday",<br>  "Tuesday",<br>  "Wednesday",<br>  "Thursday",<br>  "Friday"<br>]</pre> | no |
+| <a name="input_scheduled_scaling_days_of_week"></a> [scheduled\_scaling\_days\_of\_week](#input\_scheduled\_scaling\_days\_of\_week) | Days of the week to apply scheduled scaling profile. | `list(string)` | <pre>[<br/>  "Monday",<br/>  "Tuesday",<br/>  "Wednesday",<br/>  "Thursday",<br/>  "Friday"<br/>]</pre> | no |
 | <a name="input_scheduled_scaling_enabled"></a> [scheduled\_scaling\_enabled](#input\_scheduled\_scaling\_enabled) | Enable scheduled scaling on top of metric scaling. | `bool` | `false` | no |
 | <a name="input_scheduled_scaling_end_time_hour"></a> [scheduled\_scaling\_end\_time\_hour](#input\_scheduled\_scaling\_end\_time\_hour) | Hour to end scheduled scaling profile. | `number` | `17` | no |
 | <a name="input_scheduled_scaling_end_time_min"></a> [scheduled\_scaling\_end\_time\_min](#input\_scheduled\_scaling\_end\_time\_min) | Minute to end scheduled scaling profile. | `number` | `0` | no |
@@ -94,7 +94,7 @@ No modules.
 | <a name="input_vmss_default_ccs"></a> [vmss\_default\_ccs](#input\_vmss\_default\_ccs) | Default number of CCs in vmss. | `number` | `2` | no |
 | <a name="input_vmss_max_ccs"></a> [vmss\_max\_ccs](#input\_vmss\_max\_ccs) | Maximum number of CCs in vmss. | `number` | `16` | no |
 | <a name="input_vmss_min_ccs"></a> [vmss\_min\_ccs](#input\_vmss\_min\_ccs) | Minimum number of CCs in vmss. | `number` | `2` | no |
-| <a name="input_zones"></a> [zones](#input\_zones) | Specify which availability zone(s) to deploy VM resources in if zones\_enabled variable is set to true | `list(string)` | <pre>[<br>  "1"<br>]</pre> | no |
+| <a name="input_zones"></a> [zones](#input\_zones) | Specify which availability zone(s) to deploy VM resources in if zones\_enabled variable is set to true | `list(string)` | <pre>[<br/>  "1"<br/>]</pre> | no |
 | <a name="input_zones_enabled"></a> [zones\_enabled](#input\_zones\_enabled) | Determine whether to provision Cloud Connector VMs explicitly in defined zones (if supported by the Azure region provided in the location variable). If left false, Azure will automatically choose a zone and module will create an availability set resource instead for VM fault tolerance | `bool` | `false` | no |
 
 ## Outputs

@@ -88,7 +88,7 @@ No modules.
 | <a name="input_private_dns_subnet_id"></a> [private\_dns\_subnet\_id](#input\_private\_dns\_subnet\_id) | The ID of the Subnet that is linked to the Private DNS Resolver Outbound Endpoint | `string` | n/a | yes |
 | <a name="input_resource_group"></a> [resource\_group](#input\_resource\_group) | Specifies the name of the Resource Group where the Private DNS Resolver should exist | `string` | n/a | yes |
 | <a name="input_resource_tag"></a> [resource\_tag](#input\_resource\_tag) | A tag to associate to all the Private DNS module resources | `string` | `null` | no |
-| <a name="input_target_address"></a> [target\_address](#input\_target\_address) | Azure DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses | `list(string)` | <pre>[<br>  "185.46.212.88",<br>  "185.46.212.89"<br>]</pre> | no |
+| <a name="input_target_address"></a> [target\_address](#input\_target\_address) | Azure DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses | `list(string)` | <pre>[<br/>  "185.46.212.88",<br/>  "185.46.212.89"<br/>]</pre> | no |
 | <a name="input_vnet_id"></a> [vnet\_id](#input\_vnet\_id) | The ID of the Virtual Network that is linked to the Private DNS Resolver | `string` | n/a | yes |
 
 ## Outputs
