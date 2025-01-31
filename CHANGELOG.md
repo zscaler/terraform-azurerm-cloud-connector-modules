@@ -1,3 +1,8 @@
+## TBD (UNRELEASED)
+
+ENHANCEMENTS:
+* refactor: **support for future features** add base64 encoded user_data to VM and VMSS UserData attribute. CustomData will still be utilized until a future VHD release. At that time, it will remain as a secondary fallback to preferred UserData.
+
 ## v0.6.2 (December 9, 2024)
 
 BUG FIXES:

@@ -103,6 +103,7 @@ resource "azurerm_linux_virtual_machine" "cc_vm" {
   computer_name  = "${var.name_prefix}-ccvm-${count.index + 1}-${var.resource_tag}"
   admin_username = var.cc_username
   custom_data    = base64encode(var.user_data)
+  user_data      = base64encode(var.user_data)
 
   admin_ssh_key {
     username   = var.cc_username
