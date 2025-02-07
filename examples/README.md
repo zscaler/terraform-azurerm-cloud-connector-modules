@@ -48,7 +48,7 @@ bash
 cd examples
 Optional: Edit the terraform.tfvars file under your desired deployment type (ie: base_1cc) to setup your Cloud Connector (Details are documented inside the file)
 - ./zsec up
-- enter "greenfield"
+- enter "1" for greenfield
 - enter <desired deployment type>
 - follow prompts for any additional configuration inputs. *keep in mind, any modifications done to terraform.tfvars first will override any inputs from the zsec script*
 - script will detect client operating system and download/run a specific version of terraform in a temporary bin directory
@@ -87,7 +87,7 @@ bash
 cd examples
 Optional: Edit the terraform.tfvars file under your desired deployment type (ie: cc_lb) to setup your Cloud Connector (Details are documented inside the file)
 - ./zsec up
-- enter "brownfield"
+- enter "2" for brownfield
 - enter <desired deployment type>
 - follow prompts for any additional configuration inputs. *keep in mind, any modifications done to terraform.tfvars first will override any inputs from the zsec script*
 - script will detect client operating system and download/run a specific version of terraform in a temporary bin directory
@@ -106,11 +106,32 @@ Deployment Type: (cc_lb | cc_vmss):
 
 <br>
 
-
 Brownfield deployment types provide numerous customization options within terraform.tfvars to enable/disable bring-your-own resources for
 Cloud Connector deployment in existing environments. Custom paramaters include: BYO existing Resource Group, PIPs, NAT Gateways and associations,
 VNet, and subnets. Optional Azure Private DNS Resolver resource creation per variable zpa_enabled. The number of Cloud Connector VMs or Virtual Machine Scale Sets, Cloud Connector subnets, NAT Gateways, and Public IPs can vary based on if zones support is enabled and the amount of zone redundancy chosen.
 
+**3. Standalone Deployments**
+
+(These templates are most applicable for custom/specialized deployment configurations). No Cloud Connector resources are provisioned with this template as the dependency of this feature assumes the resources already exist.
+
+```
+bash
+cd examples
+Optional: Edit the terraform.tfvars file under your desired deployment type (ie: ztags_standalone) to manually set variable values (Details are documented inside the file)
+- ./zsec up
+- enter "3" for standalone ztags enablement
+- follow prompts for any additional configuration inputs. *keep in mind, any modifications done to terraform.tfvars first will override any inputs from the zsec script*
+- script will detect client operating system and download/run a specific version of terraform in a temporary bin directory
+- inputs will be validated and terraform init/apply will automatically exectute.
+- verify all resources that will be created/modified and enter "yes" to confirm
+```
+
+**Standalone Deployment Types**
+
+```
+Deployment Type: (ztags_standalone):
+**ztags_standalone** - Creates a new Resource Group (or use an existing); Event Grid System Topic; and PartnerDestination Event Subscription for Zscaler Tag Discovery Service automation
+```
 
 ## Destroying the cluster
 ```
