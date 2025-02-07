@@ -1,6 +1,6 @@
 # Zscaler "Z-Tags Standalone" deployment type
 
-This deployment It does not deploy any Cloud Connector appliances. Full set of resources provisioned list below, but this w
+Use this template to deploy an Azure Event Grid System Topic + PartnerDestination Event Subscription in a new or existing Resource Group. This enables Zscaler to send and receive event notifications for new resource add/delete/change operations for a designated source Subscription. No Cloud Connector resources are provisioned with this template as the dependency of this feature assumes the resources already exist.
 
 ## Caveats/Considerations
 - WSL2 DNS bug: If you are trying to run these Azure terraform deployments specifically from a Windows WSL2 instance like Ubuntu and receive an error containing a message similar to this "dial tcp: lookup management.azure.com on 172.21.240.1:53: cannot unmarshal DNS message" please refer here for a WSL2 resolv.conf fix. https://github.com/microsoft/WSL/issues/5420#issuecomment-646479747.
