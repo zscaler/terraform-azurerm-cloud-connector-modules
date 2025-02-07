@@ -3,7 +3,13 @@
 FEATURES:
 * New Azure Region supported by Cloud Connector: Spain Central
 
+FEATURES:
+* Official support for Zscaler Azure Tag Discovery Service
+* add: new examples ztags_standalone and module terraform-zscc-ztags-azure
+
 ENHANCEMENTS:
+* add: zsec support for Zscaler Azure Tag Discovery Service configuration
+* add: AzAPI provider (version 2.2.x) support for configuring Azure Event Grid resources
 * refactor: **support for future features** add base64 encoded user_data to VM and VMSS UserData attribute. CustomData will still be utilized until a future VHD release. At that time, it will remain as a secondary fallback to preferred UserData.
 * refactor: include ssh_config generation with auto mapping all workload/cc instances for base/greenfield deployments
 * refactor: change base/greenfield workload and bastion virtual machines from CentOS 7.5 to AlmaLinux 9
@@ -11,6 +17,7 @@ ENHANCEMENTS:
 
 BUG FIXES:
 * update az_supported_regions static map for all modules
+
 
 ## v0.6.2 (December 9, 2024)
 
