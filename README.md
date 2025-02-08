@@ -25,6 +25,7 @@ Our Deployment scripts are leveraging Terraform v1.1.9 which includes full binar
 - provider registry.terraform.io/hashicorp/local v2.2.x
 - provider registry.terraform.io/hashicorp/null v3.1.x
 - provider registry.terraform.io/providers/hashicorp/tls v3.4.x
+- provider registry.terraform.io/providers/Azure/azapi v2.2.x
 
 ### **Azure Requirements**
 
@@ -93,3 +94,9 @@ Brownfield deployment templates are most applicable for production deployments a
 Use the [**Custom Deployment template with Azure Load Balancer**](examples/cc_lb) to deploy your Cloud Connector in a new or existing VNet and load balance traffic across multiple Cloud Connectors. Zscaler's recommended deployment method is Azure Load Balancer. Azure Load Balancer distributes traffic across multiple Cloud Connectors and achieves high availability. Optional Azure Private DNS Resolver resource creation per variable zpa_enabled.
 
 Use the [**Custom Deployment template with Virtual Machine Scale Sets (VMSS)**](examples/cc_vmss) to deploy your Cloud Connectors in a new or existing VNet and load balance traffic across multiple Cloud Connectors. Zscaler's recommended deployment method is Azure Load Balancer. Azure Load Balancer distributes traffic across multiple Cloud Connectors and achieves high availability. For added resiliency and elasticity, Cloud Connectors are deployed in Virtual Machine Scale Sets (VMSS) with accompanying Zscaler Function App packaged zip file. Optional Azure Private DNS Resolver resource creation per variable zpa_enabled.
+
+## **Standalone Deployment Types**
+
+### **Standalone Zscaler Tags (ZTags) Enablement**
+
+Use the [**Standalone Zscaler Tags Enablement**](examples/ztags_standalone) template to deploy an Azure Event Grid System Topic + PartnerDestination Event Subscription in a new or existing Resource Group. This enables Zscaler to send and receive event notifications for new resource add/delete/change operations for a designated source Subscription. No Cloud Connector resources are provisioned with this template as the dependency of this feature assumes the resources already exist.
