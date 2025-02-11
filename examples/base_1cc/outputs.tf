@@ -15,27 +15,38 @@ By default, these templates store two critical files to the "examples" directory
    You (and subsequently Zscaler) will NOT be able to remotely access these VMs once deployed without valid SSH access.
 ***Disclaimer***
 
+Login Instructions & Resource Attributes
+1) Copy the SSH key to BASTION home directory
+scp -F ssh_config ${var.name_prefix}-key-${random_string.suffix.result}.pem bastion
 
-1) Copy the SSH key to the bastion host
-scp -i ${var.name_prefix}-key-${random_string.suffix.result}.pem ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}:/home/centos/.
+2) SSH to BASTION
+ssh -F ssh_config bastion
 
-2) SSH to the bastion host
-ssh -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}
+3) SSH to CLOUD CONNECTOR
+%{for k, v in local.cc_map~}
+ssh -F ssh_config ccvm-${k}
+%{endfor~}  
 
-3) SSH to the CC
-ssh -i ${var.name_prefix}-key-${random_string.suffix.result}.pem zsroot@${module.cc_vm.private_ip[0]} -o "proxycommand ssh -W %h:%p -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}"
+All Cloud Connector Management IPs:
+%{for k, v in local.cc_map~}
+ccvm-${k} = ${v}
+%{endfor~}  
 
-4) SSH to the workload host
-ssh -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.workload.private_ip[0]} -o "proxycommand ssh -W %h:%p -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}"
+4) SSH to WORKLOAD
+%{for k, v in local.workload_map~}
+ssh -F ssh_config workload-${k}
+%{endfor~}  
 
-All Workload IPs. Replace private IP below with centos@"ip address" in ssh example command above.
-${join("\n", module.workload.private_ip)}
+All Workload IPs:
+%{for k, v in local.workload_map~}
+workload-${k} = ${v}
+%{endfor~}  
 
 
 Resource Group: 
 ${module.network.resource_group_name}
 
-All CC Primary Service IPs:
+All Cloud Connector Service IPs:
 ${join("\n", module.cc_vm.service_ip)}
 
 All NAT GW IPs:
@@ -46,10 +57,51 @@ ${module.bastion.public_ip}
 
 TB
 }
+locals {
+  workload_map = {
+    for index, ip in module.workload.private_ip :
+    index => ip
+  }
+  cc_map = {
+    for index, ip in module.cc_vm.private_ip :
+    index => ip
+  }
+  ssh_config_contents = <<SSH_CONFIG
+    Host bastion
+      HostName ${module.bastion.public_ip}
+      User centos
+      IdentityFile ${var.name_prefix}-key-${random_string.suffix.result}.pem
+
+    %{for k, v in local.workload_map~}
+Host workload-${k}
+      HostName ${v}
+      User centos
+      IdentityFile ${var.name_prefix}-key-${random_string.suffix.result}.pem
+      StrictHostKeyChecking no
+      ProxyJump bastion
+      ProxyCommand ssh bastion -W %h:%p
+    %{endfor~}    
+    
+    %{for k, v in local.cc_map~}
+Host ccvm-${k}
+      HostName ${v}
+      User zsroot
+      IdentityFile ${var.name_prefix}-key-${random_string.suffix.result}.pem
+      StrictHostKeyChecking no
+      ProxyJump bastion        
+      ProxyCommand ssh bastion -W %h:%p
+    %{endfor~}
+  SSH_CONFIG
+}
 
 output "testbedconfig" {
   description = "Azure Testbed results"
   value       = local.testbedconfig
+}
+
+resource "local_file" "ssh_config" {
+  content  = local.ssh_config_contents
+  filename = "../ssh_config"
 }
 
 resource "local_file" "testbed" {
