@@ -19,7 +19,7 @@ By default, these templates store two critical files to the "examples" directory
 Resource Group: 
 ${module.network.resource_group_name}
 
-LB IP: 
+Load Balancer Frontend IP: 
 ${module.cc_lb.lb_ip}
 
 VMSS Names:
