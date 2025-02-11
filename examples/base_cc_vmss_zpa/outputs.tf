@@ -15,24 +15,27 @@ By default, these templates store two critical files to the "examples" directory
    You (and subsequently Zscaler) will NOT be able to remotely access these VMs once deployed without valid SSH access.
 ***Disclaimer***
 
+Login Instructions & Resource Attributes
+1) Copy the SSH key to BASTION home directory
+scp -F ssh_config ${var.name_prefix}-key-${random_string.suffix.result}.pem bastion
 
-1) Copy the SSH key to the bastion host
-scp -i ${var.name_prefix}-key-${random_string.suffix.result}.pem ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}:/home/centos/.
+2) SSH to BASTION
+ssh -F ssh_config bastion
 
-2) SSH to the bastion host
-ssh -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}
+3) SSH to WORKLOAD
+%{for k, v in local.workload_map~}
+ssh -F ssh_config workload-${k}
+%{endfor~}  
 
-3) SSH to the workload host
-ssh -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.workload.private_ip[0]} -o "proxycommand ssh -W %h:%p -i ${var.name_prefix}-key-${random_string.suffix.result}.pem centos@${module.bastion.public_ip}"
-
-All Workload IPs. Replace private IP below with centos@"ip address" in ssh example command above.
-${join("\n", module.workload.private_ip)}
-
+All Workload IPs:
+%{for k, v in local.workload_map~}
+workload-${k} = ${v}
+%{endfor~}  
 
 Resource Group: 
 ${module.network.resource_group_name}
 
-LB IP: 
+Load Balancer Frontend IP:  
 ${module.cc_lb.lb_ip}
 
 VMSS Names:
@@ -53,6 +56,14 @@ ${join("\n", module.network.public_ip_address)}
 Bastion Public IP: 
 ${module.bastion.public_ip}
 
+Private DNS Resolver:
+${module.private_dns.private_dns_resolver_name}
+
+Private DNS Forwarding Ruleset:
+${module.private_dns.private_dns_forwarding_ruleset_name}
+
+Private DNS Outbound Endpoint:
+${module.private_dns.private_dns_outbound_endpoint_name}
 
 TB
 
@@ -66,6 +77,33 @@ Based on the recorded output, the manual sync to start your Azure Function App f
 
 TB
 }
+locals {
+  workload_map = {
+    for index, ip in module.workload.private_ip :
+    index => ip
+  }
+  ssh_config_contents = <<SSH_CONFIG
+    Host bastion
+      HostName ${module.bastion.public_ip}
+      User centos
+      IdentityFile ${var.name_prefix}-key-${random_string.suffix.result}.pem
+
+    %{for k, v in local.workload_map~}
+Host workload-${k}
+      HostName ${v}
+      User centos
+      IdentityFile ${var.name_prefix}-key-${random_string.suffix.result}.pem
+      StrictHostKeyChecking no
+      ProxyJump bastion
+      ProxyCommand ssh bastion -W %h:%p
+    %{endfor~}    
+  SSH_CONFIG
+}
+
+resource "local_file" "ssh_config" {
+  content  = local.ssh_config_contents
+  filename = "../ssh_config"
+}
 
 output "testbedconfig" {
   description = "Azure Testbed results"
@@ -73,6 +111,6 @@ output "testbedconfig" {
 }
 
 resource "local_file" "testbed" {
-  content  = local.testbedconfig
+  content  = module.cc_functionapp.manual_sync_exit_status != "1" ? local.testbedconfig : format("%s%s", local.testbedconfig, local.testbedconfig_manual_sync_failed)
   filename = "../testbed.txt"
 }

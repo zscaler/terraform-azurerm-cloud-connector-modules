@@ -19,13 +19,13 @@ By default, these templates store two critical files to the "examples" directory
 Resource Group: 
 ${module.network.resource_group_name}
 
-All CC Management IPs:
+All Cloud Connector Management IPs:
 ${join("\n", module.cc_vm.private_ip)}
 
-All CC Primary Service IPs:
+All Cloud Connector Service IPs:
 ${join("\n", module.cc_vm.service_ip)}
 
-LB IP: 
+Load Balancer Frontend IP: 
 ${module.cc_lb.lb_ip}
 
 All NAT GW IPs:
