@@ -34,7 +34,7 @@ variable "subnet_id" {
 variable "server_admin_username" {
   type        = string
   description = "Username configured for the workload root/admin account"
-  default     = "centos"
+  default     = "almalinux"
 }
 
 variable "ssh_key" {
@@ -58,19 +58,19 @@ locals {
 variable "instance_image_publisher" {
   type        = string
   description = "The workload CentOS image publisher"
-  default     = "OpenLogic"
+  default     = "almalinux"
 }
 
 variable "instance_image_offer" {
   type        = string
   description = "The workload CentOS image offer"
-  default     = "CentOS"
+  default     = "almalinux-x86_64"
 }
 
 variable "instance_image_sku" {
   type        = string
   description = "The workload CentOS image sku"
-  default     = "7.5"
+  default     = "9-gen1"
 }
 
 variable "instance_image_version" {
