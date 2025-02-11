@@ -36,10 +36,10 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_dns_servers"></a> [dns\_servers](#input\_dns\_servers) | The DNS servers configured for workload VMs. | `list(string)` | `[]` | no |
 | <a name="input_global_tags"></a> [global\_tags](#input\_global\_tags) | Populate any custom user defined tags from a map | `map(string)` | `{}` | no |
-| <a name="input_instance_image_offer"></a> [instance\_image\_offer](#input\_instance\_image\_offer) | The workload CentOS image offer | `string` | `"almalinux-x86_64"` | no |
-| <a name="input_instance_image_publisher"></a> [instance\_image\_publisher](#input\_instance\_image\_publisher) | The workload CentOS image publisher | `string` | `"almalinux"` | no |
-| <a name="input_instance_image_sku"></a> [instance\_image\_sku](#input\_instance\_image\_sku) | The workload CentOS image sku | `string` | `"9-gen1"` | no |
-| <a name="input_instance_image_version"></a> [instance\_image\_version](#input\_instance\_image\_version) | The workload CentOS image version | `string` | `"latest"` | no |
+| <a name="input_instance_image_offer"></a> [instance\_image\_offer](#input\_instance\_image\_offer) | The workload image offer | `string` | `"almalinux-x86_64"` | no |
+| <a name="input_instance_image_publisher"></a> [instance\_image\_publisher](#input\_instance\_image\_publisher) | The workload image publisher | `string` | `"almalinux"` | no |
+| <a name="input_instance_image_sku"></a> [instance\_image\_sku](#input\_instance\_image\_sku) | The workload AlmaLinux image sku | `string` | `"9-gen1"` | no |
+| <a name="input_instance_image_version"></a> [instance\_image\_version](#input\_instance\_image\_version) | The workload image version | `string` | `"latest"` | no |
 | <a name="input_instance_size"></a> [instance\_size](#input\_instance\_size) | The Azure image type/size | `string` | `"Standard_B1s"` | no |
 | <a name="input_location"></a> [location](#input\_location) | Cloud Connector Azure Region | `string` | n/a | yes |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | A prefix to associate to all the workload module resources | `string` | `null` | no |
