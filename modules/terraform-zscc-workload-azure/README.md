@@ -36,16 +36,16 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_dns_servers"></a> [dns\_servers](#input\_dns\_servers) | The DNS servers configured for workload VMs. | `list(string)` | `[]` | no |
 | <a name="input_global_tags"></a> [global\_tags](#input\_global\_tags) | Populate any custom user defined tags from a map | `map(string)` | `{}` | no |
-| <a name="input_instance_image_offer"></a> [instance\_image\_offer](#input\_instance\_image\_offer) | The workload CentOS image offer | `string` | `"CentOS"` | no |
-| <a name="input_instance_image_publisher"></a> [instance\_image\_publisher](#input\_instance\_image\_publisher) | The workload CentOS image publisher | `string` | `"OpenLogic"` | no |
-| <a name="input_instance_image_sku"></a> [instance\_image\_sku](#input\_instance\_image\_sku) | The workload CentOS image sku | `string` | `"7.5"` | no |
+| <a name="input_instance_image_offer"></a> [instance\_image\_offer](#input\_instance\_image\_offer) | The workload CentOS image offer | `string` | `"almalinux-x86_64"` | no |
+| <a name="input_instance_image_publisher"></a> [instance\_image\_publisher](#input\_instance\_image\_publisher) | The workload CentOS image publisher | `string` | `"almalinux"` | no |
+| <a name="input_instance_image_sku"></a> [instance\_image\_sku](#input\_instance\_image\_sku) | The workload CentOS image sku | `string` | `"9-gen1"` | no |
 | <a name="input_instance_image_version"></a> [instance\_image\_version](#input\_instance\_image\_version) | The workload CentOS image version | `string` | `"latest"` | no |
 | <a name="input_instance_size"></a> [instance\_size](#input\_instance\_size) | The Azure image type/size | `string` | `"Standard_B1s"` | no |
 | <a name="input_location"></a> [location](#input\_location) | Cloud Connector Azure Region | `string` | n/a | yes |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | A prefix to associate to all the workload module resources | `string` | `null` | no |
 | <a name="input_resource_group"></a> [resource\_group](#input\_resource\_group) | Main Resource Group Name | `string` | n/a | yes |
 | <a name="input_resource_tag"></a> [resource\_tag](#input\_resource\_tag) | A tag to associate to all the workload module resources | `string` | `null` | no |
-| <a name="input_server_admin_username"></a> [server\_admin\_username](#input\_server\_admin\_username) | Username configured for the workload root/admin account | `string` | `"centos"` | no |
+| <a name="input_server_admin_username"></a> [server\_admin\_username](#input\_server\_admin\_username) | Username configured for the workload root/admin account | `string` | `"almalinux"` | no |
 | <a name="input_ssh_key"></a> [ssh\_key](#input\_ssh\_key) | SSH Key for instances | `string` | n/a | yes |
 | <a name="input_subnet_id"></a> [subnet\_id](#input\_subnet\_id) | The id of subnet where the workload host has to be attached | `string` | n/a | yes |
 | <a name="input_workload_count"></a> [workload\_count](#input\_workload\_count) | The number of Workload VMs to deploy | `number` | `1` | no |
@@ -54,5 +54,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_admin_username"></a> [admin\_username](#output\_admin\_username) | Instance Admin Username |
 | <a name="output_private_ip"></a> [private\_ip](#output\_private\_ip) | Instance Private IP Address |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

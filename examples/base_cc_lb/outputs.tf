@@ -77,7 +77,7 @@ locals {
     %{for k, v in local.workload_map~}
 Host workload-${k}
       HostName ${v}
-      User centos
+      User ${module.workload.admin_username}
       IdentityFile ${var.name_prefix}-key-${random_string.suffix.result}.pem
       StrictHostKeyChecking no
       ProxyJump bastion
