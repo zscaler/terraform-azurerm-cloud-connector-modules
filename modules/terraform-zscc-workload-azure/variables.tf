@@ -69,7 +69,7 @@ variable "instance_image_offer" {
 
 variable "instance_image_sku" {
   type        = string
-  description = "The workload AlmaLinux image sku"
+  description = "The workload image sku"
   default     = "9-gen1"
 }
 
