@@ -77,7 +77,7 @@ locals {
   ssh_config_contents = <<SSH_CONFIG
     Host bastion
       HostName ${module.bastion.public_ip}
-      User centos
+      User ${module.bastion.admin_username}
       IdentityFile ${var.name_prefix}-key-${random_string.suffix.result}.pem
 
     %{for k, v in local.workload_map~}
