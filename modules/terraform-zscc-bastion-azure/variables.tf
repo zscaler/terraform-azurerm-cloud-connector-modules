@@ -34,7 +34,7 @@ variable "public_subnet_id" {
 variable "server_admin_username" {
   type        = string
   description = "Username configured for the Bastion Host root/admin account"
-  default     = "centos"
+  default     = "almalinux"
 }
 
 variable "ssh_key" {
@@ -57,25 +57,25 @@ locals {
 
 variable "instance_image_publisher" {
   type        = string
-  description = "The Bastion Host CentOS image publisher"
-  default     = "OpenLogic"
+  description = "The bastion host image publisher"
+  default     = "almalinux"
 }
 
 variable "instance_image_offer" {
   type        = string
-  description = "The Bastion Host CentOS image offer"
-  default     = "CentOS"
+  description = "The bastion host image offer"
+  default     = "almalinux-x86_64"
 }
 
 variable "instance_image_sku" {
   type        = string
-  description = "The Bastion Host CentOS image sku"
-  default     = "7.5"
+  description = "The bastion host image sku"
+  default     = "9-gen1"
 }
 
 variable "instance_image_version" {
   type        = string
-  description = "The Bastion Host CentOS image version"
+  description = "The bastion host image version"
   default     = "latest"
 }
 
