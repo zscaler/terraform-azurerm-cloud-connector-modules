@@ -1,6 +1,6 @@
 # Zscaler "Base_cc_lb" deployment type
 
-This deployment type is intended for greenfield/pov/lab purposes. It will deploy a fully functioning sandbox environment in a new Resource Group/VNet with test workload VMs. Full set of resources provisioned listed below, but this will effectively create all network infrastructure dependencies for an Azure environment. Everything from "Base" deployment type (Creates 1 new Resource Group; 1 VNet with 1 public subnet and 1 private/workload subnet; 1 Centos server workload in the private subnet; 1 Bastion Host in the public subnet assigned a Public IP; and generates local key pair .pem file for ssh access).<br>
+This deployment type is intended for greenfield/pov/lab purposes. It will deploy a fully functioning sandbox environment in a new Resource Group/VNet with test workload VMs. Full set of resources provisioned listed below, but this will effectively create all network infrastructure dependencies for an Azure environment. Everything from "Base" deployment type (Creates 1 new Resource Group; 1 VNet with 1 public subnet and 1 private/workload subnet; 1 test workload in the private subnet; 1 Bastion Host in the public subnet assigned a Public IP; and generates local key pair .pem file for ssh access).<br>
 
 Additionally: Creates 2 Cloud Connector private subnets associated to a 2 NAT Gateways; 2 Cloud Connector VMs; Standard Azure Load Balancer; and workload private subnet UDR routing to the Load Balancer Frontend IP.
 
