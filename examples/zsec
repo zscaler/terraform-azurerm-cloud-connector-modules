@@ -330,6 +330,7 @@ first_run="yes"
 	"southcentralus"
 	"southeastasia"
 	"southindia"
+    "spaincentral"
 	"swedencentral"
 	"swedensouth"
 	"switzerlandnorth"
@@ -636,7 +637,7 @@ first_run="yes"
             fi
         fi
 
-        az_supported_regions=["australiaeast","brazilsouth","canadacentral","centralindia","centralus","chinanorth3","eastasia","eastus","eastus2","francecentral","germanywestcentral","japaneast","koreacentral","northeurope","norwayeast","southafricanorth","southcentralus","southeastasia","swedencentral","switzerlandnorth","uaenorth","uksouth","westeurope","westus2","westus3"]
+        az_supported_regions=["australiaeast","brazilsouth","canadacentral","centralindia","centralus","chinanorth3","eastasia","eastus","eastus2","francecentral","germanywestcentral","japaneast","koreacentral","northeurope","norwayeast","southafricanorth","southcentralus","southeastasia","spaincentral","swedencentral","switzerlandnorth","uaenorth","uksouth","westeurope","westus2","westus3","usgovvirginia"]
         if [[ ${az_supported_regions[*]} =~ $azure_location ]]; then
             echo "${GREEN}Azure region ${azure_location} supports Zones deployment...${RESET}"
             zones_enabled_default=no
