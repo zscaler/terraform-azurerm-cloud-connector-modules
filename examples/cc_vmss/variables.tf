@@ -368,7 +368,7 @@ variable "path_to_scripts" {
 variable "zpa_enabled" {
   type        = bool
   description = "Configure Azure Private DNS Outbound subnet, Resolvers, Rulesets/Rules, and Outbound Endpoint ZPA DNS redirection"
-  default     = true
+  default     = false
 }
 
 variable "domain_names" {

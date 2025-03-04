@@ -326,7 +326,7 @@ To find this Mgmt IP navigate to: Resource Group -> select Scale Set -> Instance
 | <a name="input_vmss_min_ccs"></a> [vmss\_min\_ccs](#input\_vmss\_min\_ccs) | Minimum number of CCs in vmss. | `number` | `2` | no |
 | <a name="input_zones"></a> [zones](#input\_zones) | Specify which availability zone(s) to deploy VM resources in if zones\_enabled variable is set to true | `list(string)` | <pre>[<br/>  "1"<br/>]</pre> | no |
 | <a name="input_zones_enabled"></a> [zones\_enabled](#input\_zones\_enabled) | Determine whether to provision Cloud Connector VMs explicitly in defined zones (if supported by the Azure region provided in the location variable). If left false, Azure will automatically choose a zone and module will create an availability set resource instead for VM fault tolerance | `bool` | `false` | no |
-| <a name="input_zpa_enabled"></a> [zpa\_enabled](#input\_zpa\_enabled) | Configure Azure Private DNS Outbound subnet, Resolvers, Rulesets/Rules, and Outbound Endpoint ZPA DNS redirection | `bool` | `true` | no |
+| <a name="input_zpa_enabled"></a> [zpa\_enabled](#input\_zpa\_enabled) | Configure Azure Private DNS Outbound subnet, Resolvers, Rulesets/Rules, and Outbound Endpoint ZPA DNS redirection | `bool` | `false` | no |
 | <a name="input_zscaler_cc_function_public_url"></a> [zscaler\_cc\_function\_public\_url](#input\_zscaler\_cc\_function\_public\_url) | Publicly accessible URL path where Function App can pull its zip file build from. This is only required when var.upload\_function\_app\_zip is set to false | `string` | `""` | no |
 
 ## Outputs
