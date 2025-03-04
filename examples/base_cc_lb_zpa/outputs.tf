@@ -17,7 +17,7 @@ By default, these templates store two critical files to the "examples" directory
 
 Login Instructions & Resource Attributes
 1) Copy the SSH key to BASTION home directory
-scp -F ssh_config ${var.name_prefix}-key-${random_string.suffix.result}.pem bastion
+scp -F ssh_config ${var.name_prefix}-key-${random_string.suffix.result}.pem bastion:~/.
 
 2) SSH to BASTION
 ssh -F ssh_config bastion
