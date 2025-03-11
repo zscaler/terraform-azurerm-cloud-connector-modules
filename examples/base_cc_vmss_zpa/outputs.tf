@@ -16,33 +16,15 @@ By default, these templates store two critical files to the "examples" directory
 ***Disclaimer***
 
 Login Instructions & Resource Attributes
-1) Copy the SSH key to BASTION home directory
-scp -F ssh_config ${var.name_prefix}-key-${random_string.suffix.result}.pem bastion:~/.
-
-2) SSH to BASTION
-ssh -F ssh_config bastion
-
-3) SSH to WORKLOAD
-%{for k, v in local.workload_map~}
-ssh -F ssh_config workload-${k}
-%{endfor~}  
-
-All Workload IPs:
-%{for k, v in local.workload_map~}
-workload-${k} = ${v}
-%{endfor~}  
-
-Resource Group: 
-${module.network.resource_group_name}
-
-Load Balancer Frontend IP:  
-${module.cc_lb.lb_ip}
-
+CLOUD CONNECTOR/VMSS Details/Commands:
 VMSS Names:
 ${join("\n", module.cc_vmss.vmss_names)}
 
 VMSS IDs:
 ${join("\n", module.cc_vmss.vmss_ids)}
+
+Load Balancer Frontend IP:  
+${module.cc_lb.lb_ip}
 
 Function App ID:
 ${module.cc_functionapp.function_app_id}
@@ -50,11 +32,35 @@ ${module.cc_functionapp.function_app_id}
 Function App Outbound IPs:
 ${join("\n", module.cc_functionapp.function_app_outbound_ip_address_list)}
 
+
+WORKLOAD Details/Commands:
+SSH to WORKLOAD
+%{for k, v in local.workload_map~}
+ssh -F ssh_config workload-${k}
+%{endfor~}  
+
+WORKLOAD IPs:
+%{for k, v in local.workload_map~}
+workload-${k} = ${v}
+%{endfor~}  
+
+
+BASTION Jump Host Details/Commands:
+1) Copy the SSH key to BASTION home directory
+scp -F ssh_config ${var.name_prefix}-key-${random_string.suffix.result}.pem bastion:~/.
+
+2) SSH to BASTION
+ssh -F ssh_config bastion
+
+BASTION Public IP: 
+${module.bastion.public_ip}
+
+
+Resource Group: 
+${module.network.resource_group_name}
+
 All NAT GW IPs:
 ${join("\n", module.network.public_ip_address)}
-
-Bastion Public IP: 
-${module.bastion.public_ip}
 
 Private DNS Resolver:
 ${module.private_dns.private_dns_resolver_name}

@@ -16,28 +16,32 @@ By default, these templates store two critical files to the "examples" directory
 ***Disclaimer***
 
 Login Instructions & Resource Attributes
+
+WORKLOAD Details/Commands:
+SSH to WORKLOAD
+%{for k, v in local.workload_map~}
+ssh -F ssh_config workload-${k}
+%{endfor~}  
+
+WORKLOAD IPs:
+%{for k, v in local.workload_map~}
+workload-${k} = ${v}
+%{endfor~}  
+
+
+BASTION Jump Host Details/Commands:
 1) Copy the SSH key to BASTION home directory
 scp -F ssh_config ${var.name_prefix}-key-${random_string.suffix.result}.pem bastion:~/.
 
 2) SSH to BASTION
 ssh -F ssh_config bastion
 
-3) SSH to WORKLOAD
-%{for k, v in local.workload_map~}
-ssh -F ssh_config workload-${k}
-%{endfor~}  
-
-All Workload IPs:
-%{for k, v in local.workload_map~}
-workload-${k} = ${v}
-%{endfor~}  
+BASTION Public IP: 
+${module.bastion.public_ip}
 
 
 Resource Group: 
 ${module.network.resource_group_name}
-
-Bastion Public IP: 
-${module.bastion.public_ip}
 
 TB
 }
