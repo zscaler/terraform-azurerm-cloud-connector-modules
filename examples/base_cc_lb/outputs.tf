@@ -16,13 +16,9 @@ By default, these templates store two critical files to the "examples" directory
 ***Disclaimer***
 
 Login Instructions & Resource Attributes
-1) Copy the SSH key to BASTION home directory
-scp -F ssh_config ${var.name_prefix}-key-${random_string.suffix.result}.pem bastion:~/.
 
-2) SSH to BASTION
-ssh -F ssh_config bastion
-
-3) SSH to CLOUD CONNECTOR
+CLOUD CONNECTOR Details/Commands:
+SSH to CLOUD CONNECTOR
 %{for k, v in local.cc_map~}
 ssh -F ssh_config ccvm-${k}
 %{endfor~}  
@@ -30,33 +26,45 @@ ssh -F ssh_config ccvm-${k}
 All Cloud Connector Management IPs:
 %{for k, v in local.cc_map~}
 ccvm-${k} = ${v}
-%{endfor~}  
+%{endfor~}
 
-4) SSH to WORKLOAD
+All Cloud Connector Service IPs:
+${join("\n", module.cc_vm.service_ip)}
+
+Load Balancer Frontend IP: 
+${module.cc_lb.lb_ip}
+
+
+WORKLOAD Details/Commands:
+SSH to WORKLOAD
 %{for k, v in local.workload_map~}
 ssh -F ssh_config workload-${k}
 %{endfor~}  
 
-All Workload IPs:
+WORKLOAD IPs:
 %{for k, v in local.workload_map~}
 workload-${k} = ${v}
 %{endfor~}  
 
 
+BASTION Jump Host Details/Commands:
+1) Copy the SSH key to BASTION home directory
+scp -F ssh_config ${var.name_prefix}-key-${random_string.suffix.result}.pem bastion:~/.
+
+2) SSH to BASTION
+ssh -F ssh_config bastion
+
+BASTION Public IP: 
+${module.bastion.public_ip}
+
+
 Resource Group: 
 ${module.network.resource_group_name}
-
-All Cloud Connector Service IPs:
-${join("\n", module.cc_vm.service_ip)}
 
 All NAT GW IPs:
 ${join("\n", module.network.public_ip_address)}
 
-Bastion Public IP: 
-${module.bastion.public_ip}
 
-Load Balancer Frontend IP: 
-${module.cc_lb.lb_ip}
 TB
 }
 locals {
