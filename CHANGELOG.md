@@ -7,6 +7,7 @@ ENHANCEMENTS:
 * refactor: **support for future features** add base64 encoded user_data to VM and VMSS UserData attribute. CustomData will still be utilized until a future VHD release. At that time, it will remain as a secondary fallback to preferred UserData.
 * refactor: include ssh_config generation with auto mapping all workload/cc instances for base/greenfield deployments
 * refactor: change base/greenfield workload and bastion virtual machines from CentOS 7.5 to AlmaLinux 9
+* add: variable asp_sku_name for VMSS Deployments in regions that do not support Flex Consumption App Service Plan
 
 
 BUG FIXES:

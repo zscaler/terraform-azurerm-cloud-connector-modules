@@ -1,12 +1,19 @@
-# Zscaler Cloud Connector / Azure Function App Module
+# Zscaler Cloud Connector VMSS / Azure Function App Module
 
 This module provides the necessary resource creation and configuration parameters to deploy the Zscaler generated Azure Function App and dependencies required for management and health monitoring of Cloud Connectors deployed in a Virtual Machine Scale Set (VMSS). Recommended configuration includes the creation of a new Azure Storage Account for Function App zip file upload/storage and runtime. For full functionality, a dedicate App Service Plan and Application Insights resource are required for custom metric ingestion and processing.
 
 | Function ZIP Version | SHA256 Hash | GitHub Release Date/Tag |
 | ----------- | --------| ------------ |
-| 1.0.1| aed981cf32c7cf62623f3195b8e1315afb570b43d451a0ba0e782e4ba0d828dd | 12/06/2024 - [v0.6.2](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/releases/tag/v0.6.2) |
+| 1.0.1*| aed981cf32c7cf62623f3195b8e1315afb570b43d451a0ba0e782e4ba0d828dd | 12/06/2024 - [v0.6.2](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/releases/tag/v0.6.2) |
 | 1.0.0 | 8de1144256df20f970f9c382c001bad14d2de1407a9d8b7a6edd3a6c5143d3bc | 09/05/2024 - [v0.6.0](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/releases/tag/v0.6.0) |
 
+*Zscaler recommends always running the latest Function App ZIP Version
+
+## Caveats/Considerations
+Azure Function App is deployed with App Service Plan as its [hosting option](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale). The recommended hosting option is Flex Consumption Plan (SKU Name: Y1), but there are some limitations with this.
+
+1. Recommended Flex Consumption plan and/or Consumption plan is not available for use in all Azure Regions. See [Product Availability by Region](https://azure.microsoft.com/en-us/explore/global-infrastructure/products-by-region/table) and search for Functions.
+2. Only Flex Consumption supports [Virtual Network Integration](https://learn.microsoft.com/en-us/azure/azure-functions/functions-networking-options?tabs=azure-portal#virtual-network-integration). If this plan is not available in your region, and you require VNet Integration, you will need to upgrade to Elastic Premium (EP1) plan.
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
@@ -48,6 +55,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_asp_sku_name"></a> [asp\_sku\_name](#input\_asp\_sku\_name) | SKU Name for the App Service Plan. Recommended Y1 (flex consumption) for function app unless not supported by Azure region | `string` | `"Y1"` | no |
 | <a name="input_azure_vault_url"></a> [azure\_vault\_url](#input\_azure\_vault\_url) | Azure Vault URL | `string` | n/a | yes |
 | <a name="input_cc_vm_prov_url"></a> [cc\_vm\_prov\_url](#input\_cc\_vm\_prov\_url) | Zscaler Cloud Connector Provisioning URL | `string` | n/a | yes |
 | <a name="input_existing_log_analytics_workspace"></a> [existing\_log\_analytics\_workspace](#input\_existing\_log\_analytics\_workspace) | Set to True if you wish to use an existing Log Analytics Workspace to associate with the AppInsights Instance. Default is false meaning Terraform module will create a new one | `bool` | `false` | no |
