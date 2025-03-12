@@ -49,7 +49,7 @@ resource "azurerm_service_plan" "vmss_orchestration_app_service_plan" {
   resource_group_name = var.resource_group
   location            = var.location
   os_type             = "Linux"
-  sku_name            = "Y1"
+  sku_name            = var.asp_sku_name
 
   tags = var.global_tags
 }
