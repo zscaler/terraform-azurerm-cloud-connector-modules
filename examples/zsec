@@ -1100,6 +1100,58 @@ first_run="yes"
                     * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
                 esac
             done
+
+            asp_flex_consumption_supported_regions=(
+                "australiaeast"
+                "eastasia"
+                "eastus"
+                "eastus2"
+                "northeurope"
+                "southcentralus"
+                "southeastasia"
+                "swedencentral"
+                "uksouth"
+                "westus2"
+                "westus3"
+                )
+
+            # asp dynamic selection option
+            asp_all="Y1 B1 EP1"
+            asp_no_flex="B1 EP1"
+
+            # Select App Service Plan SKU for function app
+            PS3="${CYAN}Select App Service Plan SKU: ${RESET}"
+            
+            if [[ ${asp_flex_consumption_supported_regions[@]} =~ $azure_location ]]; then
+                #display options for flex consumption, basic, and premium
+                asp_sku_names=($asp_all)
+
+            else
+                # display only basic and premium options
+                asp_sku_names=($asp_no_flex)
+            fi
+            select asp_sku_name_selection in "${asp_sku_names[@]}"; 
+                do
+                    case $asp_sku_name_selection in
+                    Y1 )
+                        echo "SKU Name ${GREEN}$asp_sku_name_selection${RESET} selected..."
+                        echo "export TF_VAR_asp_sku_name='$asp_sku_name_selection'" >> .zsecrc
+                    break
+                    ;;
+                    B1 )
+                        echo "SKU Name ${GREEN}$asp_sku_name_selection${RESET} selected..."
+                        echo "export TF_VAR_asp_sku_name='$asp_sku_name_selection'" >> .zsecrc
+                    break
+                    ;;
+                    EP1 )
+                        echo "SKU Name ${GREEN}$asp_sku_name_selection${RESET} selected..."
+                        echo "export TF_VAR_asp_sku_name='$asp_sku_name_selection'" >> .zsecrc
+                    break
+                    ;;
+                    *) 
+                        echo "${RED}Invalid response. Please enter a number selection${RESET}"
+                    esac
+                done
              
             # Azure Function Public URL
             echo "By default, Terraform will upload the Zscaler CC Azure Function Zip to this Storage Account Blob for Function App retrieval"
