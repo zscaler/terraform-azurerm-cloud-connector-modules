@@ -1,4 +1,4 @@
-## v0.7.0 (March 10, 2025)
+## v0.7.0 (March 14, 2025)
 
 FEATURES:
 * New Azure Region supported by Cloud Connector: Spain Central
