@@ -195,6 +195,7 @@ module "cc_functionapp" {
   existing_log_analytics_workspace_id = var.existing_log_analytics_workspace_id
   run_manual_sync                     = var.run_manual_sync
   path_to_scripts                     = coalesce(var.path_to_scripts, "../../scripts")
+  asp_sku_name                        = var.asp_sku_name
 }
 
 ################################################################################

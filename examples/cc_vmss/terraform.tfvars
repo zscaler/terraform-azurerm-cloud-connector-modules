@@ -328,3 +328,11 @@
 # Provide the existing Resource Group of the Azure Managed Identity name to attach to the CC VM. E.g. function_connector_rg_1
 
 #function_app_managed_identity_rg                  = "function_rg_1"
+
+# Function App uses Azure App Service Plan for hosting. Zscaler recommends leaving the default (Y1 / Flex Consumption plan), but this
+# is not available in all Azure regions. If you cannot use Y1 and you do not require VNet Integration, then choose B1. If you do need
+# VNet Integration, then choose EP1.
+
+#asp_sku_name                                      = "Y1"
+#asp_sku_name                                      = "B1"
+#asp_sku_name                                      = "EP1"
