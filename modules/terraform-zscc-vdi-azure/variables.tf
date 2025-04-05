@@ -25,7 +25,7 @@ variable "primary_service_ip" {
 }
 
 variable "resource_tag" {
-  description = "A tag to associate to VDI module resources"  
+  description = "A tag to associate to VDI module resources"
 }
 
 variable "cca_template_url" {
@@ -34,4 +34,14 @@ variable "cca_template_url" {
 
 variable "cca_token" {
   description = "Generated Token for VDI Template URL"
+}
+
+variable "workload_count" {
+  type        = number
+  description = "The number of vdi instances to deploy.  Validation assumes max for /24 subnet but could be smaller or larger as long as subnet can accommodate"
+  default     = 1
+  validation {
+    condition     = var.workload_count >= 1 && var.workload_count <= 250
+    error_message = "Input cc_count must be a whole number between 1 and 250."
+  }
 }

@@ -9,36 +9,39 @@ resource "random_password" "password" {
 
 
 resource "azurerm_public_ip" "public_ip" {
-    name                = "${var.prefix}-vdi-public-ip-${var.resource_tag}"
-    resource_group_name = var.resource_group_name
-    location            = var.resource_group_location
-    allocation_method   = "Static"
-    sku                 = "Standard"
-    sku_tier            = "Regional"
+  count               = var.workload_count
+  name                = "${var.prefix}-vdi-${count.index + 1}-public-ip-${var.resource_tag}"
+  resource_group_name = var.resource_group_name
+  location            = var.resource_group_location
+  allocation_method   = "Static"
+  sku                 = "Standard"
+  sku_tier            = "Regional"
 }
 
-  resource "azurerm_network_interface" "cca-vdi-network" {
-    name                = "${var.prefix}-vdi-network-${var.resource_tag}"
-    location            = var.resource_group_location
-    resource_group_name = var.resource_group_name
-    ip_configuration {
-      name                          = "internal"
-      subnet_id                     = var.subnet_id
-      private_ip_address_allocation = "Dynamic"
-      public_ip_address_id = azurerm_public_ip.public_ip.id
-    }
+resource "azurerm_network_interface" "cca-vdi-network" {
+  count               = var.workload_count
+  name                = "${var.prefix}-vdi-${count.index + 1}-network-${var.resource_tag}"
+  location            = var.resource_group_location
+  resource_group_name = var.resource_group_name
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = var.subnet_id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.public_ip[count.index].id
+  }
 }
 
 # Create virtual machine
 resource "azurerm_windows_virtual_machine" "cca-vdi" {
-  name                  = "${var.resource_tag}-vdi"
+  count                 = var.workload_count
+  name                  = "${var.resource_tag}-vdi-${count.index + 1}"
   admin_username        = var.admin_username
   admin_password        = random_password.password.result
   location              = var.resource_group_location
   resource_group_name   = var.resource_group_name
-  network_interface_ids = [azurerm_network_interface.cca-vdi-network.id]
+  network_interface_ids = [azurerm_network_interface.cca-vdi-network[count.index].id]
   size                  = "Standard_D2s_v3"
-  zone                 = "1"
+  zone                  = "1"
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
@@ -52,26 +55,26 @@ resource "azurerm_windows_virtual_machine" "cca-vdi" {
 }
 
 resource "azurerm_route_table" "cca-vdi-routetable" {
-    name                = "${var.prefix}-vdi-route-table-${var.resource_tag}"
-    location            = var.resource_group_location
-    resource_group_name = var.resource_group_name
-  
-    route {
-      name           = "${var.prefix}-vdi-route-${var.resource_tag}"
-      address_prefix = "185.46.212.80/32"
-      next_hop_type  = "VirtualAppliance"
-      next_hop_in_ip_address = var.primary_service_ip
-    }
-  
-    tags = {
-      environment = "cc-vdi"
-    }
+  name                = "${var.prefix}-vdi-route-table-${var.resource_tag}"
+  location            = var.resource_group_location
+  resource_group_name = var.resource_group_name
+
+  route {
+    name                   = "${var.prefix}-vdi-route-${var.resource_tag}"
+    address_prefix         = "185.46.212.80/32"
+    next_hop_type          = "VirtualAppliance"
+    next_hop_in_ip_address = var.primary_service_ip
   }
 
- resource "azurerm_subnet_route_table_association" "cca-vdi-routetable-association" {
-   subnet_id      = var.subnet_id
-   route_table_id = azurerm_route_table.cca-vdi-routetable.id
- }
+  tags = {
+    environment = "cc-vdi"
+  }
+}
+
+resource "azurerm_subnet_route_table_association" "cca-vdi-routetable-association" {
+  subnet_id      = var.subnet_id
+  route_table_id = azurerm_route_table.cca-vdi-routetable.id
+}
 
 resource "azurerm_network_security_group" "cca-vdi-nsg" {
   name                = "${var.prefix}-vdi-nsg-${var.resource_tag}"
@@ -107,20 +110,20 @@ resource "azurerm_network_security_group" "cca-vdi-nsg" {
 }
 
 resource "azurerm_network_interface_security_group_association" "cca-vdi-nsg-association" {
-  network_interface_id      = azurerm_network_interface.cca-vdi-network.id
+  count                     = var.workload_count
+  network_interface_id      = azurerm_network_interface.cca-vdi-network[count.index].id
   network_security_group_id = azurerm_network_security_group.cca-vdi-nsg.id
 }
 
-
 resource "azurerm_virtual_machine_extension" "CustomScriptExtenson" {
-      count                = var.cca_template_url == null && var.cca_token == null ? 1 : 0 
-      name                 = "${var.prefix}-CustomScriptExtension-${var.resource_tag}"
-      virtual_machine_id   = azurerm_windows_virtual_machine.cca-vdi.id
-      publisher            = "Microsoft.Compute"
-      type                 = "CustomScriptExtension"
-      type_handler_version = "1.10"
-    
-      settings = <<SETTINGS
+  count                = var.cca_template_url == null && var.cca_token == null ? var.workload_count : 0
+  name                 = "${var.prefix}-CustomScriptExtension-${count.index + 1}-${var.resource_tag}"
+  virtual_machine_id   = azurerm_windows_virtual_machine.cca-vdi[count.index].id
+  publisher            = "Microsoft.Compute"
+  type                 = "CustomScriptExtension"
+  type_handler_version = "1.10"
+
+  settings = <<SETTINGS
         {
           "commandToExecute": "powershell.exe -Command \"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://z0luvmca.blob.core.windows.net/zsvdiinstaller/ZSVDIInstaller_1.4.0.5_x64.msi' -OutFile 'C:\\temp\\ZSVDIInstaller_1.4.0.5_x64.msi'\";powershell.exe -Command \"msiexec \"/i C:\\temp\\ZSVDIInstaller_1.4.0.5_x64.msi /qn\"\""
         }
@@ -128,24 +131,25 @@ resource "azurerm_virtual_machine_extension" "CustomScriptExtenson" {
 }
 
 resource "azurerm_virtual_machine_extension" "CustomScriptExtension" {
-      count                = var.cca_template_url != null && var.cca_token != null ? 1 : 0 
-      name                 = "${var.prefix}-CustomScriptExtension-${var.resource_tag}"
-      virtual_machine_id   = azurerm_windows_virtual_machine.cca-vdi.id
-      publisher            = "Microsoft.Compute"
-      type                 = "CustomScriptExtension"
-      type_handler_version = "1.10"
-    
-      settings = <<SETTINGS
+  count                = var.cca_template_url != null && var.cca_token != null ? var.workload_count : 0
+  name                 = "${var.prefix}-CustomScriptExtension-${count.index + 1}-${var.resource_tag}"
+  virtual_machine_id   = azurerm_windows_virtual_machine.cca-vdi[count.index].id
+  publisher            = "Microsoft.Compute"
+  type                 = "CustomScriptExtension"
+  type_handler_version = "1.10"
+
+  settings = <<SETTINGS
         {
           "commandToExecute": "powershell.exe -Command \"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://z0luvmca.blob.core.windows.net/zsvdiinstaller/ZSVDIInstaller_1.4.0.5_x64.msi' -OutFile 'C:\\temp\\ZSVDIInstaller_1.4.0.5_x64.msi'\";powershell.exe -Command \"msiexec \"/i C:\\temp\\ZSVDIInstaller_1.4.0.5_x64.msi PROVURL=\"${var.cca_template_url}\" TOKEN=\"${var.cca_token}\" MODE=1 ONBOARD=1 /qn\"\""
         }
     SETTINGS
 }
-	
+
 resource "azurerm_virtual_machine_extension" "WindowsOpenSSH" {
-    name                 = "${var.prefix}-WindowsOpenSSH-${var.resource_tag}"
-    virtual_machine_id   = azurerm_windows_virtual_machine.cca-vdi.id
-    publisher            = "Microsoft.Azure.OpenSSH"
-    type                 = "WindowsOpenSSH"
-    type_handler_version = "3.0"
+  count                = var.workload_count
+  name                 = "${var.prefix}-WindowsOpenSSH-${count.index + 1}-${var.resource_tag}"
+  virtual_machine_id   = azurerm_windows_virtual_machine.cca-vdi[count.index].id
+  publisher            = "Microsoft.Azure.OpenSSH"
+  type                 = "WindowsOpenSSH"
+  type_handler_version = "3.0"
 }
