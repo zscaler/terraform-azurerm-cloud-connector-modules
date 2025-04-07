@@ -234,13 +234,13 @@ variable "deploy_cca_vdi" {
 
 
 variable "cca_template_url" {
-    type = string
-    description = "Create a set of configurations that are applied to the VDI and dictate the VDI's behavior."
-    default = null
+  type        = string
+  description = "Create a set of configurations that are applied to the VDI and dictate the VDI's behavior."
+  default     = null
 }
 
 variable "cca_token" {
-    type = string
-    description = "Generated Token for VDI Template URL"
-    default = null
+  type        = string
+  description = "Generated Token for VDI Template URL"
+  default     = null
 }

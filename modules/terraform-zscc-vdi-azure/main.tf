@@ -34,7 +34,7 @@ resource "azurerm_network_interface" "cca-vdi-network" {
 # Create virtual machine
 resource "azurerm_windows_virtual_machine" "cca-vdi" {
   count                 = var.workload_count
-  name                  = "${var.resource_tag}-vdi-${count.index + 1}"
+  name                  = "vdi-${count.index + 1}-${var.resource_tag}"
   admin_username        = var.admin_username
   admin_password        = random_password.password.result
   location              = var.resource_group_location
@@ -117,7 +117,7 @@ resource "azurerm_network_interface_security_group_association" "cca-vdi-nsg-ass
 
 resource "azurerm_virtual_machine_extension" "CustomScriptExtenson" {
   count                = var.cca_template_url == null && var.cca_token == null ? var.workload_count : 0
-  name                 = "${var.prefix}-CustomScriptExtension-${count.index + 1}-${var.resource_tag}"
+  name                 = "${var.prefix}-CustomScriptExtension-vm-${count.index + 1}-${var.resource_tag}"
   virtual_machine_id   = azurerm_windows_virtual_machine.cca-vdi[count.index].id
   publisher            = "Microsoft.Compute"
   type                 = "CustomScriptExtension"
@@ -132,7 +132,7 @@ resource "azurerm_virtual_machine_extension" "CustomScriptExtenson" {
 
 resource "azurerm_virtual_machine_extension" "CustomScriptExtension" {
   count                = var.cca_template_url != null && var.cca_token != null ? var.workload_count : 0
-  name                 = "${var.prefix}-CustomScriptExtension-${count.index + 1}-${var.resource_tag}"
+  name                 = "${var.prefix}-CustomScriptExtension-vm-${count.index + 1}-${var.resource_tag}"
   virtual_machine_id   = azurerm_windows_virtual_machine.cca-vdi[count.index].id
   publisher            = "Microsoft.Compute"
   type                 = "CustomScriptExtension"
@@ -147,7 +147,7 @@ resource "azurerm_virtual_machine_extension" "CustomScriptExtension" {
 
 resource "azurerm_virtual_machine_extension" "WindowsOpenSSH" {
   count                = var.workload_count
-  name                 = "${var.prefix}-WindowsOpenSSH-${count.index + 1}-${var.resource_tag}"
+  name                 = "${var.prefix}-WindowsOpenSSH-vm-${count.index + 1}-${var.resource_tag}"
   virtual_machine_id   = azurerm_windows_virtual_machine.cca-vdi[count.index].id
   publisher            = "Microsoft.Azure.OpenSSH"
   type                 = "WindowsOpenSSH"

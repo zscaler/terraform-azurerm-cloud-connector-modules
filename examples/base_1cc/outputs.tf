@@ -2,19 +2,13 @@
 locals {
   admin_password = (
     try(
-      module.cc_vdi[0].admin_password,
+      module.cc_vdi[0].admin_password[0],
       (sensitive("NA"))
     )
   )
   admin_username = (
     try(
-      module.cc_vdi[0].admin_username,
-      "NA"
-    )
-  )
-  public_ip_address = (
-    try(
-      module.cc_vdi[0].public_ip_address,
+      module.cc_vdi[0].admin_username[0],
       "NA"
     )
   )
@@ -67,7 +61,7 @@ Bastion Public IP:
 ${module.bastion.public_ip}
 
 VDI Public IP:
-${local.public_ip_address}
+${join("\n", module.cc_vdi[0].public_ip_address)}
 
 VDI Username:
 ${local.admin_username}
