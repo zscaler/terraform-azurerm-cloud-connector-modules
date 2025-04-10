@@ -146,10 +146,12 @@ resource "azurerm_virtual_machine_extension" "CustomScriptExtension" {
 }
 
 resource "azurerm_virtual_machine_extension" "WindowsOpenSSH" {
-  count                = var.workload_count
-  name                 = "${var.prefix}-WindowsOpenSSH-vm-${count.index + 1}-${var.resource_tag}"
-  virtual_machine_id   = azurerm_windows_virtual_machine.cca-vdi[count.index].id
-  publisher            = "Microsoft.Azure.OpenSSH"
-  type                 = "WindowsOpenSSH"
-  type_handler_version = "3.0"
+  count                       = var.workload_count
+  name                        = "${var.prefix}-WindowsOpenSSH-vm-${count.index + 1}-${var.resource_tag}"
+  virtual_machine_id          = azurerm_windows_virtual_machine.cca-vdi[count.index].id
+  publisher                   = "Microsoft.Azure.OpenSSH"
+  type                        = "WindowsOpenSSH"
+  type_handler_version        = "3.0"
+  auto_upgrade_minor_version  = true
+  failure_suppression_enabled = true
 }
