@@ -61,6 +61,7 @@ module "network" {
   workloads_enabled     = true
   bastion_enabled       = true
   lb_enabled            = var.lb_enabled
+  vwan_hub_id           = var.vwan_hub_id
 }
 
 
@@ -112,6 +113,10 @@ CC_URL=${var.cc_vm_prov_url}
 AZURE_VAULT_URL=${var.azure_vault_url}
 HTTP_PROBE_PORT=${var.http_probe_port}
 AZURE_MANAGED_IDENTITY_CLIENT_ID=${module.cc_identity.managed_identity_client_id}
+[BGPCONFIG]
+LB_VIP=${module.cc_lb.lb_ip}
+VWAN_HUB_ID=${var.vwan_hub_id}
+VNET_CONNECTION_NAME=${var.vnet_connection_name}
 USERDATA
 }
 
