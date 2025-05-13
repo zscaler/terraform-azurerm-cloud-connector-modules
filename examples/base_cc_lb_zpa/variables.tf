@@ -298,6 +298,6 @@ variable "vwan_hub_id" {
 variable "vnet_connection_name" {
   type        = string
   description = "Name of VNET connection from Zscaler Spoke VNET to VWAN Hub"
-  default     = "zscaler-vnet-vwan-connection"
+  default     = ""
 }
 

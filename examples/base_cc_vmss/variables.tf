@@ -385,3 +385,15 @@ variable "path_to_scripts" {
   description = "Path to script_directory"
   default     = ""
 }
+
+variable "vwan_hub_id" {
+  type        = string
+  description = "VWAN Hub ID to which Zscaler Spoke VNET will connect to"
+  default     = ""
+}
+
+variable "vnet_connection_name" {
+  type        = string
+  description = "Name of VNET connection from Zscaler Spoke VNET to VWAN Hub"
+  default     = ""
+}

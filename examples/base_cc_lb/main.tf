@@ -62,6 +62,7 @@ module "network" {
   bastion_enabled       = true
   lb_enabled            = var.lb_enabled
   vwan_hub_id           = var.vwan_hub_id
+  vnet_connection_name  = var.vnet_connection_name
 }
 
 

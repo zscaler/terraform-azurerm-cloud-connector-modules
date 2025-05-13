@@ -64,6 +64,7 @@ module "network" {
   lb_enabled            = var.lb_enabled
   zpa_enabled           = var.zpa_enabled
   vwan_hub_id           = var.vwan_hub_id
+  vnet_connection_name  = var.vnet_connection_name
 }
 
 

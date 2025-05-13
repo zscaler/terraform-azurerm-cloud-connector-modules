@@ -42,7 +42,7 @@ data "azurerm_virtual_network" "vnet_selected" {
 }
 
 resource "azurerm_virtual_hub_connection" "zscaler_vnet_to_vwan" {
-  count                     = var.vwan_hub_id != null && var.vwan_hub_id != "" ? 1 : 0
+  count                     = var.vwan_hub_id != null && var.vwan_hub_id != "" && var.vnet_connection_name != "" ? 1 : 0
   name                      = var.vnet_connection_name
   virtual_hub_id            = var.vwan_hub_id
   remote_virtual_network_id = var.byo_vnet ? data.azurerm_virtual_network.vnet_selected[0].id : azurerm_virtual_network.vnet[0].id
