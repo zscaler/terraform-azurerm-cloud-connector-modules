@@ -98,7 +98,7 @@ AZURE_MANAGED_IDENTITY_CLIENT_ID=${module.cc_identity.managed_identity_client_id
 [BGPCONFIG]
 LB_VIP=${module.cc_lb.lb_ip}
 VWAN_HUB_ID=${var.vwan_hub_id}
-VNET_CONNECTION_NAME=${var.vnet_connection_name}
+VNET_CONNECTION_ID=${module.network.virtual_network_vwan_connection_id}
 USERDATA
 }
 

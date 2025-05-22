@@ -413,12 +413,12 @@ variable "path_to_scripts" {
 
 variable "vwan_hub_id" {
   type        = string
-  description = "VWAN Hub ID to which Zscaler Spoke VNET will connect to"
+  description = "VWAN Hub ID to which Security Spoke VNET will connect to"
   default     = ""
 }
 
 variable "vnet_connection_name" {
   type        = string
-  description = "Name of VNET connection from Zscaler Spoke VNET to VWAN Hub"
+  description = "Name of VNET connection from Security Spoke VNET to VWAN Hub"
   default     = ""
 }

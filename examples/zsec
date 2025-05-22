@@ -639,9 +639,12 @@ first_run="yes"
 
         read -r -p "${CYAN}Enter VWAN HUB ID that you would like to peer to [Default=""]: ${RESET}" vwan_hub_id
         echo "export TF_VAR_vwan_hub_id=${vwan_hub_id}" >> .zsecrc
-
-        read -r -p "${CYAN}Enter vnet connection name (Only if you would like Zscaler to create a VNET connection to the VWAN Hub [Default=""]): ${RESET}" vnet_connection_name
-        echo "export TF_VAR_vnet_connection_name=${vnet_connection_name}" >> .zsecrc
+        if [[ "$deployment" == "brownfield" && -n ${vwan_hub_id} ]]; then
+            read -r -p "${CYAN}Enter name of connection from vnet to vwan if it exists already [Default=""]): ${RESET}" vnet_connection_name
+	    if [[ -n ${vnet_connection_name} ]]; then
+		echo "export TF_VAR_vnet_connection_name=${vnet_connection_name}" >> .zsecrc
+            fi
+       fi
 
         az_supported_regions=["australiaeast","brazilsouth","canadacentral","centralindia","centralus","chinanorth3","eastasia","eastus","eastus2","francecentral","germanywestcentral","japaneast","koreacentral","northeurope","norwayeast","southafricanorth","southcentralus","southeastasia","spaincentral","swedencentral","switzerlandnorth","uaenorth","uksouth","westeurope","westus2","westus3","usgovvirginia"]
         if [[ ${az_supported_regions[*]} =~ $azure_location ]]; then
