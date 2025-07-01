@@ -15,6 +15,8 @@ resource "azurerm_storage_account" "cc_function_storage_account" {
   location                 = var.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
+
+  tags = var.global_tags
 }
 
 # Or use an existing storage account
