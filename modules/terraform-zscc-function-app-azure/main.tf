@@ -28,7 +28,7 @@ data "azurerm_storage_account" "existing_storage_account" {
 resource "azurerm_storage_container" "cc_function_storage_container" {
   count                 = var.upload_function_app_zip ? 1 : 0
   name                  = "function-zip-container"
-  storage_account_name  = local.storage_account_name
+  storage_account_id    = local.storage_account_id
   container_access_type = "private"
 }
 
@@ -65,6 +65,7 @@ resource "azurerm_log_analytics_workspace" "vmss_orchestration_log_analytics_wor
 
 locals {
   storage_account_name       = var.existing_storage_account ? data.azurerm_storage_account.existing_storage_account[0].name : azurerm_storage_account.cc_function_storage_account[0].name
+  storage_account_id         = var.existing_storage_account ? data.azurerm_storage_account.existing_storage_account[0].id : azurerm_storage_account.cc_function_storage_account[0].id
   storage_account_access_key = var.existing_storage_account ? data.azurerm_storage_account.existing_storage_account[0].primary_access_key : azurerm_storage_account.cc_function_storage_account[0].primary_access_key
   log_analytics_workspace_id = var.existing_log_analytics_workspace ? var.existing_log_analytics_workspace_id : azurerm_log_analytics_workspace.vmss_orchestration_log_analytics_workspace[0].id
 }
