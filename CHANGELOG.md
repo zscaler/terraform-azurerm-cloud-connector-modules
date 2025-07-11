@@ -1,4 +1,4 @@
-## v0.8.0 (July 8, 2025)
+## v0.8.0 (July 11, 2025)
 
 FEATURES:
 * Official support for Zscaler Azure Tag Discovery Service

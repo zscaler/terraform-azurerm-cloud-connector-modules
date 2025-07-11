@@ -4,8 +4,8 @@ This module provides the necessary resource creation and configuration parameter
 
 | Function ZIP Version | SHA256 Hash | GitHub Release Date/Tag |
 | ----------- | --------| ------------ |
-| 1.0.2 | 8439872aac693b1d472ea0565b76585e2ac617e4323f3b6bc15dda7f15600171 | 07/08/2025 - [v0.8.0](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/releases/tag/v0.8.0) |
-| 1.0.1| aed981cf32c7cf62623f3195b8e1315afb570b43d451a0ba0e782e4ba0d828dd | 12/06/2024 - [v0.6.2](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/releases/tag/v0.6.2) |
+| 1.0.2 | 8439872aac693b1d472ea0565b76585e2ac617e4323f3b6bc15dda7f15600171 | 07/11/2025 - [v0.8.0](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/releases/tag/v0.8.0) |
+| 1.0.1 | aed981cf32c7cf62623f3195b8e1315afb570b43d451a0ba0e782e4ba0d828dd | 12/06/2024 - [v0.6.2](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/releases/tag/v0.6.2) |
 | 1.0.0 | 8de1144256df20f970f9c382c001bad14d2de1407a9d8b7a6edd3a6c5143d3bc | 09/05/2024 - [v0.6.0](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/releases/tag/v0.6.0) |
 
 *Zscaler recommends always running the latest Function App ZIP Version
