@@ -1,3 +1,19 @@
+
+locals {
+  admin_password = (
+    try(
+      module.cc_vdi[0].admin_password[0],
+      (sensitive("NA"))
+    )
+  )
+  admin_username = (
+    try(
+      module.cc_vdi[0].admin_username[0],
+      "NA"
+    )
+  )
+}
+
 locals {
 
   testbedconfig = <<TB
@@ -61,6 +77,15 @@ ${module.network.resource_group_name}
 All NAT GW IPs:
 ${join("\n", module.network.public_ip_address)}
 
+
+VDI Public IP:
+${join("\n", module.cc_vdi[0].public_ip_address)}
+
+VDI Username:
+${local.admin_username}
+
+VDI Password:
+${nonsensitive(local.admin_password)}
 
 TB
 }
