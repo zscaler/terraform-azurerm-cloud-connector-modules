@@ -1,3 +1,18 @@
+## v0.8.0 (July 11, 2025)
+
+FEATURES:
+* Official support for Zscaler Azure Tag Discovery Service
+* add: new examples ztags_standalone and module terraform-zscc-ztags-azure
+
+ENHANCEMENTS:
+* add: variable asp_sku_name for VMSS Deployments in regions that do not support Flex Consumption App Service Plan
+* add: zsec support for Zscaler Azure Tag Discovery Service configuration
+* add: AzAPI provider (version 2.2.x) support for configuring Azure Event Grid resources
+
+BUG FIXES:
+* fix: new VMSS Function App version [v1.0.2](modules/terraform-zscc-function-app-azure/zscaler_cc_function_app.zip) updating requests Python library from version 2.29.0 to 2.32.2
+* fix: add default tags to missing resources
+
 ## v0.7.0 (March 10, 2025)
 
 FEATURES:
@@ -8,9 +23,9 @@ ENHANCEMENTS:
 * refactor: include ssh_config generation with auto mapping all workload/cc instances for base/greenfield deployments
 * refactor: change base/greenfield workload and bastion virtual machines from CentOS 7.5 to AlmaLinux 9
 
-
 BUG FIXES:
 * update az_supported_regions static map for all modules
+
 
 ## v0.6.2 (December 9, 2024)
 

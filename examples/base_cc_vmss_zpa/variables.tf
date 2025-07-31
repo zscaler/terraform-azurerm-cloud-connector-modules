@@ -411,6 +411,7 @@ variable "path_to_scripts" {
   default     = ""
 }
 
+<<<<<<< HEAD
 variable "vwan_hub_id" {
   type        = string
   description = "VWAN Hub ID to which Security Spoke VNET will connect to"
@@ -418,7 +419,22 @@ variable "vwan_hub_id" {
 }
 
 variable "vnet_connection_name" {
-  type        = string
+  type = string
   description = "Name of VNET connection from Security Spoke VNET to VWAN Hub"
-  default     = ""
+  default = ""
+}
+
+variable "asp_sku_name" {
+  type        = string
+  description = "SKU Name for the App Service Plan. Recommended Y1 (flex consumption) for function app unless not supported by Azure region"
+  default     = "Y1"
+  validation {
+    condition = (
+      var.asp_sku_name == "Y1" ||
+      var.asp_sku_name == "FC1" ||
+      var.asp_sku_name == "EP1" ||
+      var.asp_sku_name == "B1"
+    )
+    error_message = "Input asp_sku_name selected is not a valid/approved SKU Name."
+  }
 }

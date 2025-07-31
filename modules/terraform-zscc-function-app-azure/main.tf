@@ -15,6 +15,8 @@ resource "azurerm_storage_account" "cc_function_storage_account" {
   location                 = var.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
+
+  tags = var.global_tags
 }
 
 # Or use an existing storage account
@@ -49,7 +51,7 @@ resource "azurerm_service_plan" "vmss_orchestration_app_service_plan" {
   resource_group_name = var.resource_group
   location            = var.location
   os_type             = "Linux"
-  sku_name            = "Y1"
+  sku_name            = var.asp_sku_name
 
   tags = var.global_tags
 }
