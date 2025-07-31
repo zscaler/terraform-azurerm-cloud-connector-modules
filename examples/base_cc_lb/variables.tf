@@ -263,3 +263,15 @@ variable "zssupport_server" {
   description = "destination IP address of Zscaler Support access server. IP resolution of remotesupport.<zscaler_customer_cloud>.net"
   default     = "199.168.148.101" #for commercial clouds
 }
+
+variable "vwan_hub_id" {
+  type        = string
+  description = "VWAN Hub ID to which Security Spoke VNET will connect to"
+  default     = ""
+}
+
+variable "vnet_connection_name" {
+  type        = string
+  description = "Name of VNET connection from Security Spoke VNET to VWAN Hub"
+  default     = ""
+}

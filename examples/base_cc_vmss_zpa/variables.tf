@@ -411,6 +411,19 @@ variable "path_to_scripts" {
   default     = ""
 }
 
+<<<<<<< HEAD
+variable "vwan_hub_id" {
+  type        = string
+  description = "VWAN Hub ID to which Security Spoke VNET will connect to"
+  default     = ""
+}
+
+variable "vnet_connection_name" {
+  type = string
+  description = "Name of VNET connection from Security Spoke VNET to VWAN Hub"
+  default = ""
+}
+
 variable "asp_sku_name" {
   type        = string
   description = "SKU Name for the App Service Plan. Recommended Y1 (flex consumption) for function app unless not supported by Azure region"

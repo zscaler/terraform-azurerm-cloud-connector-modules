@@ -58,6 +58,8 @@ module "network" {
   zones                 = var.zones
   lb_frontend_ip        = module.cc_lb.lb_ip
   zpa_enabled           = var.zpa_enabled
+  vwan_hub_id           = var.vwan_hub_id
+  vnet_connection_name  = var.vnet_connection_name
   #bring-your-own variables
   byo_rg                             = var.byo_rg
   byo_rg_name                        = var.byo_rg_name
@@ -93,6 +95,10 @@ CC_URL=${var.cc_vm_prov_url}
 AZURE_VAULT_URL=${var.azure_vault_url}
 HTTP_PROBE_PORT=${var.http_probe_port}
 AZURE_MANAGED_IDENTITY_CLIENT_ID=${module.cc_identity.managed_identity_client_id}
+[BGPCONFIG]
+LB_VIP=${module.cc_lb.lb_ip}
+VWAN_HUB_ID=${var.vwan_hub_id}
+VNET_CONNECTION_ID=${module.network.virtual_network_vwan_connection_id}
 USERDATA
 }
 

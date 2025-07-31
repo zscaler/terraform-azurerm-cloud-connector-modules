@@ -210,3 +210,15 @@ variable "existing_nat_gw_subnet_association" {
   description = "Set this to true only if both byo_nat_gws and byo_subnets variables are true. this implies that there are already NAT Gateway resources associated to subnets where Cloud Connectors are being deployed to"
   default     = false
 }
+
+variable "vwan_hub_id" {
+  type        = string
+  description = "VWAN Hub ID to which Security Spoke VNET will connect to"
+  default     = ""
+}
+
+variable "vnet_connection_name" {
+  type        = string
+  description = "Name of VNET connection from Security Spoke VNET to VWAN Hub"
+  default     = ""
+}

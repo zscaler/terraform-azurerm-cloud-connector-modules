@@ -288,3 +288,16 @@ variable "target_address" {
   description = "Azure DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses"
   default     = ["185.46.212.88", "185.46.212.89"]
 }
+
+variable "vwan_hub_id" {
+  type        = string
+  description = "VWAN Hub ID to which Security Spoke VNET will connect to"
+  default     = ""
+}
+
+variable "vnet_connection_name" {
+  type        = string
+  description = "Name of VNET connection from Security Spoke VNET to VWAN Hub"
+  default     = ""
+}
+

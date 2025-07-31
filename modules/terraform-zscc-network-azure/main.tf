@@ -43,6 +43,28 @@ data "azurerm_virtual_network" "vnet_selected" {
 
 
 ################################################################################
+# Virtual Network connection to VWAN Hub
+################################################################################
+locals {
+  virtual_hub_name = var.vwan_hub_id != null && var.vwan_hub_id != "" ? element(split("/", var.vwan_hub_id), length(split("/", var.vwan_hub_id)) - 1) : null
+}
+
+# Create VNET to VWAN Connection or reference existing
+resource "azurerm_virtual_hub_connection" "vnet_to_vwan" {
+  count                     = var.vwan_hub_id != null && var.vwan_hub_id != "" && (var.vnet_connection_name == null || var.vnet_connection_name == "") ? 1 : 0
+  name                      = "${var.name_prefix}-vnet-vwan-connection-${var.resource_tag}"
+  virtual_hub_id            = var.vwan_hub_id
+  remote_virtual_network_id = var.byo_vnet ? data.azurerm_virtual_network.vnet_selected[0].id : azurerm_virtual_network.vnet[0].id
+}
+
+data "azurerm_virtual_hub_connection" "vnet_to_vwan_selected" {
+  count               = var.vwan_hub_id != null && var.vwan_hub_id != "" && var.vnet_connection_name != null && var.vnet_connection_name != "" ? 1 : 0
+  name                = var.vwan_hub_id != null && var.vwan_hub_id != "" && var.vnet_connection_name != null && var.vnet_connection_name != "" ? var.vnet_connection_name : azurerm_virtual_hub_connection.vnet_to_vwan[0].name
+  resource_group_name = try(data.azurerm_resource_group.rg_selected[0].name, azurerm_resource_group.rg[0].name)
+  virtual_hub_name    = local.virtual_hub_name
+}
+
+################################################################################
 # NAT Gateway
 ################################################################################
 # Create Public IP for NAT Gateway or reference existing
