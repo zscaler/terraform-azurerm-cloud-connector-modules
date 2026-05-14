@@ -2,6 +2,10 @@
 
 This module creates all Azure VM, NSG, and Public IP resources needed to deploy a publicly accessible bastion/jump host for Cloud Connector Greenfield/POV environments.
 
+> **NOTE:** As of September 30, 2025, Microsoft will be retiring the Basic SKU public IP address. All new deployments should use the default "Standard" SKU. For more information, please see Microsoft's [official guidance](https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/public-ip-basic-upgrade-guidance).
+
+> **IMPORTANT:** When upgrading an existing bastion host from a Basic to a Standard SKU public IP, you may encounter deployment conflicts. Azure does not permit Basic and Standard SKU public IPs to coexist on the same VM or in some cases, within the same resource group, depending on other resource dependencies. To avoid issues, it is recommended to manually disassociate and delete the existing bastion public IP resource in the Azure portal before applying the Terraform changes.
+
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
@@ -44,6 +48,7 @@ No modules.
 | <a name="input_instance_size"></a> [instance\_size](#input\_instance\_size) | The Azure image type/size | `string` | `"Standard_B1s"` | no |
 | <a name="input_location"></a> [location](#input\_location) | Cloud Connector Azure Region | `string` | n/a | yes |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | A prefix to associate to all the Bastion Host module resources | `string` | `null` | no |
+| <a name="input_pip_sku"></a> [pip\_sku](#input\_pip\_sku) | The SKU for the Public IP. Defaults to Standard | `string` | `"Standard"` | no |
 | <a name="input_public_subnet_id"></a> [public\_subnet\_id](#input\_public\_subnet\_id) | The id of public subnet where the bastion host has to be attached | `string` | n/a | yes |
 | <a name="input_resource_group"></a> [resource\_group](#input\_resource\_group) | Main Resource Group Name | `string` | n/a | yes |
 | <a name="input_resource_tag"></a> [resource\_tag](#input\_resource\_tag) | A tag to associate to all the Bastion Host module resources | `string` | `null` | no |

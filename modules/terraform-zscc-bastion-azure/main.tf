@@ -26,15 +26,20 @@ resource "azurerm_network_security_group" "bastion_nsg" {
 # Create Public IP to assign to Bastion Host
 ################################################################################
 resource "azurerm_public_ip" "bastion_pip" {
-  name                    = "${var.name_prefix}-bastion-public-ip-${var.resource_tag}"
+  name                    = "${var.name_prefix}-bastion-pip-${var.resource_tag}"
   location                = var.location
   resource_group_name     = var.resource_group
   allocation_method       = "Static"
   idle_timeout_in_minutes = 30
+  sku                     = var.pip_sku
+  zones                   = null # No zones specified for Bastion PIP so this is not required
 
   tags = var.global_tags
-}
 
+  lifecycle {
+    create_before_destroy = true
+  }
+}
 
 ################################################################################
 # Create Network Interface and association NSG
