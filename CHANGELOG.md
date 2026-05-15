@@ -1,3 +1,8 @@
+## v0.9.0 (UNRELEASED)
+
+ENHANCEMENTS:
+* add: support for new Standard_D2s_v5 Azure VM instance size
+
 ## v0.8.0 (July 11, 2025)
 
 FEATURES:

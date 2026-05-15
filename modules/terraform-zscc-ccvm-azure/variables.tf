@@ -52,9 +52,10 @@ variable "ssh_key" {
 variable "ccvm_instance_type" {
   type        = string
   description = "Cloud Connector Image size"
-  default     = "Standard_D2ds_v5"
+  default     = "Standard_D2s_v5"
   validation {
     condition = (
+      var.ccvm_instance_type == "Standard_D2s_v5" ||
       var.ccvm_instance_type == "Standard_D2s_v3" ||
       var.ccvm_instance_type == "Standard_DS2_v2" ||
       var.ccvm_instance_type == "Standard_D2ds_v4" ||
