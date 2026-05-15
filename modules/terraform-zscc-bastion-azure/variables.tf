@@ -84,3 +84,9 @@ variable "bastion_nsg_source_prefix" {
   description = "user input for locking down SSH access to bastion to a specific IP or CIDR range"
   default     = "*"
 }
+
+variable "pip_sku" {
+  type        = string
+  description = "The SKU for the Public IP. Defaults to Standard"
+  default     = "Standard"
+}

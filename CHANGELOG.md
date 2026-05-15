@@ -1,3 +1,8 @@
+## TBD (UNRELEASED)
+
+BUG FIXES:
+* add variable pip_sku to terraform.zscc-bastion-azure module with a default value of Standard per Microsoft guidance of Public IP Basic SKU being deprecated
+
 ## v0.8.0 (July 11, 2025)
 
 FEATURES:
