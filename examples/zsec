@@ -559,7 +559,7 @@ first_run="yes"
                     esac
                 done
             else
-                vm_sizes=("Standard_D2s_v3" "Standard_DS2_v2" "Standard_DS3_v2")
+                vm_sizes=("Standard_D2s_v5" "Standard_D2s_v3" "Standard_DS2_v2" "Standard_DS3_v2")
                 select ccvm_instance_type in "${vm_sizes[@]}"
                 do
                     case $REPLY in

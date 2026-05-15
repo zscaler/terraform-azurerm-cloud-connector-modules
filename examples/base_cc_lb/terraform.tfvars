@@ -66,8 +66,9 @@
 #arm_location                               = "westus2"
 
 ## 10. Cloud Connector Azure VM Instance size selection. Uncomment ccvm_instance_type line with desired vm size to change.
-##    (Default: Standard_D2s_v3)
+##    (Default: Standard_D2s_v5)
 
+#ccvm_instance_type                         = "Standard_D2s_v5"
 #ccvm_instance_type                         = "Standard_D2s_v3"
 #ccvm_instance_type                         = "Standard_DS3_v2"
 #ccvm_instance_type                         = "Standard_D8s_v3"
