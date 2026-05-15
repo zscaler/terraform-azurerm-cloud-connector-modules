@@ -70,7 +70,11 @@
 
 #ccvm_instance_type                         = "Standard_D2s_v3"
 
-## 11. By default, no zones are specified in any resource creation meaning they are either auto-assigned by Azure 
+## 11. Enable FIPS mode for new deployments only. Supported values are "False" or "True".
+##     This setting is applied only for new deployments.
+#fips_enabled                              = "False"
+
+## 12. By default, no zones are specified in any resource creation meaning they are either auto-assigned by Azure 
 ##    (Virtual Machines and NAT Gateways) or Zone-Redundant (Public IP) based on whatever default configuration is.
 ##    Setting this value to true will do the following:
 ##    1. will create zonal NAT Gateway resources in order of the zones [1-3] specified in zones variable. 1x per zone
@@ -81,7 +85,7 @@
 
 #zones_enabled                              = true
 
-## 12. By default, this variable is used as a count (1) for resource creation of Public IP, NAT Gateway, and CC Subnets.
+## 13. By default, this variable is used as a count (1) for resource creation of Public IP, NAT Gateway, and CC Subnets.
 ##    This should only be modified if zones_enabled is also set to true
 ##    Doing so will change the default zone aware configuration for the 3 aforementioned resources with the values specified
 ##    
@@ -96,7 +100,7 @@
 #zones                                      = ["1","2"]
 #zones                                      = ["1","2","3"]
 
-## 13. Network Configuration:
+## 14. Network Configuration:
 
 ##    IPv4 CIDR configured with VNet creation. All Subnet resources (Workload, Public, and Cloud Connector) will be created based off this prefix
 ##    /24 subnets are created assuming this cidr is a /16. If you require creating a VNet smaller than /16, you may need to explicitly define all other 
@@ -121,20 +125,20 @@
 #cc_subnets                                 = ["10.x.y.z/24","10.x.y.z/24"]
 #private_dns_subnet                         = "10.x.y.z/28"
 
-## 14. Number of Workload VMs to be provisioned in the workload subnet. Only limitation is available IP space
+## 15. Number of Workload VMs to be provisioned in the workload subnet. Only limitation is available IP space
 ##    in subnet configuration. Only applicable for "base" deployment types. Default workload subnet is /24 so 250 max
 
 #workload_count                             = 2
 
-## 15. Tag attribute "Owner" assigned to all resoure creation. (Default: "zscc-admin")
+## 16. Tag attribute "Owner" assigned to all resoure creation. (Default: "zscc-admin")
 
 #owner_tag                                  = "username@company.com"
 
-## 16. Tag attribute "Environment" assigned to all resources created. (Default: "Development")
+## 17. Tag attribute "Environment" assigned to all resources created. (Default: "Development")
 
 #environment                                = "Development"
 
-## 17. By default, Host encryption is enabled for Cloud Connector VMs. This does require the EncryptionAtHost feature
+## 18. By default, Host encryption is enabled for Cloud Connector VMs. This does require the EncryptionAtHost feature
 ##     enabled for your subscription though first.
 ##     You can verify this by following the Azure Prerequisites guide here: 
 ##     https://learn.microsoft.com/en-us/azure/virtual-machines/linux/disks-enable-host-based-encryption-cli#prerequisites
@@ -143,7 +147,7 @@
 
 #encryption_at_host_enabled                 = false
 
-## 18. By default, if Terraform is creating NSGs an outbound rule named Zscaler_Support_Access is configured enabling 
+## 19. By default, if Terraform is creating NSGs an outbound rule named Zscaler_Support_Access is configured enabling 
 ##     Zscaler remote support access. Without this firewall access, Zscaler Support may not be able to assist as
 ##     efficiently if troubleshooting is required. Uncomment if you do not want to enable this rule. 
 ##
@@ -152,7 +156,7 @@
 
 #support_access_enabled                     = false
 
-## 19. By default, Terraform will lookup the latest Cloud Connector image version from the Azure Marketplace.
+## 20. By default, Terraform will lookup the latest Cloud Connector image version from the Azure Marketplace.
 ##     Uncomment and set this value to the path of a local subscription Microsoft.Compute image to override the 
 ##     Cloud Connector deployment with a private VHD instead of using the marketplace publisher.
 ##     *** This is recommended only for testing purposes and not supported for production deployments ***
@@ -164,7 +168,7 @@
 #####################################################################################################################
 ##### ZPA/Azure Private DNS specific variables #####
 #####################################################################################################################
-## 20. Provide the domain names you want Azure Private DNS to redirect to Cloud Connector for ZPA interception. 
+## 21. Provide the domain names you want Azure Private DNS to redirect to Cloud Connector for ZPA interception. 
 ##     Only applicable for base + zpa or zpa_enabled = true deployment types where Outbound DNS subnets, Resolver Ruleset/Rules, 
 ##     and Outbound Endpoints are being created. Two example domains are populated to show the mapping structure and syntax.
 ##     Azure does require a trailing dot "." on all domain entries. ZPA Module will read through each to create a resolver rule per 
@@ -175,7 +179,7 @@
 #  appseg2 = "app2.com."
 #}
 
-## 21. Azure Private DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses.
+## 22. Azure Private DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses.
 ##     The required expectation is that the target should follow VNet/subnet routing towards the configured Cloud Connector Load Balancer VIP for 
 ##     ZPA DNS interception
 
