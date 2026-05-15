@@ -1,3 +1,10 @@
+## v0.9.0 (May 14, 2026)
+
+ENHANCEMENTS:
+* default `ccvm_instance_type` updated to `Standard_D2s_v5`
+* add `Standard_D2s_v5` to example `terraform.tfvars` values and `examples/zsec` VM selection
+* bump `hashicorp/azurerm` provider constraint to `>= 3.108.0, < 5.0.0` across examples and modules
+
 ## v0.8.0 (July 11, 2025)
 
 FEATURES:
