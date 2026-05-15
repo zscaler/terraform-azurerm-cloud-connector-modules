@@ -74,14 +74,18 @@
 #ccvm_instance_type                         = "Standard_D2ds_v5"
 #ccvm_instance_type                         = "Standard_D2ads_v5"
 
-## 11. The number of Cloud Connector appliances to provision. Each incremental Cloud Connector will be created in alternating 
+## 11. Enable FIPS mode for new deployments only. Supported values are "False" or "True".
+##     This setting is applied only for new deployments.
+#fips_enabled                              = "False"
+
+## 12. The number of Cloud Connector appliances to provision. Each incremental Cloud Connector will be created in alternating 
 ##    subnets based on the zones or byo_subnet_names variable and loop through for any deployments where cc_count > zones.
 ##    Not configurable for base or base_1cc deployment types. (All others - Default: 2)
 ##    E.g. cc_count set to 4 and 2 zones set ['1","2"] will create 2x CCs in AZ1 and 2x CCs in AZ2
 
 #cc_count                                   = 2
 
-## 12. By default, no zones are specified in any resource creation meaning they are either auto-assigned by Azure 
+## 13. By default, no zones are specified in any resource creation meaning they are either auto-assigned by Azure 
 ##    (Virtual Machines and NAT Gateways) or Zone-Redundant (Public IP) based on whatever default configuration is.
 ##    Setting this value to true will do the following:
 ##    1. will create zonal NAT Gateway resources in order of the zones [1-3] specified in zones variable. 1x per zone
@@ -92,7 +96,7 @@
 
 #zones_enabled                              = true
 
-## 13. By default, this variable is used as a count (1) for resource creation of Public IP, NAT Gateway, and CC Subnets.
+## 14. By default, this variable is used as a count (1) for resource creation of Public IP, NAT Gateway, and CC Subnets.
 ##    This should only be modified if zones_enabled is also set to true
 ##    Doing so will change the default zone aware configuration for the 3 aforementioned resources with the values specified
 ##    
@@ -107,7 +111,7 @@
 #zones                                      = ["1","2"]
 #zones                                      = ["1","2","3"]
 
-## 14. Network Configuration:
+## 15. Network Configuration:
 
 ##    IPv4 CIDR configured with VNet creation. All Subnet resources (Workload, Public, and Cloud Connector) will be created based off this prefix
 ##    /24 subnets are created assuming this cidr is a /16. If you require creating a VNet smaller than /16, you may need to explicitly define all other 
@@ -131,25 +135,25 @@
 #workloads_subnets                          = ["10.x.y.z/24","10.x.y.z/24"]
 #cc_subnets                                 = ["10.x.y.z/24","10.x.y.z/24"]
 
-## 15. Number of Workload VMs to be provisioned in the workload subnet. Only limitation is available IP space
+## 16. Number of Workload VMs to be provisioned in the workload subnet. Only limitation is available IP space
 ##    in subnet configuration. Only applicable for "base" deployment types. Default workload subnet is /24 so 250 max
 
 #workload_count                             = 2
 
-## 16. Tag attribute "Owner" assigned to all resoure creation. (Default: "zscc-admin")
+## 17. Tag attribute "Owner" assigned to all resoure creation. (Default: "zscc-admin")
 
 #owner_tag                                  = "username@company.com"
 
-## 17. Tag attribute "Environment" assigned to all resources created. (Default: "Development")
+## 18. Tag attribute "Environment" assigned to all resources created. (Default: "Development")
 
 #environment                                = "Development"
 
-## 18. By default, this script will apply 1 Network Security Group per Cloud Connector instance. 
+## 19. By default, this script will apply 1 Network Security Group per Cloud Connector instance. 
 ##     Uncomment if you want to use the same Network Security Group for ALL Cloud Connectors (true or false. Default: false)
 
 #reuse_nsg                                  = true
 
-## 19. By default, Host encryption is enabled for Cloud Connector VMs. This does require the EncryptionAtHost feature
+## 20. By default, Host encryption is enabled for Cloud Connector VMs. This does require the EncryptionAtHost feature
 ##     enabled for your subscription though first.
 ##     You can verify this by following the Azure Prerequisites guide here: 
 ##     https://learn.microsoft.com/en-us/azure/virtual-machines/linux/disks-enable-host-based-encryption-cli#prerequisites
@@ -158,7 +162,7 @@
 
 #encryption_at_host_enabled                 = false
 
-## 20. By default, if Terraform is creating NSGs an outbound rule named Zscaler_Support_Access is configured enabling 
+## 21. By default, if Terraform is creating NSGs an outbound rule named Zscaler_Support_Access is configured enabling 
 ##     Zscaler remote support access. Without this firewall access, Zscaler Support may not be able to assist as
 ##     efficiently if troubleshooting is required. Uncomment if you do not want to enable this rule. 
 ##
@@ -167,7 +171,7 @@
 
 #support_access_enabled                     = false
 
-## 21. By default, Terraform will lookup the latest Cloud Connector image version from the Azure Marketplace.
+## 22. By default, Terraform will lookup the latest Cloud Connector image version from the Azure Marketplace.
 ##     Uncomment and set this value to the path of a local subscription Microsoft.Compute image to override the 
 ##     Cloud Connector deployment with a private VHD instead of using the marketplace publisher.
 ##     *** This is recommended only for testing purposes and not supported for production deployments ***

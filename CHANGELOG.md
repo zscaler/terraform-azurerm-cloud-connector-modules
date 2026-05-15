@@ -1,3 +1,9 @@
+## v0.9.1 (Unreleased)
+
+ENHANCEMENTS:
+* add new `fips_enabled` variable for enabling FIPS mode via userdata
+* bump `hashicorp/azurerm` provider constraint to `>= 3.108.0, < 5.0.0` across examples and modules
+
 ## v0.9.0 (Unreleased)
 
 FEATURES:
