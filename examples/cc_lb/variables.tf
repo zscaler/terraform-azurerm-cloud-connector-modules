@@ -373,3 +373,9 @@ variable "byo_service_nsg_names" {
   description = "Existing Service Network Security Group ID for Cloud Connector VM association. This must be populated if byo_nsg variable is true"
   default     = null
 }
+
+variable "public_lb_deploy" {
+  type        = bool
+  description = "Deploy a Public Load-Balancer"
+  default     = false
+}

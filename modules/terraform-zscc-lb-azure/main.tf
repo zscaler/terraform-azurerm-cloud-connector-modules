@@ -68,4 +68,5 @@ resource "azurerm_lb_rule" "cc_lb_rule" {
   probe_id                       = azurerm_lb_probe.cc_lb_probe.id
   load_distribution              = var.load_distribution
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.cc_lb_backend_pool.id]
+  enable_floating_ip             = true
 }

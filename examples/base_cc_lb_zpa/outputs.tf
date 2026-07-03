@@ -34,6 +34,8 @@ ${join("\n", module.cc_vm.service_ip)}
 Load Balancer Frontend IP: 
 ${module.cc_lb.lb_ip}
 
+Public Load Balancer Frontend IP:
+${local.public_ip_ip}
 
 WORKLOAD Details/Commands:
 SSH to WORKLOAD
@@ -75,6 +77,7 @@ ${module.private_dns.private_dns_outbound_endpoint_name}
 TB
 }
 locals {
+  public_ip_ip = (one(module.cc_public_lb[*].lb_ip) == null) ? "" : one(module.cc_public_lb[*].lb_ip)
   workload_map = {
     for index, ip in module.workload.private_ip :
     index => ip

@@ -2,6 +2,10 @@
 
 This module creates a Standard Load Balancer, backend addres pool, LB rules, and LB health probes to be used with Cloud Connector clusters.
 
+## Pre-existing Load Balancers (Out of Scope)
+
+Bringing your own (`byo_`) pre-existing Private LB is currently **out of scope** for this module. The same is true for the `terraform-zscc-gwlb-azure` Gateway Load Balancer module. Operators who already have an LB provisioned and only need to register Cloud Connector NICs into its backend pool should wire the NIC → backend-pool association outside this module. Uniform `byo_*` support across both Load Balancer modules may be addressed in a future release.
+
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 

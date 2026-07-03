@@ -106,12 +106,14 @@ module "workload" {
 ################################################################################
 # Create the user_data file with necessary bootstrap variables for Cloud Connector registration
 locals {
+  GLB_VIP  = local.public_ip_ip != "" ? "GLB_VIP=${local.public_ip_ip}" : ""
   userdata = <<USERDATA
 [ZSCALER]
 CC_URL=${var.cc_vm_prov_url}
 AZURE_VAULT_URL=${var.azure_vault_url}
 HTTP_PROBE_PORT=${var.http_probe_port}
 AZURE_MANAGED_IDENTITY_CLIENT_ID=${module.cc_identity.managed_identity_client_id}
+${local.GLB_VIP}
 USERDATA
 }
 
@@ -143,6 +145,7 @@ module "cc_vm" {
   managed_identity_id            = module.cc_identity.managed_identity_id
   user_data                      = local.userdata
   backend_address_pool           = module.cc_lb.lb_backend_address_pool
+  public_lb_backend_address_pool = (var.public_lb_deploy == true) ? module.cc_public_lb[0].lb_backend_address_pool : null
   lb_association_enabled         = true
   location                       = var.arm_location
   zones_enabled                  = var.zones_enabled
@@ -157,6 +160,7 @@ module "cc_vm" {
   service_nsg_id                 = module.cc_nsg.service_nsg_id
   accelerated_networking_enabled = var.accelerated_networking_enabled
   encryption_at_host_enabled     = var.encryption_at_host_enabled
+  public_lb_deployed             = var.public_lb_deploy
 }
 
 
@@ -176,6 +180,7 @@ module "cc_nsg" {
   global_tags            = local.global_tags
   support_access_enabled = var.support_access_enabled
   zssupport_server       = var.zssupport_server
+  public_lb_deployed     = var.public_lb_deploy
 }
 
 
@@ -202,6 +207,24 @@ module "cc_identity" {
 # Azure Load Balancer Module variables
 module "cc_lb" {
   source                = "../../modules/terraform-zscc-lb-azure"
+  name_prefix           = var.name_prefix
+  resource_tag          = random_string.suffix.result
+  global_tags           = local.global_tags
+  resource_group        = module.network.resource_group_name
+  location              = var.arm_location
+  subnet_id             = module.network.cc_subnet_ids[0]
+  http_probe_port       = var.http_probe_port
+  load_distribution     = var.load_distribution
+  zones_enabled         = var.zones_enabled
+  zones                 = var.zones
+  health_check_interval = var.health_check_interval
+  probe_threshold       = var.probe_threshold
+  number_of_probes      = var.number_of_probes
+}
+
+module "cc_public_lb" {
+  source                = "../../modules/terraform-zscc-public-lb-azure"
+  count                 = (var.public_lb_deploy == true) ? 1 : 0
   name_prefix           = var.name_prefix
   resource_tag          = random_string.suffix.result
   global_tags           = local.global_tags

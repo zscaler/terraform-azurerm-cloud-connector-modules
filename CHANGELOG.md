@@ -1,3 +1,30 @@
+## v0.9.0 (Unreleased)
+
+FEATURES:
+* Azure Gateway Load Balancer (GWLB) support for Cloud Connector — enables transparent inline inspection for ingress traffic that is not possible with the existing egress-only Private LB topology.
+    - add: module terraform-zscc-gwlb-azure for GWLB and dual-VXLAN backend pool orchestration
+    - add: module terraform-zscc-public-lb-azure for the consumer Public LB that chains to the GWLB frontend (also usable standalone for inbound DNAT / fwd ZIA)
+    - add: greenfield example base_cc_gwlb (CC VMs + GWLB)
+    - add: greenfield example base_cc_gwlb_vmss (CC VMSS + GWLB)
+    - add: greenfield example base_cc_public_lb (CC VMs + standalone Public LB)
+    - add: greenfield example base_cc_public_vmss (CC VMSS + standalone Public LB)
+    - add: brownfield example cc_gwlb (CC VMs + GWLB in existing VNet)
+    - add: brownfield example cc_gwlb_vmss (CC VMSS + GWLB in existing VNet)
+    - add: brownfield example cc_public_lb (CC VMs + standalone Public LB in existing VNet)
+    - add: zsec script support for all new GWLB and Public LB greenfield and brownfield deployment types
+    - add: zsec prompt create_consumer_plb to optionally create and auto-chain a consumer Public LB to the GWLB frontend (covered on first-run, .zsecrc re-use, and destroy paths across cc_gwlb, base_cc_gwlb, and base_cc_gwlb_vmss)
+
+ENHANCEMENTS:
+* refactor: zsec portability fixes — eliminate BSD sed artifacts so the wrapper script works consistently on macOS and Linux
+* fix: zsec no longer pre-creates .zsecrc before the deployment type is selected (prevents stale state on aborted runs)
+* refactor: rename CCVM module variables has_private_lb/has_public_lb to private_lb_enabled/public_lb_enabled to match the existing _enabled suffix convention
+* security: tighten cc_service_gwlb_nsg VXLAN UDP rules — restrict source to AzureLoadBalancer service tag and scope destination ports to configured VXLAN port range
+* fix: add ILB (downstream) to base_cc_public_lb example completing PLB → CC → ILB → workloads topology
+* fix: add IMMUTABLE warnings to vxlan_external_port/vxlan_internal_port/vni variables in gwlb module
+
+NOTES:
+* ZPA (Azure Private DNS Resolver) variants are intentionally not provided for the new GWLB and Public LB greenfield examples. ZPA conditional forwarding is paired with Cloud Connector egress (Private LB) topologies; the GWLB ingress-inspection and standalone Public LB topologies do not require an Azure Private DNS Resolver in their reference deployment.
+
 ## v0.8.1 (June 12, 2026)
 
 BUG FIXES:
@@ -28,9 +55,9 @@ ENHANCEMENTS:
 * refactor: include ssh_config generation with auto mapping all workload/cc instances for base/greenfield deployments
 * refactor: change base/greenfield workload and bastion virtual machines from CentOS 7.5 to AlmaLinux 9
 
+
 BUG FIXES:
 * update az_supported_regions static map for all modules
-
 
 ## v0.6.2 (December 9, 2024)
 

@@ -125,6 +125,12 @@ variable "backend_address_pool" {
   default     = null
 }
 
+variable "public_lb_backend_address_pool" {
+  type        = string
+  description = "Azure Public LB Backend Address Pool ID for NIC association"
+  default     = null
+}
+
 # Validation to determine if Azure Region selected supports availabilty zones if desired
 locals {
   az_supported_regions = ["australiaeast", "Australia East", "brazilsouth", "Brazil South", "canadacentral", "Canada Central", "centralindia", "Central India", "centralus", "Central US", "chinanorth3", "China North 3", "ChinaNorth3", "eastasia", "East Asia", "eastus", "East US", "eastus2", "East US 2", "francecentral", "France Central", "germanywestcentral", "Germany West Central", "japaneast", "Japan East", "koreacentral", "Korea Central", "northeurope", "North Europe", "norwayeast", "Norway East", "southafricanorth", "South Africa North", "southcentralus", "South Central US", "southeastasia", "Southeast Asia", "spaincentral", "Spain Central", "swedencentral", "Sweden Central", "switzerlandnorth", "Switzerland North", "uaenorth", "UAE North", "uksouth", "UK South", "westeurope", "West Europe", "westus2", "West US 2", "westus3", "West US 3", "usgovvirginia", "US Gov Virginia"]
@@ -183,5 +189,17 @@ locals {
 variable "encryption_at_host_enabled" {
   type        = bool
   description = "User input for enabling or disabling host encryption"
+  default     = true
+}
+
+variable "public_lb_deployed" {
+  type        = bool
+  description = "Check if any Public Load Balancer deployed or not"
+  default     = false
+}
+
+variable "private_lb_enabled" {
+  type        = bool
+  description = "Check if any Private Load Balancer deployed or not"
   default     = true
 }

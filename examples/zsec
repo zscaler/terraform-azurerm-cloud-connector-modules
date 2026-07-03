@@ -15,6 +15,25 @@ usage()
     exit 1
 }
 
+query_public_lb()
+{
+	public_lb_default=no
+	while true; do
+   		read -r -p "${CYAN}Do you want to deploy a Public load-balancer as well? [Default=$public_lb_default]: ${RESET}" public_lb_input
+		public_lb=${public_lb_input:-$public_lb_default}
+		case $public_lb in
+		yes|y )
+			echo "export TF_VAR_public_lb_deploy=true" >> .zsecrc
+			break
+			;;
+		no|n )
+			break
+			;;
+		*) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
+		esac
+	done
+}
+
 if [ $# -ne 1 ] ; then
     usage
 else
@@ -28,15 +47,111 @@ else
     esac
 fi
 
+# Early no-op gate for destroy when there's no .zsecrc (the previous successful
+# destroy already archived it to .zsecrc-<timestamp> and removed it).
+if [[ "$oper" == "destroy" && ! -f ./.zsecrc ]]; then
+    echo "${YELLOW}No .zsecrc found — nothing to destroy.${RESET}"
+    latest_archive=$(ls -1t .zsecrc-[0-9]* 2>/dev/null | head -1)
+    if [[ -n "$latest_archive" ]]; then
+        echo "${YELLOW}If you still have live Azure resources from a prior deploy, restore credentials from the latest archive first:${RESET}"
+        echo "    cp ${latest_archive} .zsecrc && $0 $1"
+    else
+        echo "${YELLOW}No .zsecrc-<timestamp> archive present either; run './zsec up' for a fresh deploy.${RESET}"
+    fi
+    exit 0
+fi
+
+if [[ "$oper" == "up" && ! -e ./.zsecrc ]]; then
+    PS3="${CYAN}Select your Zscaler Cloud: ${RESET}"
+    zs_clouds=("zscloud.net" "zscaler.net" "zscalertwo.net" "zscalerthree.net" "zscalerten.net" "zscalergov.net" "zscalerbeta.net" "other")
+    select zscaler_cloud in "${zs_clouds[@]}"
+    do
+        case $REPLY in
+            1)
+                echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
+                zscaler_cloud=$zscaler_cloud
+                break
+                ;;
+            2)
+                echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
+                zscaler_cloud=$zscaler_cloud
+                break
+                ;;
+            3)
+                echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
+                zscaler_cloud=$zscaler_cloud
+                break
+                ;;
+            4)
+                echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
+                zscaler_cloud=$zscaler_cloud
+                break
+                ;;
+            5)
+                echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
+                zscaler_cloud=$zscaler_cloud
+                break
+                ;;
+            6)
+                echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
+                zscaler_cloud=$zscaler_cloud
+                break
+                ;;
+            7)
+                echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
+                zscaler_cloud=$zscaler_cloud
+                break
+                ;;
+            8)
+                echo "Zscaler Cloud ${YELLOW}$zscaler_cloud${RESET} selected"
+                while true; do
+                    read -r -p "${CYAN}Enter your desired Zscaler Cloud name (e.g. zscalerbeta.net): ${RESET}" manual_cloud_name_response
+                    case $manual_cloud_name_response in
+                        zspreview|zscalerpreview|preview|zspreview.net|zscalerpreview.net|preview.net )
+                            echo "Setting zspreview.net"
+                            zscaler_cloud=zspreview.net
+                            zs_env=development
+                            break
+                            ;;
+                        zsdevel|zscalerdevel|devel|zsdevel.net|zscalerdevel.net|devel.net )
+                            echo "Setting zsdevel.net"
+                            zscaler_cloud=zsdevel.net
+                            zs_env=development
+                            break
+                            ;;
+                        zsqa|zscalerqa|qa|zsqa.net|zscalerqa.net|qa.net )
+                            echo "Setting zsqa.net"
+                            zscaler_cloud=zsqa.net
+                            zs_env=development
+                            break
+                            ;;
+                        *) 
+                            echo "${RED}Invalid response. Please enter a valid Zscaler Cloud name${RESET}"
+                    esac
+                done
+                break
+                ;;
+            *) 
+                echo "${RED}Invalid response. Please enter a number selection${RESET}"
+        esac
+    done
+fi
+
 if [[ "$oper" == "up" ]]; then
     if [[ -e ./.zsecrc ]]; then
         echo "${YELLOW}Existing deployment configuration file identified...${RESET}"
         # initialize environment variables
         . ./.zsecrc
-        echo "Refreshing Deployment Type: ${GREEN}$dtype${RESET}..." 
+        echo "Refreshing Deployment Type: ${GREEN}$dtype${RESET}..."
+        # If this is a private LB or VMSS deployment and PLB was never asked, ask now
+        if [[ "$dtype" == *"vmss"* || "$dtype" == *"lb"* ]] && [[ "$dtype" != *"pub"* && "$dtype" != *"gwlb"* ]]; then
+            if ! grep -q "TF_VAR_public_lb_deploy" .zsecrc; then
+                query_public_lb
+            fi
+        fi
     else #Prompt for deployment selection
         PS3="${CYAN}Select desired deployment: ${RESET}"
-        deployments=("greenfield - Recommended for isolated test/POV deployments. Creates new network infrastructure, test workloads, and a public jump host" "brownfield - Recommended for prod deployments. Bring-your-own existing network infrastructure customizations + no workload/bastion creation" "standalone - Zscaler Tags Enablement")
+        deployments=("greenfield - Recommended for isolated test/POV deployments. Creates new network infrastructure, test workloads, and a public jump host" "brownfield - Recommended for prod deployments. Bring-your-own existing network infrastructure customizations + no workload/bastion creation")
         select deployment in "${deployments[@]}"
         do
             case $REPLY in
@@ -52,19 +167,38 @@ if [[ "$oper" == "up" ]]; then
                     deployment=brownfield
                 break
                 ;;
-                3)
-                    echo "${GREEN}Zscaler Tags Enablement selected...${RESET}"
-                    echo "${YELLOW}This does NOT deploy any Cloud Connector resources. Configuring this implies you already have Cloud Connectors deployed${RESET}"
-                    deployment=ztags_standalone
-                    dtype=$deployment
-                break
-                ;;
                 *) 
                     echo "${RED}Invalid response. Please enter a number selection${RESET}"
             esac
         done
         
-        if [[ "$deployment" != "ztags_standalone" ]]; then
+        if [[ "$zscaler_cloud" == "zscalerten.net" ]]; then
+            echo "${YELLOW}Zscalerten does not currently support Auto Scaling VMSS. Proceeding with standard deployment options...${RESET}"
+            if [[ "$deployment" == "greenfield" ]]; then 
+                vmss_enabled=false
+            elif [[ "$deployment" == "brownfield" ]]; then
+                vmss_enabled=false
+                PS3="${CYAN}Select brownfield load balancer type: ${RESET}"
+                bf_lb_types=("Standard Load Balancer (cc_lb)" "Gateway Load Balancer (cc_gwlb)")
+                select bf_lb_type in "${bf_lb_types[@]}"
+                do
+                    case $REPLY in
+                        1)
+                            echo "${GREEN}Proceeding with brownfield Standard Load Balancer configuration...${RESET}"
+                            dtype=cc_lb
+                            break
+                            ;;
+                        2)
+                            echo "${GREEN}Proceeding with brownfield Gateway Load Balancer configuration...${RESET}"
+                            dtype=cc_gwlb
+                            break
+                            ;;
+                        *)
+                            echo "${RED}Invalid response. Please enter a number selection${RESET}"
+                    esac
+                done
+            fi
+        else
             while true; do
                 read -r -p "${CYAN}Deploy Cloud Connectors in Auto Scaling VMSS? [yes/no]: ${RESET}" response
                 case $response in 
@@ -85,10 +219,26 @@ if [[ "$oper" == "up" ]]; then
                         echo "${GREEN}Proceeding with greenfield manual scaling configuration...${RESET}"
                         vmss_enabled=false
                     elif [[ "$deployment" == "brownfield" ]]; then
-                        echo "${GREEN}Proceeding with brownfield manual scaling with load balancer configuration...${RESET}"
                         vmss_enabled=false
-                        #implicitly set dtype as cc_lb for brownfield + no vmss
-                        dtype=cc_lb
+                        PS3="${CYAN}Select brownfield load balancer type: ${RESET}"
+                        bf_lb_types=("Standard Load Balancer (cc_lb)" "Gateway Load Balancer (cc_gwlb)")
+                        select bf_lb_type in "${bf_lb_types[@]}"
+                        do
+                            case $REPLY in
+                                1)
+                                    echo "${GREEN}Proceeding with brownfield Standard Load Balancer configuration...${RESET}"
+                                    dtype=cc_lb
+                                    break
+                                    ;;
+                                2)
+                                    echo "${GREEN}Proceeding with brownfield Gateway Load Balancer configuration...${RESET}"
+                                    dtype=cc_gwlb
+                                    break
+                                    ;;
+                                *)
+                                    echo "${RED}Invalid response. Please enter a number selection${RESET}"
+                            esac
+                        done
                     fi
                 break
                 ;;
@@ -106,6 +256,8 @@ if [[ "$oper" == "up" ]]; then
                 "Deploy 1 Cloud Connector in a new Resource Group and VNet w/ Private DNS for ZPA"
                 "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet"
                 "Deploy multiple Cloud Connectors w/ Load Balancer in a new Resource Group and VNet w/ Private DNS for ZPA"
+                "Deploy multiple Cloud Connectors w/ Public Load Balancer in a new Resource Group and VNet"
+                "Deploy multiple Cloud Connectors w/ Gateway Load Balancer in a new Resource Group and VNet"
                 "Deploy a new Resource Group and VNet only - No Cloud Connector resources"  
             )
             select greenfield_type in "${dtypes[@]}"
@@ -132,6 +284,16 @@ if [[ "$oper" == "up" ]]; then
                         break
                         ;;
                     5)
+                        echo "Deployment type base_cc_public_lb selected..."
+                        dtype=base_cc_public_lb
+                        break
+                        ;;
+                    6)
+                        echo "Deployment type base_cc_gwlb selected..."
+                        dtype=base_cc_gwlb
+                        break
+                        ;;
+                    7)
                         echo "Deployment type base selected..."
                         dtype=base
                         break
@@ -144,6 +306,8 @@ if [[ "$oper" == "up" ]]; then
             dtypes=(
                 "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Load Balancer in a new Resource Group and VNet"
                 "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Load Balancer in a new Resource Group and VNet w/ Private DNS for ZPA"
+                "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Public Load Balancer in a new Resource Group and VNet"
+                "Deploy Virtual Machine Scale Set of Cloud Connectors w/ Gateway Load Balancer in a new Resource Group and VNet"
             )
             select greenfield_type in "${dtypes[@]}"
             do
@@ -158,6 +322,16 @@ if [[ "$oper" == "up" ]]; then
                         dtype=base_cc_vmss_zpa
                         break
                         ;;
+                    3)
+                        echo "Deployment type base_cc_public_vmss selected..."
+                        dtype=base_cc_public_vmss
+                        break
+                        ;;
+                    4)
+                        echo "Deployment type base_cc_gwlb_vmss selected..."
+                        dtype=base_cc_gwlb_vmss
+                        break
+                        ;;
                     *) 
                         echo "${RED}Invalid response. Please enter a number selection${RESET}"
                 esac
@@ -165,82 +339,6 @@ if [[ "$oper" == "up" ]]; then
         fi
     else
         dtype=$dtype
-    fi
-
-    if [[ "$dtype" != "base" && "$dtype" != "ztags_standalone" ]]; then
-        PS3="${CYAN}Select your Zscaler Cloud: ${RESET}"
-        zs_clouds=("zscloud.net" "zscaler.net" "zscalertwo.net" "zscalerthree.net" "zscalerten.net" "zscalergov.net" "zscalerbeta.net" "other")
-        select zscaler_cloud in "${zs_clouds[@]}"
-        do
-            case $REPLY in
-                1)
-                    echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
-                    zscaler_cloud=$zscaler_cloud
-                break
-                ;;
-                2)
-                    echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
-                    zscaler_cloud=$zscaler_cloud
-                break
-                ;;
-                3)
-                    echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
-                    zscaler_cloud=$zscaler_cloud
-                break
-                ;;
-                4)
-                    echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
-                    zscaler_cloud=$zscaler_cloud
-                break
-                ;;
-                5)
-                    echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
-                    zscaler_cloud=$zscaler_cloud
-                break
-                ;;
-                6)
-                    echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
-                    zscaler_cloud=$zscaler_cloud
-                break
-                ;;
-                7)
-                    echo "Zscaler Cloud ${GREEN}$zscaler_cloud${RESET} selected"
-                    zscaler_cloud=$zscaler_cloud
-                break
-                ;;
-                8)
-                    echo "Zscaler Cloud ${YELLOW}$zscaler_cloud${RESET} selected"
-                    while true; do
-                        read -r -p "${CYAN}Enter your desired Zscaler Cloud name (e.g. zscalerbeta.net): ${RESET}" manual_cloud_name_response
-                        case $manual_cloud_name_response in
-                        zspreview|zscalerpreview|preview|zspreview.net|zscalerpreview.net|preview.net )
-                            echo "Setting zspreview.net"
-                            zscaler_cloud=zspreview.net
-                            zs_env=development
-                        break
-                        ;;
-                        zsdevel|zscalerdevel|devel|zsdevel.net|zscalerdevel.net|devel.net )
-                            echo "Setting zsdevel.net"
-                            zscaler_cloud=zsdevel.net
-                            zs_env=development
-                        break
-                        ;;
-                        zsqa|zscalerqa|qa|zsqa.net|zscalerqa.net|qa.net )
-                            echo "Setting zsqa.net"
-                            zscaler_cloud=zsqa.net
-                            zs_env=development
-                        break
-                        ;;
-                        *) 
-                            echo "${RED}Invalid response. Please enter a valid Zscaler Cloud name${RESET}"
-                        esac
-                    done
-                break
-                ;;
-                *) 
-                    echo "${RED}Invalid response. Please enter a number selection${RESET}"
-            esac
-        done
     fi
 fi
 
@@ -285,9 +383,7 @@ fi
 echo "Checking Azure Environment Variables and Cloud Connector bootstrap requirements... For ZPA or custom/byo deployments, please stop and refer to the README and terraform.tfvars file instructions"
 if [[ "$oper" == "up" && ! -e ./.zsecrc ]]; then
 first_run="yes"
-    if [[ "$deployment" != "ztags_standalone" ]]; then
-        echo "export zscaler_cloud='$zscaler_cloud'" > .zsecrc
-    fi   
+    echo "export zscaler_cloud='$zscaler_cloud'" > .zsecrc
     # Azure Region selection
     PS3="${CYAN}Select desired Azure region: ${RESET}"
     region_list=(
@@ -358,13 +454,8 @@ first_run="yes"
             if [[ $region_choice == $region_selection ]]; then
                 azure_location=$region_selection
                 echo "Azure region ${GREEN}$azure_location${RESET} selected..."
-                if [[ "$deployment" != "ztags_standalone" ]]; then
-                    echo "export TF_VAR_arm_location='$azure_location'" >> .zsecrc
-                else
-                    echo "export TF_VAR_arm_location='$azure_location'" > .zsecrc
-                fi
-		        
-                if [[ ${azure_location} = "china"*  ]]; then
+                echo "export TF_VAR_arm_location='$azure_location'" >> .zsecrc
+		        if [[ ${azure_location} = "china"*  ]]; then
             		echo "${YELLOW}Azure China region detected. Setting ARM_ENVIRONMENT...${RESET}"
             		echo "export ARM_ENVIRONMENT=china" >> .zsecrc
             		echo "export ARM_SKIP_PROVIDER_REGISTRATION=true" >> .zsecrc
@@ -378,42 +469,17 @@ first_run="yes"
         done
     done
 
-    echo "Checking Azure Environment Variables to use for Terraform authentication..."
+    echo "Checking Azure Environment Variables..."
     read -r -p "${CYAN}Enter Azure Subcription ID: ${RESET}" azure_subscription_id
-    echo "export ARM_SUBSCRIPTION_ID='$azure_subscription_id'" >> .zsecrc
-    if [[ "$deployment" != "ztags_standalone" ]]; then
-    echo "export TF_VAR_env_subscription_id='$azure_subscription_id'" >> .zsecrc
-    fi
+    echo "export ARM_SUBSCRIPTION_ID=${azure_subscription_id}" >> .zsecrc
+    echo "export TF_VAR_env_subscription_id=${azure_subscription_id}" >> .zsecrc
     read -r -p "${CYAN}Enter Directory (tenant) ID: ${RESET}" azure_tenant_id
-    echo "export ARM_TENANT_ID='$azure_tenant_id'" >> .zsecrc
+    echo "export ARM_TENANT_ID=${azure_tenant_id}" >> .zsecrc
     read -r -p "${CYAN}Enter Application (client) ID of Service Principal: ${RESET}" azure_client_id
-    echo "export ARM_CLIENT_ID='$azure_client_id'" >> .zsecrc
+    echo "export ARM_CLIENT_ID=${azure_client_id}" >> .zsecrc
     read -r -p "${CYAN}Enter Client Secret Value of Service Principal: ${RESET}" azure_client_secret
-    echo "export ARM_CLIENT_SECRET='$azure_client_secret'" >> .zsecrc
+    echo "export ARM_CLIENT_SECRET='${azure_client_secret}'" >> .zsecrc
 
-    if [[ "$deployment" == "ztags_standalone" ]]; then
-    echo "By default, Terraform will create a new Azure Resource Group to store the Azure Z-Tag resources"
-        while true; do
-            read -r -p "${CYAN}Do you have an existing Resource Group to use instead? [yes/no]: ${RESET}" existing_ztags_rg_response
-            case $existing_ztags_rg_response in 
-                no|n ) 
-                    echo "${GREEN}Terraform will proceed with creating a new Resource Group for Azure Z-Tag resources in region $azure_location${RESET}"
-                break
-                ;;
-                yes|y )
-                    echo "Terraform will use an existing Resource Group. ${YELLOW}*Note* - Resource Group must reside in the same Subscription: $azure_subscription_id${RESET}"
-                    read -r -p "${CYAN}Enter the Name of your existing Resource Group: ${RESET}" existing_ztags_rg
-                    echo "export TF_VAR_existing_ztags_rg_name='$existing_ztags_rg'" >> .zsecrc
-                break
-                ;;
-                * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
-            esac
-        done
-
-        read -r -p "${CYAN}Enter the full Azure resource ID path for the Zscaler provided PartnerDestination ID${RESET} (E.g. /subscriptions/<subscriptionId>/resourceGroups/<partnerResourceGroup/providers/Microsoft.EventGrid/partnerDestinations/<partnerDestinationName>): " partnerdestination_id
-        echo "export TF_VAR_partnerdestination_id='$partnerdestination_id'" >> .zsecrc
-    fi
-    
     if [[ "$deployment" == "greenfield" ]]; then    
         while true; do
             clientpublicip=$(curl -s ifconfig.me)
@@ -462,8 +528,51 @@ first_run="yes"
         fi
     fi
 
+    ### VXLAN Configuration for gwlb deployments ###
+    if [[ "$dtype" == *"gwlb"* ]]; then
+        # Use standard Zscaler CC image defaults (matches sc.network.conf).
+        # To override, set vxlan_* variables in terraform.tfvars before running ./zsec up.
+        vxlan_external_port=10801
+        vxlan_internal_port=10800
+        vxlan_external_vni=801
+        vxlan_internal_vni=800
+
+        # Save VXLAN settings in .zsecrc for Terraform
+        echo "export TF_VAR_vxlan_external_port=${vxlan_external_port}" >> .zsecrc
+        echo "export TF_VAR_vxlan_internal_port=${vxlan_internal_port}" >> .zsecrc
+        echo "export TF_VAR_vxlan_external_vni=${vxlan_external_vni}" >> .zsecrc
+        echo "export TF_VAR_vxlan_internal_vni=${vxlan_internal_vni}" >> .zsecrc
+
+        ### Consumer Public Load Balancer prompt — all GWLB dtypes
+        ### (brownfield cc_gwlb, greenfield base_cc_gwlb, greenfield base_cc_gwlb_vmss)
+        if [[ "$dtype" == "cc_gwlb" || "$dtype" == "base_cc_gwlb" || "$dtype" == "base_cc_gwlb_vmss" ]]; then
+            echo ""
+            echo "${CYAN}After the Gateway Load Balancer is deployed, a consumer Public Load Balancer is needed to chain to it for inbound inspection.${RESET}"
+            while true; do
+                read -r -p "${CYAN}Do you want Terraform to create a new consumer Public Load Balancer and auto-chain it to the GWLB? [yes/no]: ${RESET}" public_lb_response
+                public_lb_response=$(echo "$public_lb_response" | tr '[:upper:]' '[:lower:]')
+                case $public_lb_response in
+                    yes|y)
+                        echo "${GREEN}Terraform will create a new consumer Public LB and automatically chain it to the GWLB frontend.${RESET}"
+                        echo "export TF_VAR_create_consumer_public_lb=true" >> .zsecrc
+                        break
+                        ;;
+                    no|n)
+                        echo "${YELLOW}No consumer PLB will be created by Terraform.${RESET}"
+                        echo "After deployment, use the 'gwlb_frontend_ip_config_id' from the testbed output to manually chain your existing Public LB to the GWLB in the Azure Portal."
+                        echo "export TF_VAR_create_consumer_public_lb=false" >> .zsecrc
+                        break
+                        ;;
+                    *)
+                        echo "${RED}Invalid input. Please enter yes or no.${RESET}"
+                        ;;
+                esac
+            done
+        fi
+    fi
+
     # if .zsecrc is not present we'll assume that Azure env was never set
-    if [[ "$dtype" != "base" && "$dtype" != "ztags_standalone" ]]; then
+    if [[ "$dtype" != "base" ]]; then
         # ---
         # Host Encryption Support
         encryption_at_host_enabled=true
@@ -559,7 +668,7 @@ first_run="yes"
                     esac
                 done
             else
-                vm_sizes=("Standard_D2s_v3" "Standard_DS2_v2" "Standard_DS3_v2")
+                vm_sizes=("Standard_D2s_v3" "Standard_DS2_v2" "Standard_DS3_v2" "Standard_D2ds_v5")
                 select ccvm_instance_type in "${vm_sizes[@]}"
                 do
                     case $REPLY in
@@ -574,6 +683,11 @@ first_run="yes"
                             break
                             ;;
                         3)
+                            echo "Cloud Connector VM type $ccvm_instance_type selected"
+                            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+                            break
+                            ;;
+                        4)
                             echo "Cloud Connector VM type $ccvm_instance_type selected"
                             echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
                             break
@@ -625,8 +739,11 @@ first_run="yes"
         read -r -p "${CYAN}Enter Managed Identity Resource Group: ${RESET}" cc_vm_managed_identity_rg
         echo "export TF_VAR_cc_vm_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
 
-        if [[ $dtype == *"vmss"* ]]; then
-        echo "Function App User Managed Identity Information:"
+        if [[ "$dtype" == *"vmss"* ]]; then
+	      if [[ "$dtype" != *"pub"* && "$dtype" != *"gwlb"* ]]; then
+            query_public_lb
+          fi 
+          echo "Function App User Managed Identity Information:"
             while true; do
                 read -r -p "${CYAN}Assign the same User Managed Identity ($cc_vm_managed_identity_name) to Function App? [yes/no]: ${RESET}" function_mui_response
                 case $function_mui_response in 
@@ -653,7 +770,10 @@ first_run="yes"
             echo "${GREEN}${dtype} will deploy one Cloud Connector in ${azure_location}${RESET}"
         elif [[ "$dtype" == *"vmss"* ]]; then
             echo "Auto Scaling deployment type identified. Proceeding to VMSS configurations..." 
-        elif [[ "$dtype" == *"lb"* ]]; then
+        elif [[ "$dtype" == *"lb"* || "$dtype" == "cc_gwlb" ]]; then
+	        if [[ "$dtype" != *"pub"* && "$dtype" != *"gwlb"* ]]; then
+                query_public_lb
+			fi
             read -r -p "${CYAN}Enter how many Cloud Connectors to deploy? [Default=$cc_count_default]: ${RESET}" cc_count_input
             cc_count=${cc_count_input:-$cc_count_default}
             if ((cc_count >= 1 && cc_count <= 20)); then
@@ -795,7 +915,8 @@ first_run="yes"
         fi
 
         #Browfield/BYO Networking Options
-        if [[ "$deployment" == "brownfield" ]]; then
+        # ZPA Private DNS is only supported by cc_lb — not cc_gwlb
+        if [[ "$deployment" == "brownfield" && "$dtype" != "cc_gwlb" ]]; then
             while true; do
                 read -r -p "${CYAN}Enable Azure Private DNS for ZPA? (yes/no): ${RESET}" zpa_response
                 case $zpa_response in 
@@ -1129,6 +1250,26 @@ first_run="yes"
                     * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
                 esac
             done
+             
+            # Azure Function Public URL
+            echo "By default, Terraform will upload the Zscaler CC Azure Function Zip to this Storage Account Blob for Function App retrieval"
+            while true; do
+                read -r -p "${CYAN}Do you have a different public URL to retrieve Zscaler CC Azure Function Zip from? [yes/no]: ${RESET}" func_public_url_response
+                case $func_public_url_response in 
+                    no|n ) 
+                        echo "Terraform will proceed with uploading Function Zip file to Azure Storage"
+                        echo "export TF_VAR_upload_function_app_zip=true" >> .zsecrc
+                        break
+                        ;;
+                    yes|y )
+                        echo "Terraform will not upload Function Zip..."
+                        read -r -p "${CYAN}Enter an external URL to retrieve Zscaler CC Azure Function Zip from: ${RESET}" func_public_url_input
+                        echo "export TF_VAR_zscaler_cc_function_public_url=${func_public_url_input}" >> .zsecrc
+                        break
+                        ;;
+                    * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
+                esac
+            done
 
             asp_flex_consumption_supported_regions=(
                 "australiaeast"
@@ -1181,26 +1322,6 @@ first_run="yes"
                         echo "${RED}Invalid response. Please enter a number selection${RESET}"
                     esac
                 done
-             
-            # Azure Function Public URL
-            echo "By default, Terraform will upload the Zscaler CC Azure Function Zip to this Storage Account Blob for Function App retrieval"
-            while true; do
-                read -r -p "${CYAN}Do you have a different public URL to retrieve Zscaler CC Azure Function Zip from? [yes/no]: ${RESET}" func_public_url_response
-                case $func_public_url_response in 
-                    no|n ) 
-                        echo "Terraform will proceed with uploading Function Zip file to Azure Storage"
-                        echo "export TF_VAR_upload_function_app_zip=true" >> .zsecrc
-                        break
-                        ;;
-                    yes|y )
-                        echo "Terraform will not upload Function Zip..."
-                        read -r -p "${CYAN}Enter an external URL to retrieve Zscaler CC Azure Function Zip from: ${RESET}" func_public_url_input
-                        echo "export TF_VAR_zscaler_cc_function_public_url=${func_public_url_input}" >> .zsecrc
-                        break
-                        ;;
-                    * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
-                esac
-            done
         fi
     fi
 fi
@@ -1213,7 +1334,9 @@ fi
 # add deployment type to .zsecrc for future runs
 if [[ "$oper" == "up" ]]; then
     echo "${GREEN}Updating .zsecrc with dtype of $dtype${RESET}"
-    sed -i'' -e '/dtype/d' .zsecrc
+    # Portable in-place strip of any existing dtype line (avoids the .zsecrc-e
+    # artifact that BSD/macOS sed -i'' can leave behind and pollute later runs).
+    grep -v '^[[:space:]]*\(export[[:space:]]\+\)\?dtype=' .zsecrc > .zsecrc.tmp && mv .zsecrc.tmp .zsecrc
     echo "export dtype=${dtype}" >> .zsecrc
 fi
 
@@ -1222,11 +1345,20 @@ fi
 
 # check for valid environment variables in .zsecrc
 if [ -z "$ARM_CLIENT_ID" ] || [ -z "$ARM_CLIENT_SECRET" ] || [ -z "$ARM_SUBSCRIPTION_ID" ] || [ -z "$ARM_TENANT_ID" ] || [ -z "$TF_VAR_arm_location" ]; then
-    echo "${RED}Azure Access info is missing. Remove .zsecrc file and rerun $0 $1${RESET}"
+    echo "${RED}Azure Access info is missing or incomplete in .zsecrc.${RESET}"
+    echo "${YELLOW}This can happen if a previous './zsec up' run was interrupted before credentials were entered.${RESET}"
+    latest_archive=$(ls -1t .zsecrc-[0-9]* 2>/dev/null | head -1)
+    if [[ -n "$latest_archive" ]]; then
+        echo "${YELLOW}To re-attempt, restore the latest archived credentials:${RESET}"
+        echo "    cp ${latest_archive} .zsecrc && $0 $1"
+    else
+        echo "${YELLOW}Please delete the .zsecrc file and rerun:${RESET}"
+        echo "    rm -f .zsecrc && $0 $1"
+    fi
     exit 1
 fi
 
-if [[ $dtype != "base" && $dtype != "ztags_standalone" ]]; then
+if [[ $dtype != "base" ]]; then
     echo "Checking Cloud Connector provisioning info"
     if [ -z "$TF_VAR_cc_vm_prov_url" ] || [ -z "$TF_VAR_azure_vault_url" ] || [ -z "$TF_VAR_http_probe_port" ] || [ -z "$TF_VAR_ccvm_instance_type" ] || [ -z "$TF_VAR_cc_vm_managed_identity_name" ] || [ -z "$TF_VAR_cc_vm_managed_identity_rg" ]; then
         echo "${RED}Cloud Connector provisioning info is missing. Remove .zsecrc file and rerun $0 $1${RESET}"

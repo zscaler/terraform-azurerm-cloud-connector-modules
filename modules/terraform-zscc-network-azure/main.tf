@@ -156,8 +156,8 @@ resource "azurerm_route_table" "workload_rt" {
   route {
     name                   = "default-route"
     address_prefix         = "0.0.0.0/0"
-    next_hop_type          = var.base_only == true ? "Internet" : "VirtualAppliance"
-    next_hop_in_ip_address = var.lb_enabled == true ? var.lb_frontend_ip : element(var.cc_service_ip, count.index)
+    next_hop_type          = (var.base_only == true || (var.lb_enabled == true && var.lb_frontend_ip == null) || (var.lb_enabled == false && length(var.cc_service_ip) == 0)) ? "Internet" : "VirtualAppliance"
+    next_hop_in_ip_address = (var.base_only == true || (var.lb_enabled == true && var.lb_frontend_ip == null) || (var.lb_enabled == false && length(var.cc_service_ip) == 0)) ? null : (var.lb_enabled == true ? var.lb_frontend_ip : element(var.cc_service_ip, count.index))
   }
 }
 

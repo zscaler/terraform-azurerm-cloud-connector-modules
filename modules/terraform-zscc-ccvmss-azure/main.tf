@@ -40,7 +40,7 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "cc_vmss" {
       name                                   = "${var.name_prefix}-ccvmss-fwd-nic-conf-${var.resource_tag}"
       primary                                = true
       subnet_id                              = element(var.service_subnet_id, count.index)
-      load_balancer_backend_address_pool_ids = [var.backend_address_pool]
+      load_balancer_backend_address_pool_ids = (var.public_lb_deployed) ? [var.backend_address_pool, var.public_lb_backend_address_pool] : [var.backend_address_pool]
     }
   }
 
@@ -247,5 +247,4 @@ resource "azurerm_monitor_autoscale_setting" "vmss_autoscale_setting" {
       }
     }
   }
-  tags = var.global_tags
 }

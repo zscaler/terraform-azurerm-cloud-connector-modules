@@ -61,3 +61,27 @@ variable "zssupport_server" {
   description = "destination IP address of Zscaler Support access server. IP resolution of remotesupport.<zscaler_customer_cloud>.net"
   default     = "199.168.148.101" #for commercial clouds
 }
+
+variable "public_lb_deployed" {
+  type        = bool
+  description = "Check if any Public Load Balancer deployed or not"
+  default     = false
+}
+
+variable "gwlb_enabled" {
+  type        = bool
+  description = "Create a dedicated NSG for Gateway Load Balancer VXLAN traffic. Only set to true for GWLB deployment types"
+  default     = false
+}
+
+variable "vxlan_internal_port" {
+  type        = number
+  description = "VXLAN internal UDP port configured on the GWLB backend pool tunnel interface. Used to scope the GWLB NSG inbound rule to only the configured port range. Must match the value passed to the terraform-zscc-gwlb-azure module."
+  default     = 10800
+}
+
+variable "vxlan_external_port" {
+  type        = number
+  description = "VXLAN external UDP port configured on the GWLB backend pool tunnel interface. Used to scope the GWLB NSG inbound rule to only the configured port range. Must match the value passed to the terraform-zscc-gwlb-azure module."
+  default     = 10801
+}

@@ -26,6 +26,9 @@ ${join("\n", module.cc_vmss.vmss_ids)}
 Load Balancer Frontend IP:  
 ${module.cc_lb.lb_ip}
 
+Public Load Balancer Frontend IP:
+${local.public_ip_ip}
+
 Function App ID:
 ${module.cc_functionapp.function_app_id}
 
@@ -84,6 +87,7 @@ Based on the recorded output, the manual sync to start your Azure Function App f
 TB
 }
 locals {
+  public_ip_ip = (one(module.cc_public_lb[*].lb_ip) == null) ? "" : one(module.cc_public_lb[*].lb_ip)
   workload_map = {
     for index, ip in module.workload.private_ip :
     index => ip

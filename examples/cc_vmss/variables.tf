@@ -364,21 +364,6 @@ variable "path_to_scripts" {
   default     = ""
 }
 
-variable "asp_sku_name" {
-  type        = string
-  description = "SKU Name for the App Service Plan. Recommended Y1 (flex consumption) for function app unless not supported by Azure region"
-  default     = "Y1"
-  validation {
-    condition = (
-      var.asp_sku_name == "Y1" ||
-      var.asp_sku_name == "FC1" ||
-      var.asp_sku_name == "EP1" ||
-      var.asp_sku_name == "B1"
-    )
-    error_message = "Input asp_sku_name selected is not a valid/approved SKU Name."
-  }
-}
-
 # Azure Private DNS specific variables
 variable "zpa_enabled" {
   type        = bool
@@ -514,4 +499,10 @@ variable "byo_service_nsg_names" {
   type        = list(string)
   description = "Existing Service Network Security Group ID for Cloud Connector VM association. This must be populated if byo_nsg variable is true"
   default     = null
+}
+
+variable "public_lb_deploy" {
+  type        = bool
+  description = "Deploy a Public Load-Balancer"
+  default     = false
 }
