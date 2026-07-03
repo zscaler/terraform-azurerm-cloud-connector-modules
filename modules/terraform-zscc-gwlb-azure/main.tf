@@ -50,15 +50,6 @@ resource "azurerm_lb_backend_address_pool" "cc_gwlb_backend_pool" {
     type       = "External"
   }
 
-  # Distinctness check: at least one of (port, VNI) must differ between the
-  # two tunnel interfaces, otherwise Azure rejects the backend pool with
-  # "tunnel interfaces must be unique".
-  lifecycle {
-    precondition {
-      condition     = var.vxlan_internal_port != var.vxlan_external_port || var.vxlan_internal_vni != var.vxlan_external_vni
-      error_message = "GWLB tunnel interfaces must be unique: the (port, VNI) pair for the Internal interface must differ from the External interface in at least one value. Adjust var.vxlan_internal_port / var.vxlan_external_port and/or var.vxlan_internal_vni / var.vxlan_external_vni so they are not identical."
-    }
-  }
 }
 
 ################################################################################
