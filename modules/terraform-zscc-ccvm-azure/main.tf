@@ -152,7 +152,12 @@ resource "azurerm_linux_virtual_machine" "cc_vm" {
     identity_ids = [var.managed_identity_id]
   }
 
-  tags = var.global_tags
+  # LegacyVMNVA=true opts this NVA out of Azure MANA (Managed Network Adapter)
+  # assignment. Required for Cloud Connector to function correctly on Azure hosts
+  # that enforce MANA. This tag must be present before the VM is provisioned;
+  # for existing VMs, apply the tag then stop/deallocate and start the VM so it
+  # lands on a non-MANA host. A simple reboot is NOT sufficient.
+  tags = merge(var.global_tags, { LegacyVMNVA = "true" })
 
   depends_on = [
     azurerm_network_interface_security_group_association.cc_mgmt_nic_association,
