@@ -88,7 +88,13 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "cc_vmss" {
 
   source_image_id = var.ccvm_source_image_id != null ? var.ccvm_source_image_id : null
 
-  tags = var.global_tags
+  # LegacyVMNVA=true opts this NVA out of Azure MANA (Managed Network Adapter)
+  # assignment. Required for Cloud Connector VMSS to function correctly on Azure
+  # hosts that enforce MANA. This tag is set on the VMSS model so all future
+  # scale-out instances inherit it automatically. For existing VMSS instances,
+  # apply terraform then perform a rolling instance refresh or manual
+  # stop/deallocate+start of each instance so they land on non-MANA hosts.
+  tags = merge(var.global_tags, { LegacyVMNVA = "true" })
 
   depends_on = [
     var.backend_address_pool
