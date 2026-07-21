@@ -88,7 +88,7 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "cc_vmss" {
 
   source_image_id = var.ccvm_source_image_id != null ? var.ccvm_source_image_id : null
 
-  tags = merge(var.global_tags, { LegacyVMNVA = "true" })
+  tags = merge(var.global_tags, var.enable_legacy_vm_nva_tag ? { LegacyVMNVA = "true" } : {})
 
   depends_on = [
     var.backend_address_pool
