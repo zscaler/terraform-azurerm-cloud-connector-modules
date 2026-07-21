@@ -16,6 +16,12 @@ variable "global_tags" {
   default     = {}
 }
 
+variable "enable_legacy_vm_nva_tag" {
+  type        = bool
+  description = "Emit the LegacyVMNVA tag on the Cloud Connector VM. Set to false once MANA host support is available."
+  default     = true
+}
+
 variable "resource_group" {
   type        = string
   description = "Main Resource Group Name"
