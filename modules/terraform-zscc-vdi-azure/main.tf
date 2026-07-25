@@ -48,10 +48,32 @@ resource "azurerm_windows_virtual_machine" "cca-vdi" {
   }
   source_image_reference {
     publisher = "MicrosoftWindowsDesktop"
-    offer     = "Office-365"
-    sku       = "win10-21h2-avd-m365"
+    offer     = "office-365"
+    sku       = "win10-22h2-avd-m365"
     version   = "latest"
   }
+
+  # Enable WinRM for remote management
+  winrm_listener {
+    protocol = "Http"
+  }
+
+  # Configure WinRM client to allow unencrypted traffic for remote connections
+  user_data = base64encode(<<-EOF
+    <powershell>
+    # Enable unencrypted traffic on WinRM client
+    Set-Item -Path WSMan:\localhost\Client\AllowUnencrypted -Value $true -Force
+    
+    # Also set registry key for client configuration
+    reg add "HKLM\Software\Policies\Microsoft\Windows\WinRM\Client" /v AllowUnencrypted /t REG_DWORD /d 1 /f
+    
+    # Restart WinRM service to apply changes
+    Restart-Service WinRM -Force
+    
+    Write-Host "WinRM client configuration completed"
+    </powershell>
+  EOF
+  )
 }
 
 resource "azurerm_route_table" "cca-vdi-routetable" {
@@ -94,16 +116,29 @@ resource "azurerm_network_security_group" "cca-vdi-nsg" {
   }
 
   security_rule {
-    name                       = "AllowAnySSHInbound"
+    name                       = "AllowWinRMHTTPInbound"
     priority                   = 101
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
-    destination_port_range     = "22"
+    destination_port_range     = "5985"
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
+
+  security_rule {
+    name                       = "AllowWinRMHTTPSInbound"
+    priority                   = 102
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "5986"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
   tags = {
     environment = "cc-vdi"
   }
@@ -115,7 +150,7 @@ resource "azurerm_network_interface_security_group_association" "cca-vdi-nsg-ass
   network_security_group_id = azurerm_network_security_group.cca-vdi-nsg.id
 }
 
-resource "azurerm_virtual_machine_extension" "CustomScriptExtenson" {
+resource "azurerm_virtual_machine_extension" "CustomScriptExtensionNoToken" {
   count                = var.cca_template_url == null && var.cca_token == null ? var.workload_count : 0
   name                 = "${var.prefix}-CustomScriptExtension-vm-${count.index + 1}-${var.resource_tag}"
   virtual_machine_id   = azurerm_windows_virtual_machine.cca-vdi[count.index].id
@@ -125,9 +160,15 @@ resource "azurerm_virtual_machine_extension" "CustomScriptExtenson" {
 
   settings = <<SETTINGS
         {
-          "commandToExecute": "powershell.exe -Command \"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://z0luvmca.blob.core.windows.net/zsvdiinstaller/ZSVDIInstaller_1.4.0.5_x64.msi' -OutFile 'C:\\temp\\ZSVDIInstaller_1.4.0.5_x64.msi'\";powershell.exe -Command \"msiexec \"/i C:\\temp\\ZSVDIInstaller_1.4.0.5_x64.msi /qn\"\""
+          "commandToExecute": "powershell.exe -ExecutionPolicy Bypass -Command \"New-Item -ItemType Directory -Force -Path 'C:\\temp'; Enable-PSRemoting -Force -SkipNetworkProfileCheck; Set-Item WSMan:\\localhost\\Client\\TrustedHosts -Value '*' -Force; winrm set winrm/config/service '@{AllowUnencrypted=\"true\"}'; winrm set winrm/config/service/auth '@{Basic=\"true\"}'; Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP-PUBLIC' -RemoteAddress Any -ErrorAction SilentlyContinue; New-NetFirewallRule -Name 'WinRM-HTTP' -DisplayName 'WinRM HTTP' -Enabled True -Direction Inbound -Protocol TCP -LocalPort 5985 -Action Allow -ErrorAction SilentlyContinue; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://z0luvmca.blob.core.windows.net/zsvdiinstaller/ZSVDIInstaller_1.4.0.5_x64.msi' -OutFile 'C:\\temp\\ZSVDIInstaller_1.4.0.5_x64.msi'; Start-Process msiexec.exe -ArgumentList '/i C:\\temp\\ZSVDIInstaller_1.4.0.5_x64.msi /qn' -Wait\""
         }
     SETTINGS
+
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "10m"
+  }
 }
 
 resource "azurerm_virtual_machine_extension" "CustomScriptExtension" {
@@ -140,18 +181,16 @@ resource "azurerm_virtual_machine_extension" "CustomScriptExtension" {
 
   settings = <<SETTINGS
         {
-          "commandToExecute": "powershell.exe -Command \"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://z0luvmca.blob.core.windows.net/zsvdiinstaller/ZSVDIInstaller_1.4.0.5_x64.msi' -OutFile 'C:\\temp\\ZSVDIInstaller_1.4.0.5_x64.msi'\";powershell.exe -Command \"msiexec \"/i C:\\temp\\ZSVDIInstaller_1.4.0.5_x64.msi PROVURL=\"${var.cca_template_url}\" TOKEN=\"${var.cca_token}\" MODE=1 ONBOARD=1 /qn\"\""
+          "commandToExecute": "powershell.exe -ExecutionPolicy Bypass -Command \"New-Item -ItemType Directory -Force -Path 'C:\\temp'; Enable-PSRemoting -Force -SkipNetworkProfileCheck; Set-Item WSMan:\\localhost\\Client\\TrustedHosts -Value '*' -Force; winrm set winrm/config/service '@{AllowUnencrypted=\\\"true\\\"}'; winrm set winrm/config/service/auth '@{Basic=\\\"true\\\"}'; New-ItemProperty -Path HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System -Name LocalAccountTokenFilterPolicy -Value 1 -Force; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://z0luvmca.blob.core.windows.net/zsvdiinstaller/ZSVDIInstaller_1.4.0.5_x64.msi' -OutFile 'C:\\temp\\ZSVDIInstaller_1.4.0.5_x64.msi'; Start-Process msiexec.exe -ArgumentList '/i C:\\temp\\ZSVDIInstaller_1.4.0.5_x64.msi PROVURL=${var.cca_template_url} TOKEN=${var.cca_token} MODE=1 ONBOARD=1 /qn' -Wait\""
         }
     SETTINGS
+
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "10m"
+  }
 }
 
-resource "azurerm_virtual_machine_extension" "WindowsOpenSSH" {
-  count                       = var.workload_count
-  name                        = "${var.prefix}-WindowsOpenSSH-vm-${count.index + 1}-${var.resource_tag}"
-  virtual_machine_id          = azurerm_windows_virtual_machine.cca-vdi[count.index].id
-  publisher                   = "Microsoft.Azure.OpenSSH"
-  type                        = "WindowsOpenSSH"
-  type_handler_version        = "3.0"
-  auto_upgrade_minor_version  = true
-  failure_suppression_enabled = true
-}
+# WindowsOpenSSH extension removed - using WinRM instead for remote management
+# WinRM is configured in CustomScriptExtension and is more reliable for Windows
