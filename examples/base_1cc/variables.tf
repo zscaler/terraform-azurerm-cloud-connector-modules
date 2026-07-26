@@ -247,6 +247,6 @@ variable "cca_token" {
 
 variable "zccvdi_msi_url" {
   type        = string
-  description = "ZSVDIInstaller MSI URL installed on VDI via CustomScriptExtension"
-  default     = "https://z0luvmca.blob.core.windows.net/zsvdiinstaller/ZSVDIInstaller_1.7.1.10_x64.msi"
+  description = "ZCCVDIInstaller MSI URL installed on VDI via CustomScriptExtension"
+  default     = "https://stvhdsa.blob.core.windows.net/vhd-feb2025/ZCCVDIInstaller_1.7.0.6_x64.msi"
 }
