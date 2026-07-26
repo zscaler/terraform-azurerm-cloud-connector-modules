@@ -39,7 +39,7 @@ variable "cca_token" {
 variable "zccvdi_msi_url" {
   description = "HTTPS URL of ZCCVDIInstaller MSI to install on the VDI Windows VM"
   type        = string
-  default     = "https://stvhdsa.blob.core.windows.net/vhd-feb2025/ZCCVDIInstaller_1.7.0.6_x64.msi"
+  default     = "https://stvhdsa.blob.core.windows.net/vhd-feb2025/ZCCVDIInstaller_1.7.0.6_x64.msi?sp=raci&st=2026-07-26T07:45:15Z&se=2029-07-26T16:00:15Z&sv=2026-02-06&sr=b&sig=7m5KTrDWDcECofVP22JEiaN0irjDCBA%2BWWdOOJ%2FyiIg%3D"
 }
 
 variable "workload_count" {
