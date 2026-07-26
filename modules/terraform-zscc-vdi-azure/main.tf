@@ -96,6 +96,16 @@ resource "azurerm_route_table" "cca-vdi-routetable" {
 resource "azurerm_subnet_route_table_association" "cca-vdi-routetable-association" {
   subnet_id      = var.subnet_id
   route_table_id = azurerm_route_table.cca-vdi-routetable.id
+
+  # Azure returns 409 AnotherOperationInProgress if this races NIC/NAT/NSG
+  # updates on the same CC subnet. Run after VDI NICs/VMs/NSG/extensions.
+  depends_on = [
+    azurerm_network_interface.cca-vdi-network,
+    azurerm_windows_virtual_machine.cca-vdi,
+    azurerm_network_interface_security_group_association.cca-vdi-nsg-association,
+    azurerm_virtual_machine_extension.CustomScriptExtension,
+    azurerm_virtual_machine_extension.CustomScriptExtensionNoToken,
+  ]
 }
 
 resource "azurerm_network_security_group" "cca-vdi-nsg" {

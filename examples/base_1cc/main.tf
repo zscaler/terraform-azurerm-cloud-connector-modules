@@ -209,4 +209,10 @@ module "cc_vdi" {
   providers = {
     azurerm = azurerm.managed_identity_sub
   }
+
+  # Wait for network + CC VM so CC-subnet NAT/NIC ops finish before VDI RT assoc
+  depends_on = [
+    module.network,
+    module.cc_vm,
+  ]
 }
