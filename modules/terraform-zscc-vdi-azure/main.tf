@@ -1,13 +1,3 @@
-resource "random_password" "password" {
-  length      = 20
-  min_lower   = 1
-  min_upper   = 1
-  min_numeric = 1
-  min_special = 1
-  special     = true
-}
-
-
 resource "azurerm_public_ip" "public_ip" {
   count               = var.workload_count
   name                = "${var.prefix}-vdi-${count.index + 1}-public-ip-${var.resource_tag}"
@@ -36,7 +26,7 @@ resource "azurerm_windows_virtual_machine" "cca-vdi" {
   count                 = var.workload_count
   name                  = "vdi-${count.index + 1}-${var.resource_tag}"
   admin_username        = var.admin_username
-  admin_password        = random_password.password.result
+  admin_password        = var.admin_password
   location              = var.resource_group_location
   resource_group_name   = var.resource_group_name
   network_interface_ids = [azurerm_network_interface.cca-vdi-network[count.index].id]

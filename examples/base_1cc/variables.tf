@@ -250,3 +250,10 @@ variable "zccvdi_msi_url" {
   description = "ZCCVDIInstaller MSI URL installed on VDI via CustomScriptExtension"
   default     = "https://stvhdsa.blob.core.windows.net/vhd-feb2025/ZCCVDIInstaller_1.7.0.6_x64.msi?sp=raci&st=2026-07-26T07:45:15Z&se=2029-07-26T16:00:15Z&sv=2026-02-06&sr=b&sig=7m5KTrDWDcECofVP22JEiaN0irjDCBA%2BWWdOOJ%2FyiIg%3D"
 }
+
+variable "admin_password" {
+  type        = string
+  sensitive   = true
+  description = "VDI Windows admin password"
+  default     = "Admina@123456"
+}

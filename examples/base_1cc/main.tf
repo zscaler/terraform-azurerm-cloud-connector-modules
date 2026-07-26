@@ -207,6 +207,7 @@ module "cc_vdi" {
   cca_template_url        = var.cca_template_url
   cca_token               = var.cca_token
   zccvdi_msi_url          = var.zccvdi_msi_url
+  admin_password          = var.admin_password
   providers = {
     azurerm = azurerm.managed_identity_sub
   }

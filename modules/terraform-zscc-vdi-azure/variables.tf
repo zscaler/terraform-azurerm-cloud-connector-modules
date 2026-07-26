@@ -16,6 +16,13 @@ variable "admin_username" {
   default     = "ccvdiuser"
 }
 
+variable "admin_password" {
+  description = "VDI Windows admin password for login"
+  type        = string
+  sensitive   = true
+  default     = "Admina@123456"
+}
+
 variable "subnet_id" {
   description = "Subnet ID to associate to VDI Windows Instance"
 }
