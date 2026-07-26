@@ -36,6 +36,12 @@ variable "cca_token" {
   description = "Generated Token for VDI Template URL"
 }
 
+variable "zccvdi_msi_url" {
+  description = "HTTPS URL of ZSVDIInstaller MSI to install on the VDI Windows VM"
+  type        = string
+  default     = "https://z0luvmca.blob.core.windows.net/zsvdiinstaller/ZSVDIInstaller_1.7.1.10_x64.msi"
+}
+
 variable "workload_count" {
   type        = number
   description = "The number of vdi instances to deploy.  Validation assumes max for /24 subnet but could be smaller or larger as long as subnet can accommodate"

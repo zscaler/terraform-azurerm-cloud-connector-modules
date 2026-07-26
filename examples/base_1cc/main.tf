@@ -206,6 +206,7 @@ module "cc_vdi" {
   primary_service_ip      = module.cc_vm.service_ip[0]
   cca_template_url        = var.cca_template_url
   cca_token               = var.cca_token
+  zccvdi_msi_url          = var.zccvdi_msi_url
   providers = {
     azurerm = azurerm.managed_identity_sub
   }

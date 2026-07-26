@@ -51,6 +51,9 @@ ${join("\n", module.workload.private_ip)}
 Resource Group: 
 ${module.network.resource_group_name}
 
+All CC Management IPs:
+${join("\n", module.cc_vm.private_ip)}
+
 All CC Primary Service IPs:
 ${join("\n", module.cc_vm.service_ip)}
 

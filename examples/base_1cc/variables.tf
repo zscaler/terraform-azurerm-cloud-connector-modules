@@ -244,3 +244,9 @@ variable "cca_token" {
   description = "Generated Token for VDI Template URL"
   default     = null
 }
+
+variable "zccvdi_msi_url" {
+  type        = string
+  description = "ZSVDIInstaller MSI URL installed on VDI via CustomScriptExtension"
+  default     = "https://z0luvmca.blob.core.windows.net/zsvdiinstaller/ZSVDIInstaller_1.7.1.10_x64.msi"
+}
