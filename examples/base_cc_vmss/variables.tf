@@ -92,12 +92,14 @@ variable "azure_vault_url" {
 variable "ccvm_instance_type" {
   type        = string
   description = "Cloud Connector Image size"
-  default     = "Standard_D2s_v3"
+  default     = "Standard_D2ds_v5"
   validation {
     condition = (
       var.ccvm_instance_type == "Standard_D2s_v3" ||
       var.ccvm_instance_type == "Standard_DS2_v2" ||
-      var.ccvm_instance_type == "Standard_DS3_v2"
+      var.ccvm_instance_type == "Standard_DS3_v2" ||
+      var.ccvm_instance_type == "Standard_D2ds_v5" ||
+      var.ccvm_instance_type == "Standard_D2ads_v5"
     )
     error_message = "Input ccvm_instance_type must be set to an approved vm size."
   }
@@ -391,4 +393,3 @@ variable "public_lb_deploy" {
   description = "Deploy a Public Load-Balancer"
   default     = false
 }
-
