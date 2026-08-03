@@ -34,7 +34,7 @@ Our Deployment scripts are leveraging Terraform v1.1.9 which includes full binar
     - Directory (tenant) ID
     - Client Secret Value
 3. Azure Region (e.g. westus2) where Cloud Connector resources are to be deployed
-4. User-created Azure Managed Identity. Role Assignment: Network Contributor (If using a Custom Role, the minimum requirement is: Microsoft. Network/networkInterfaces/read) Scope: Subscription or Resource Group (where Cloud Connector VMs will be deployed)
+4. User-created Azure Managed Identity with a **least-privilege** Role Assignment. **Recommended**: create a Custom Role that grants only `Microsoft.Network/networkInterfaces/read` and assign it at **Resource Group scope** (the Resource Group where the Cloud Connector VMs will be deployed). **Do NOT** use the built-in `Network Contributor` role at Subscription scope — it grants write access to every NIC, NSG, route table, load balancer, and VNet peering across the entire subscription, well beyond what Cloud Connector needs at runtime. If your environment cannot create Custom Roles, `Network Contributor` scoped to only the single Cloud Connector Resource Group is an acceptable (still over-privileged) fallback.
 5. Azure Vault URL with Zscaler Cloud Connector Credentials (E.g. [https://zscaler-cc-demo.vault.azure.net](https://zscaler-cc-demo.vault.azure.net/)) Add an access policy to the above Key Vault as below
     - Secret Permissions: Get, List
     - Select Principal: The Managed Identity created in the above step
