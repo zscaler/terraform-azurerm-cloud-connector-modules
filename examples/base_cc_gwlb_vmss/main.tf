@@ -213,7 +213,7 @@ module "cc_identity" {
   cc_vm_managed_identity_name = var.cc_vm_managed_identity_name
   cc_vm_managed_identity_rg   = var.cc_vm_managed_identity_rg
 
-  vmss_enabled                       = true
+  vmss_enabled = true
   # TF-AZ-09: Function App autoscaler MUST use a managed identity DISTINCT from cc_vm_managed_identity_*.
   # Empty or equal-to-CC values will fail plan (see terraform-zscc-identity-azure preconditions).
   function_app_managed_identity_name = var.function_app_managed_identity_name

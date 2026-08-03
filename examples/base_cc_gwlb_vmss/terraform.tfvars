@@ -202,10 +202,10 @@
 #### Terraform plan will FAIL with a TF-AZ-09 error if these are empty or match the CC identity.
 
 # Name of the User-Assigned Managed Identity to attach to the Function App. E.g. function_app_managed_identity
-function_app_managed_identity_name                = ""
+function_app_managed_identity_name = ""
 
 # Resource Group of the Function App Managed Identity. E.g. function_rg_1
-function_app_managed_identity_rg                  = ""
+function_app_managed_identity_rg = ""
 
 # Function App uses Azure App Service Plan for hosting. Zscaler recommends leaving the default (Y1 / Flex Consumption plan), but this
 # is not available in all Azure regions. If you cannot use Y1 and you do not require VNet Integration, then choose B1. If you do need
