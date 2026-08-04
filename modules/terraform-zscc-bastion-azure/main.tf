@@ -30,6 +30,7 @@ resource "azurerm_public_ip" "bastion_pip" {
   location                = var.location
   resource_group_name     = var.resource_group
   allocation_method       = "Static"
+  sku                     = "Standard"
   idle_timeout_in_minutes = 30
 
   tags = var.global_tags
