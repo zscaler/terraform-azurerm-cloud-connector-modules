@@ -57,7 +57,7 @@ module "network" {
   public_subnets        = var.public_subnets
   zones_enabled         = var.zones_enabled
   zones                 = var.zones
-  workloads_enabled     = false
+  workloads_enabled     = true
   bastion_enabled       = true
 }
 
@@ -77,6 +77,22 @@ module "bastion" {
   bastion_nsg_source_prefix = var.bastion_nsg_source_prefix
 }
 
+
+################################################################################
+# 3. Create Workload Hosts to test traffic connectivity through CC
+################################################################################
+module "workload" {
+  source         = "../../modules/terraform-zscc-workload-azure"
+  workload_count = var.workload_count
+  location       = var.arm_location
+  name_prefix    = var.name_prefix
+  resource_tag   = random_string.suffix.result
+  global_tags    = local.global_tags
+  resource_group = module.network.resource_group_name
+  subnet_id      = module.network.workload_subnet_ids[0]
+  ssh_key        = tls_private_key.key.public_key_openssh
+  dns_servers    = []
+}
 
 
 ################################################################################
