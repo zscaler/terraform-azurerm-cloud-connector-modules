@@ -249,3 +249,13 @@ variable "target_address" {
   description = "Azure DNS queries will be conditionally forwarded to these target IP addresses. Default are a pair of Zscaler Global VIP addresses"
   default     = ["185.46.212.88", "185.46.212.89"]
 }
+
+variable "fips_enabled" {
+  type        = string
+  description = "Enable FIPS mode for Cloud Connector provisioning. Supported values are 'False' or 'True'."
+  default     = "False"
+  validation {
+    condition     = var.fips_enabled == "False" || var.fips_enabled == "True"
+    error_message = "Variable fips_enabled must be either 'False' or 'True'."
+  }
+}

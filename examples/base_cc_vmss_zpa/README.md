@@ -209,7 +209,7 @@ To find this Mgmt IP navigate to: Resource Group -> select Scale Set -> Instance
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.7, < 2.0.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 3.108.0, <= 3.116 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 3.108.0, < 5.0.0 |
 | <a name="requirement_local"></a> [local](#requirement\_local) | ~> 2.5.0 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | ~> 3.1.0 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.3.0 |
@@ -219,7 +219,7 @@ To find this Mgmt IP navigate to: Resource Group -> select Scale Set -> Instance
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | >= 3.108.0, <= 3.116 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | >= 3.108.0, < 5.0.0 |
 | <a name="provider_local"></a> [local](#provider\_local) | ~> 2.5.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | ~> 3.3.0 |
 | <a name="provider_tls"></a> [tls](#provider\_tls) | ~> 3.4.0 |
@@ -278,6 +278,7 @@ To find this Mgmt IP navigate to: Resource Group -> select Scale Set -> Instance
 | <a name="input_existing_storage_account"></a> [existing\_storage\_account](#input\_existing\_storage\_account) | Set to True if you wish to use an existing Storage Account to associate with the Function App. Default is false meaning Terraform module will create a new one | `bool` | `false` | no |
 | <a name="input_existing_storage_account_name"></a> [existing\_storage\_account\_name](#input\_existing\_storage\_account\_name) | Name of existing Storage Account to associate with the Function App. | `string` | `""` | no |
 | <a name="input_existing_storage_account_rg"></a> [existing\_storage\_account\_rg](#input\_existing\_storage\_account\_rg) | Resource Group of existing Storage Account to associate with the Function App. | `string` | `""` | no |
+| <a name="input_fips_enabled"></a> [fips\_enabled](#input\_fips\_enabled) | Enable FIPS mode for Cloud Connector provisioning. Supported values are 'False' or 'True'. | `string` | `"False"` | no |
 | <a name="input_function_app_managed_identity_name"></a> [function\_app\_managed\_identity\_name](#input\_function\_app\_managed\_identity\_name) | Azure Managed Identity name to attach to the Function App. E.g zspreview-66117-mi | `string` | `""` | no |
 | <a name="input_function_app_managed_identity_rg"></a> [function\_app\_managed\_identity\_rg](#input\_function\_app\_managed\_identity\_rg) | Resource Group of the Azure Managed Identity name to attach to the Function App. E.g. edgeconnector\_rg\_1 | `string` | `""` | no |
 | <a name="input_health_check_interval"></a> [health\_check\_interval](#input\_health\_check\_interval) | The interval, in seconds, for how frequently to probe the endpoint for health status. Typically, the interval is slightly less than half the allocated timeout period (in seconds) which allows two full probes before taking the instance out of rotation. The default value is 15, the minimum value is 5 | `number` | `15` | no |
