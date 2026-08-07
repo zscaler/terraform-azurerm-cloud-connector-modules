@@ -183,16 +183,9 @@ variable "vmss_default_ccs" {
 
   validation {
     condition = (
-      var.vmss_default_ccs <= 16
+      var.vmss_default_ccs >= 1 && var.vmss_default_ccs <= 16
     )
-    error_message = "vmss_default_ccs cannot exceed 16 (hard limit of 16 Cloud Connectors per group)."
-  }
-
-  validation {
-    condition = (
-      var.vmss_default_ccs >= var.vmss_min_ccs && var.vmss_default_ccs <= var.vmss_max_ccs
-    )
-    error_message = "vmss_default_ccs must be between vmss_min_ccs and vmss_max_ccs (inclusive)."
+    error_message = "Input vmss_default_ccs cannot exceed 16 (hard limit of 16 Cloud Connectors per group)."
   }
 }
 
@@ -205,7 +198,7 @@ variable "vmss_min_ccs" {
     condition = (
       var.vmss_min_ccs >= 1 && var.vmss_min_ccs <= 16
     )
-    error_message = "vmss_min_ccs must be between 1 and 16."
+    error_message = "Input vmss_min_ccs must be set to a number between 1 and 16."
   }
 }
 
@@ -216,16 +209,9 @@ variable "vmss_max_ccs" {
 
   validation {
     condition = (
-      var.vmss_max_ccs <= 16
+      var.vmss_max_ccs >= 1 && var.vmss_max_ccs <= 16
     )
-    error_message = "vmss_max_ccs cannot exceed 16 (hard limit of 16 Cloud Connectors per group)."
-  }
-
-  validation {
-    condition = (
-      var.vmss_max_ccs >= var.vmss_min_ccs
-    )
-    error_message = "vmss_max_ccs must be greater than or equal to vmss_min_ccs."
+    error_message = "Input vmss_max_ccs cannot exceed 16 (hard limit of 16 Cloud Connectors per group)."
   }
 }
 
