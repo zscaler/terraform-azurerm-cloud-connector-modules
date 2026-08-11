@@ -73,6 +73,8 @@
 #ccvm_instance_type                         = "Standard_DS3_v2"
 #ccvm_instance_type                         = "Standard_D2ds_v5"
 #ccvm_instance_type                         = "Standard_D2ads_v5"
+#ccvm_instance_type                         = "Standard_D2ds_v6"
+#ccvm_instance_type                         = "Standard_D2ads_v6"
 
 ## 11. By default, no zones are specified in any resource creation meaning they are either auto-assigned by Azure 
 ##    (Virtual Machines and NAT Gateways) or Zone-Redundant (Public IP) based on whatever default configuration is.

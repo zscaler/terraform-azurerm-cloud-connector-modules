@@ -3,6 +3,7 @@
 ENHANCEMENTS:
 * add new `fips_enabled` variable for enabling FIPS mode via userdata
 * bump `hashicorp/azurerm` provider constraint to `>= 3.108.0, < 5.0.0` across examples and modules
+* add: Azure D-v6 VM/VMSS sizes `Standard_D2ds_v6` and `Standard_D2ads_v6` added **additively** to the `ccvm_instance_type` allow-list in the CCVM/CCVMSS modules and all examples (v5 sizes remain); `zsec` VM size menu offers the v6 sizes for public clouds only (not offered in any Azure China region, where the SKUs are not available)
 
 ## v0.9.0 (Unreleased)
 

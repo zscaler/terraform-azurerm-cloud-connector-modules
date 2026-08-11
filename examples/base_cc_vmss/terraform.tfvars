@@ -73,6 +73,8 @@
 #ccvm_instance_type                         = "Standard_DS3_v2"
 #ccvm_instance_type                         = "Standard_D2ds_v5"
 #ccvm_instance_type                         = "Standard_D2ads_v5"
+#ccvm_instance_type                         = "Standard_D2ds_v6"
+#ccvm_instance_type                         = "Standard_D2ads_v6"
 
 ## 11. Enable FIPS mode for new deployments only. Supported values are "False" or "True".
 ##     This setting is applied only for new deployments.

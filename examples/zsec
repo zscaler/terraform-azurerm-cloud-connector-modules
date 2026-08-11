@@ -641,7 +641,7 @@ first_run="yes"
             elif [[ "$azure_location" == "chinanorth3" || "$azure_location" == "chinaeast3" ]]; then
                 vm_sizes=("Standard_DS3_v2" "Standard_D2ds_v5" "Standard_D2ads_v5" "Standard_DS2_v2")
             else
-                vm_sizes=("Standard_D2ds_v5" "Standard_D2ads_v5")
+                vm_sizes=("Standard_D2ds_v5" "Standard_D2ads_v5" "Standard_D2ds_v6" "Standard_D2ads_v6")
             fi
             select ccvm_instance_type in "${vm_sizes[@]}"
             do
