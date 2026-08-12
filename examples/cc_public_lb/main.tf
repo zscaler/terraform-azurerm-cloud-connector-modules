@@ -115,8 +115,10 @@ module "cc_vm" {
   ssh_key                        = tls_private_key.key.public_key_openssh
   managed_identity_id            = module.cc_identity.managed_identity_id
   user_data                      = local.userdata
-  backend_address_pool           = module.cc_public_lb.lb_backend_address_pool
+  public_lb_backend_address_pool = module.cc_public_lb.lb_backend_address_pool
   lb_association_enabled         = true
+  public_lb_deployed             = true
+  private_lb_enabled             = false
   location                       = var.arm_location
   zones_enabled                  = var.zones_enabled
   zones                          = var.zones
@@ -130,7 +132,6 @@ module "cc_vm" {
   service_nsg_id                 = module.cc_nsg.service_nsg_id
   accelerated_networking_enabled = var.accelerated_networking_enabled
   encryption_at_host_enabled     = var.encryption_at_host_enabled
-  public_lb_enabled              = true
 }
 
 
