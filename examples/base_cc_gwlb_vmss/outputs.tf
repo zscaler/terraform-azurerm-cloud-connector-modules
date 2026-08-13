@@ -44,7 +44,16 @@ ${module.cc_functionapp.function_app_id}
 Function App Outbound IPs:
 ${join("\n", module.cc_functionapp.function_app_outbound_ip_address_list)}
 
+WORKLOAD Details/Commands:
+SSH to WORKLOAD
+%{for k, v in local.workload_map~}
+ssh -F ssh_config workload-${k}
+%{endfor~}  
 
+WORKLOAD IPs:
+%{for k, v in local.workload_map~}
+workload-${k} = ${v}
+%{endfor~}  
 
 
 BASTION Jump Host Details/Commands:
@@ -78,11 +87,25 @@ TB
 }
 
 locals {
+  workload_map = {
+    for index, ip in module.workload.private_ip :
+    index => ip
+  }
   ssh_config_contents = <<SSH_CONFIG
     Host bastion
       HostName ${module.bastion.public_ip}
       User ${module.bastion.admin_username}
       IdentityFile ${var.name_prefix}-key-${random_string.suffix.result}.pem
+
+    %{for k, v in local.workload_map~}
+Host workload-${k}
+      HostName ${v}
+      User ${module.workload.admin_username}
+      IdentityFile ${var.name_prefix}-key-${random_string.suffix.result}.pem
+      StrictHostKeyChecking no
+      ProxyJump bastion
+      ProxyCommand ssh bastion -W %h:%p
+    %{endfor~}
   SSH_CONFIG
 }
 
