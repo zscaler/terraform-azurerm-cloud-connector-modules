@@ -45,6 +45,16 @@
 #cc_vm_managed_identity_name = "cloud_connector_managed_identity"
 #cc_vm_managed_identity_rg   = "cloud_connector_rg_1"
 
+## 6b. REQUIRED for VMSS deployments (TF-AZ-09): Function App autoscaler managed identity.
+## This MUST reference a DIFFERENT User-Assigned Managed Identity than cc_vm_managed_identity_*
+## above. The Function App needs VMSS Compute write/delete and Key Vault secret-read; the CC
+## VMs do not. Sharing one identity means a compromised CC VM inherits the autoscaler's power
+## to delete sibling CCs and read every Zscaler provisioning secret.
+## Terraform plan will FAIL with a TF-AZ-09 error if these are empty or match the CC identity.
+
+function_app_managed_identity_name = ""
+function_app_managed_identity_rg   = ""
+
 
 #####################################################################################################################
 ##### BYO (Bring Your Own) — existing infrastructure                                      #####

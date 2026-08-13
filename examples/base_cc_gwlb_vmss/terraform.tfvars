@@ -198,14 +198,18 @@
 #existing_storage_account_rg = "<storage-account-resource-group"
 
 
-#### Optional inputs: By default, Terraform will use the same Managed Identity as the CC VMSS for the Function App
-# Provide your existing Azure Managed Identity name to attach to the Function App. E.g tunction_app_managed_identity
+#### REQUIRED for VMSS deployments (TF-AZ-09): Function App autoscaler managed identity.
+#### This MUST reference a DIFFERENT User-Assigned Managed Identity than cc_vm_managed_identity_*
+#### above. The Function App needs VMSS Compute write/delete and Key Vault secret-read; the CC
+#### VMs do not. Sharing one identity means a compromised CC VM inherits the autoscaler's power
+#### to delete sibling CCs and read every Zscaler provisioning secret.
+#### Terraform plan will FAIL with a TF-AZ-09 error if these are empty or match the CC identity.
 
-#function_app_managed_identity_name                = "function_app_managed_identity"
+# Name of the User-Assigned Managed Identity to attach to the Function App. E.g. function_app_managed_identity
+function_app_managed_identity_name = ""
 
-# Provide the existing Resource Group of the Azure Managed Identity name to attach to the CC VM. E.g. function_connector_rg_1
-
-#function_app_managed_identity_rg                  = "function_rg_1"
+# Resource Group of the Function App Managed Identity. E.g. function_rg_1
+function_app_managed_identity_rg = ""
 
 # Function App uses Azure App Service Plan for hosting. Zscaler recommends leaving the default (Y1 / Flex Consumption plan), but this
 # is not available in all Azure regions. If you cannot use Y1 and you do not require VNet Integration, then choose B1. If you do need
