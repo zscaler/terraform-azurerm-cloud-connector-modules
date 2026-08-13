@@ -218,7 +218,7 @@ module "cc_identity" {
 
   #optional variable provider block defined in versions.tf to support managed identity resource being in a different subscription
   providers = {
-    azurerm = azurerm.managed_identity_sub
+    azurerm.managed_identity_sub = azurerm.managed_identity_sub
   }
 }
 
