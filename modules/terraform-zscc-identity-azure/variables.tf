@@ -74,7 +74,7 @@ variable "create_cc_read_role" {
 ################################################################################
 variable "create_function_app_role" {
   type        = bool
-  description = "If true, create a least-privilege Custom Role for the Function App autoscaler (VMSS Compute ops) and assign it — plus 'Key Vault Secrets User' — to the Function App managed identity at the CC Resource Group scope. Requires vmss_enabled = true. See TF-AZ-09 remediation notes."
+  description = "If true, create a least-privilege Custom Role for the Function App autoscaler (VMSS Compute ops) and assign it — plus 'Key Vault Secrets User' — to the Function App managed identity at the CC Resource Group scope. Requires vmss_enabled = true. NOTE: the 'Key Vault Secrets User' assignment is Azure RBAC and only takes effect if the target Key Vault has enable_rbac_authorization = true; vaults using the legacy Access Policy model additionally need an access policy entry for the Function App identity. See TF-AZ-09 remediation notes."
   default     = false
 }
 

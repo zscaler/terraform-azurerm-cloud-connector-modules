@@ -110,6 +110,14 @@ resource "azurerm_role_assignment" "function_app_vmss_ops" {
 # Assigned at CC RG scope so the autoscaler can read Zscaler provisioning secrets from
 # any Key Vault in the CC RG. If tighter scoping to a specific vault is required,
 # customers can create the assignment out of band and leave create_function_app_role = false.
+#
+# CAVEAT: this is an Azure RBAC role assignment. It only grants access if the target
+# Key Vault has `enable_rbac_authorization = true` (RBAC permission model). If the vault
+# is still using the legacy Access Policy permission model (Azure default, and what the
+# README prerequisites currently instruct users to configure), this assignment is a
+# silent no-op — the Function App identity will ALSO need an explicit access policy
+# entry (Secret permissions: Get, List) added to the vault, or the vault must be migrated
+# to RBAC mode, for secret reads to actually succeed.
 resource "azurerm_role_assignment" "function_app_kv_secrets" {
   count                = var.create_function_app_role ? 1 : 0
   scope                = data.azurerm_resource_group.fa_cc_rg[0].id
