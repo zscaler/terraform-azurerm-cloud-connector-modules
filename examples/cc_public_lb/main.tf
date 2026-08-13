@@ -104,18 +104,21 @@ locals {
 }
 
 module "cc_vm" {
-  source                         = "../../modules/terraform-zscc-ccvm-azure"
-  cc_count                       = var.cc_count
-  name_prefix                    = var.name_prefix
-  resource_tag                   = random_string.suffix.result
-  global_tags                    = local.global_tags
-  resource_group                 = module.network.resource_group_name
-  mgmt_subnet_id                 = module.network.cc_subnet_ids
-  service_subnet_id              = module.network.cc_subnet_ids
-  ssh_key                        = tls_private_key.key.public_key_openssh
-  managed_identity_id            = module.cc_identity.managed_identity_id
-  user_data                      = local.userdata
-  backend_address_pool           = module.cc_public_lb.lb_backend_address_pool
+  source              = "../../modules/terraform-zscc-ccvm-azure"
+  cc_count            = var.cc_count
+  name_prefix         = var.name_prefix
+  resource_tag        = random_string.suffix.result
+  global_tags         = local.global_tags
+  resource_group      = module.network.resource_group_name
+  mgmt_subnet_id      = module.network.cc_subnet_ids
+  service_subnet_id   = module.network.cc_subnet_ids
+  ssh_key             = tls_private_key.key.public_key_openssh
+  managed_identity_id = module.cc_identity.managed_identity_id
+  user_data           = local.userdata
+  # Join both the PLB and ILB backend pools (PLB -> CC -> ILB topology above).
+  public_lb_backend_address_pool = module.cc_public_lb.lb_backend_address_pool
+  public_lb_deployed             = true
+  backend_address_pool           = module.cc_ilb.lb_backend_address_pool
   lb_association_enabled         = true
   location                       = var.arm_location
   zones_enabled                  = var.zones_enabled
@@ -130,7 +133,6 @@ module "cc_vm" {
   service_nsg_id                 = module.cc_nsg.service_nsg_id
   accelerated_networking_enabled = var.accelerated_networking_enabled
   encryption_at_host_enabled     = var.encryption_at_host_enabled
-  public_lb_enabled              = true
 }
 
 
