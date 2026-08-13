@@ -168,7 +168,7 @@ module "cc_identity" {
   cc_vm_managed_identity_rg   = var.cc_vm_managed_identity_rg
 
   providers = {
-    azurerm = azurerm.managed_identity_sub
+    azurerm.managed_identity_sub = azurerm.managed_identity_sub
   }
 }
 
