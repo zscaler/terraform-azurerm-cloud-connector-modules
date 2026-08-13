@@ -60,6 +60,15 @@
 function_app_managed_identity_name = ""
 function_app_managed_identity_rg   = ""
 
+## TF-AZ-09/TF-AZ-10 (opt-in): create and assign least-privilege Custom Roles for the CC
+## and/or Function App managed identities instead of relying on out-of-band role assignments.
+## See modules/terraform-zscc-identity-azure. Key Vault Secrets User is Azure RBAC and only
+## takes effect if the target vault has enable_rbac_authorization = true.
+#create_cc_read_role      = true
+#cc_read_role_name        = "cc-nic-read"
+#create_function_app_role = true
+#function_app_role_name   = "function-app-vmss-ops"
+
 
 #####################################################################################################################
 ##### BYO (Bring Your Own) — existing infrastructure                                      #####

@@ -340,6 +340,30 @@ variable "function_app_managed_identity_rg" {
   default     = ""
 }
 
+variable "create_cc_read_role" {
+  type        = bool
+  description = "TF-AZ-10 (opt-in): if true, Terraform creates and assigns a least-privilege Custom Role (Microsoft.Network/networkInterfaces/read) to the CC managed identity at this deployment's Resource Group scope, instead of relying on an out-of-band role assignment. See modules/terraform-zscc-identity-azure for details."
+  default     = false
+}
+
+variable "cc_read_role_name" {
+  type        = string
+  description = "Optional custom name for the TF-AZ-10 least-privilege role definition. If empty, defaults to '<cc_vm_managed_identity_name>-nic-read'. Only used when create_cc_read_role = true."
+  default     = ""
+}
+
+variable "create_function_app_role" {
+  type        = bool
+  description = "TF-AZ-09 (opt-in): if true, Terraform creates a least-privilege Custom Role for the Function App autoscaler (VMSS Compute ops) and assigns it — plus the built-in 'Key Vault Secrets User' role — to the Function App managed identity at this deployment's Resource Group scope. NOTE: the Key Vault Secrets User assignment is Azure RBAC and only takes effect if the target Key Vault has enable_rbac_authorization = true. See modules/terraform-zscc-identity-azure for details."
+  default     = false
+}
+
+variable "function_app_role_name" {
+  type        = string
+  description = "Optional custom name for the TF-AZ-09 Function App VMSS ops role definition. If empty, defaults to '<function_app_managed_identity_name>-vmss-ops'. Only used when create_function_app_role = true."
+  default     = ""
+}
+
 variable "existing_log_analytics_workspace" {
   type        = bool
   description = "Set to True if you wish to use an existing Log Analytics Workspace to associate with the AppInsights Instance. Default is false meaning Terraform module will create a new one"

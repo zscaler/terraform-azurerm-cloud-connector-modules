@@ -233,6 +233,14 @@ module "cc_identity" {
   function_app_managed_identity_name = var.function_app_managed_identity_name
   function_app_managed_identity_rg   = var.function_app_managed_identity_rg
 
+  # TF-AZ-09/TF-AZ-10 (opt-in): create and assign least-privilege Custom Roles for the CC
+  # and/or Function App managed identities instead of relying on out-of-band role assignments.
+  cc_resource_group_name   = module.network.resource_group_name
+  create_cc_read_role      = var.create_cc_read_role
+  cc_read_role_name        = var.cc_read_role_name
+  create_function_app_role = var.create_function_app_role
+  function_app_role_name   = var.function_app_role_name
+
   #optional variable provider block defined in versions.tf to support managed identity resource being in a different subscription
   providers = {
     azurerm.managed_identity_sub = azurerm.managed_identity_sub
