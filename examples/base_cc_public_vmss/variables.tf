@@ -364,25 +364,25 @@ variable "function_app_managed_identity_rg" {
 
 variable "create_cc_read_role" {
   type        = bool
-  description = "TF-AZ-10 (opt-in): if true, Terraform creates and assigns a least-privilege Custom Role (Microsoft.Network/networkInterfaces/read) to the CC managed identity at this deployment's Resource Group scope, instead of relying on an out-of-band role assignment. See modules/terraform-zscc-identity-azure for details."
+  description = "TF-AZ-10 (opt-in): create and assign a least-privilege Custom Role (networkInterfaces/read only) to the CC managed identity at this deployment's Resource Group scope."
   default     = false
 }
 
 variable "cc_read_role_name" {
   type        = string
-  description = "Optional custom name for the TF-AZ-10 least-privilege role definition. If empty, defaults to '<cc_vm_managed_identity_name>-nic-read'. Only used when create_cc_read_role = true."
+  description = "Custom name for the TF-AZ-10 role definition. Defaults to '<cc_vm_managed_identity_name>-nic-read'. Used only when create_cc_read_role = true."
   default     = ""
 }
 
 variable "create_function_app_role" {
   type        = bool
-  description = "TF-AZ-09 (opt-in): if true, Terraform creates a least-privilege Custom Role for the Function App autoscaler (VMSS Compute ops) and assigns it — plus the built-in 'Key Vault Secrets User' role — to the Function App managed identity at this deployment's Resource Group scope. NOTE: the Key Vault Secrets User assignment is Azure RBAC and only takes effect if the target Key Vault has enable_rbac_authorization = true. See modules/terraform-zscc-identity-azure for details."
+  description = "TF-AZ-09 (opt-in): create a least-privilege VMSS-ops Custom Role and assign it, plus 'Key Vault Secrets User', to the Function App identity at this deployment's Resource Group scope. Key Vault assignment requires enable_rbac_authorization = true on the vault."
   default     = false
 }
 
 variable "function_app_role_name" {
   type        = string
-  description = "Optional custom name for the TF-AZ-09 Function App VMSS ops role definition. If empty, defaults to '<function_app_managed_identity_name>-vmss-ops'. Only used when create_function_app_role = true."
+  description = "Custom name for the TF-AZ-09 Function App VMSS ops role. Defaults to '<function_app_managed_identity_name>-vmss-ops'. Used only when create_function_app_role = true."
   default     = ""
 }
 

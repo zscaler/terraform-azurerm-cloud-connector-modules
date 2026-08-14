@@ -81,13 +81,13 @@ variable "cc_vm_managed_identity_rg" {
 
 variable "create_cc_read_role" {
   type        = bool
-  description = "TF-AZ-10 (opt-in): if true, Terraform creates and assigns a least-privilege Custom Role (Microsoft.Network/networkInterfaces/read) to the CC managed identity at this deployment's Resource Group scope, instead of relying on an out-of-band role assignment. See modules/terraform-zscc-identity-azure for details."
+  description = "TF-AZ-10 (opt-in): create and assign a least-privilege Custom Role (networkInterfaces/read only) to the CC managed identity at this deployment's Resource Group scope."
   default     = false
 }
 
 variable "cc_read_role_name" {
   type        = string
-  description = "Optional custom name for the TF-AZ-10 least-privilege role definition. If empty, defaults to '<cc_vm_managed_identity_name>-nic-read'. Only used when create_cc_read_role = true."
+  description = "Custom name for the TF-AZ-10 role definition. Defaults to '<cc_vm_managed_identity_name>-nic-read'. Used only when create_cc_read_role = true."
   default     = ""
 }
 

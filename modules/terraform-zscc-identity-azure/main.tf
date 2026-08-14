@@ -14,15 +14,9 @@ data "azurerm_user_assigned_identity" "selected" {
 # Reference inputs to obtain an existing User Managed Identity Resource
 # to associate to the Function App autoscaler.
 #
-# TF-AZ-09 remediation: this identity MUST be a distinct User-Assigned
-# Managed Identity from the one attached to the Cloud Connector VMs. The
-# Function App requires VMSS Compute write/delete and Key Vault secret-read
-# permissions that Cloud Connector VMs do not need; reusing a single
-# identity across both components means a compromised CC VM inherits the
-# Function App's power to delete sibling CCs and read all vault secrets.
-#
-# The precondition below fails plan when vmss_enabled = true and no
-# separate Function App identity has been supplied.
+# TF-AZ-09: must be a distinct identity from the CC VM's, so a compromised
+# CC VM can't inherit the autoscaler's power to delete sibling CCs / read
+# Key Vault secrets. Precondition below enforces this.
 ################################################################################
 data "azurerm_user_assigned_identity" "function_app_identity_selected" {
   count               = var.vmss_enabled ? 1 : 0
@@ -33,27 +27,18 @@ data "azurerm_user_assigned_identity" "function_app_identity_selected" {
   lifecycle {
     precondition {
       condition     = var.function_app_managed_identity_name != "" && var.function_app_managed_identity_rg != ""
-      error_message = "TF-AZ-09: A separate managed identity is required for the Function App when vmss_enabled = true. Set function_app_managed_identity_name and function_app_managed_identity_rg to a DISTINCT identity from cc_vm_managed_identity_name/rg. Reusing the CC VM identity grants a compromised CC instance the ability to delete sibling CCs and read all Function App secrets. See README.md prerequisites and TF-AZ-09 remediation notes."
+      error_message = "TF-AZ-09: function_app_managed_identity_name/rg must be set to a distinct identity from cc_vm_managed_identity_name/rg when vmss_enabled = true."
     }
     precondition {
       condition     = var.function_app_managed_identity_name != var.cc_vm_managed_identity_name || var.function_app_managed_identity_rg != var.cc_vm_managed_identity_rg
-      error_message = "TF-AZ-09: function_app_managed_identity_name/rg must reference a DIFFERENT managed identity than cc_vm_managed_identity_name/rg. Both currently point to the same identity, which recreates the shared-identity privilege-escalation exposure this control is designed to prevent."
+      error_message = "TF-AZ-09: function_app_managed_identity_name/rg must differ from cc_vm_managed_identity_name/rg."
     }
   }
 }
 
 ################################################################################
-# TF-AZ-09 remediation (opt-in): least-privilege Custom Role + assignments
-# for the Function App autoscaler managed identity.
-#
-# Guarded by create_function_app_role. When true, provisions:
-#   * A Custom Role Definition (VMSS Compute read/write + per-instance
-#     read/write/delete) scoped to the CC Resource Group.
-#   * A role assignment binding that custom role to the Function App
-#     managed identity at the CC Resource Group scope.
-#   * A role assignment binding the built-in "Key Vault Secrets User"
-#     role to the Function App managed identity at the CC Resource
-#     Group scope (autoscaler needs to read Zscaler provisioning secrets).
+# TF-AZ-09 (opt-in): least-privilege Custom Role + Key Vault access for the
+# Function App autoscaler identity. Guarded by create_function_app_role.
 ################################################################################
 data "azurerm_subscription" "fa_current" {
   count = var.create_function_app_role ? 1 : 0
@@ -66,11 +51,11 @@ data "azurerm_resource_group" "fa_cc_rg" {
   lifecycle {
     precondition {
       condition     = var.vmss_enabled
-      error_message = "TF-AZ-09: create_function_app_role requires vmss_enabled = true. The Function App identity only exists in VMSS deployments."
+      error_message = "TF-AZ-09: create_function_app_role requires vmss_enabled = true."
     }
     precondition {
       condition     = var.cc_resource_group_name != ""
-      error_message = "TF-AZ-09: create_function_app_role requires cc_resource_group_name to be set. This is the Resource Group scope for both the custom role's assignable_scopes and both role assignments."
+      error_message = "TF-AZ-09: create_function_app_role requires cc_resource_group_name to be set."
     }
   }
 }
@@ -79,7 +64,7 @@ resource "azurerm_role_definition" "function_app_vmss_ops" {
   count       = var.create_function_app_role ? 1 : 0
   name        = coalesce(var.function_app_role_name, "${var.function_app_managed_identity_name}-vmss-ops")
   scope       = data.azurerm_subscription.fa_current[0].id
-  description = "Least-privilege role for Zscaler CC Function App autoscaler. Grants only VMSS Compute read/write + per-instance read/write/delete on the CC Resource Group. Ref: TF-AZ-09."
+  description = "Least-privilege VMSS ops role for CC Function App autoscaler (TF-AZ-09)."
 
   permissions {
     actions = [
@@ -103,38 +88,26 @@ resource "azurerm_role_assignment" "function_app_vmss_ops" {
   scope              = data.azurerm_resource_group.fa_cc_rg[0].id
   role_definition_id = azurerm_role_definition.function_app_vmss_ops[0].role_definition_resource_id
   principal_id       = data.azurerm_user_assigned_identity.function_app_identity_selected[0].principal_id
-  description        = "TF-AZ-09 least-privilege VMSS ops assignment for Zscaler CC Function App autoscaler."
+  description        = "TF-AZ-09 VMSS ops assignment for CC Function App autoscaler."
 }
 
-# Built-in role: 'Key Vault Secrets User' — read secret contents (get/list secret versions).
-# Assigned at CC RG scope so the autoscaler can read Zscaler provisioning secrets from
-# any Key Vault in the CC RG. If tighter scoping to a specific vault is required,
-# customers can create the assignment out of band and leave create_function_app_role = false.
+# Built-in 'Key Vault Secrets User' role, scoped to the CC RG, so the
+# autoscaler can read Zscaler provisioning secrets.
 #
-# CAVEAT: this is an Azure RBAC role assignment. It only grants access if the target
-# Key Vault has `enable_rbac_authorization = true` (RBAC permission model). If the vault
-# is still using the legacy Access Policy permission model (Azure default, and what the
-# README prerequisites currently instruct users to configure), this assignment is a
-# silent no-op — the Function App identity will ALSO need an explicit access policy
-# entry (Secret permissions: Get, List) added to the vault, or the vault must be migrated
-# to RBAC mode, for secret reads to actually succeed.
+# CAVEAT: RBAC assignment only takes effect if the target Key Vault has
+# enable_rbac_authorization = true. Legacy Access Policy vaults need an
+# explicit access policy entry instead.
 resource "azurerm_role_assignment" "function_app_kv_secrets" {
   count                = var.create_function_app_role ? 1 : 0
   scope                = data.azurerm_resource_group.fa_cc_rg[0].id
   role_definition_name = "Key Vault Secrets User"
   principal_id         = data.azurerm_user_assigned_identity.function_app_identity_selected[0].principal_id
-  description          = "TF-AZ-09 Key Vault secret-read assignment for Zscaler CC Function App autoscaler."
+  description          = "TF-AZ-09 Key Vault secret-read assignment for CC Function App autoscaler."
 }
 
 ################################################################################
-# TF-AZ-10 remediation: optional least-privilege Custom Role for the CC
-# managed identity.
-#
-# When create_cc_read_role = true, a Custom Role granting only
-# Microsoft.Network/networkInterfaces/read is created at Subscription scope
-# and assigned to the CC managed identity at the Cloud Connector Resource
-# Group scope. This is the recommended replacement for the historical
-# Network Contributor at Subscription scope guidance.
+# TF-AZ-10 (opt-in): least-privilege Custom Role for the CC managed identity.
+# Replaces the historical Network Contributor @ Subscription scope guidance.
 ################################################################################
 data "azurerm_subscription" "current" {
   count = var.create_cc_read_role ? 1 : 0
@@ -149,7 +122,7 @@ resource "azurerm_role_definition" "cc_nic_read" {
   count       = var.create_cc_read_role ? 1 : 0
   name        = coalesce(var.cc_read_role_name, "${var.cc_vm_managed_identity_name}-nic-read")
   scope       = data.azurerm_subscription.current[0].id
-  description = "Least-privilege role for Zscaler Cloud Connector managed identity. Grants only Microsoft.Network/networkInterfaces/read. Ref: TF-AZ-10."
+  description = "Least-privilege role for CC managed identity: networkInterfaces/read only (TF-AZ-10)."
 
   permissions {
     actions          = ["Microsoft.Network/networkInterfaces/read"]
@@ -166,5 +139,5 @@ resource "azurerm_role_assignment" "cc_nic_read" {
   scope              = data.azurerm_resource_group.cc_rg[0].id
   role_definition_id = azurerm_role_definition.cc_nic_read[0].role_definition_resource_id
   principal_id       = data.azurerm_user_assigned_identity.selected.principal_id
-  description        = "TF-AZ-10 least-privilege assignment for Zscaler Cloud Connector managed identity."
+  description        = "TF-AZ-10 least-privilege assignment for CC managed identity."
 }
