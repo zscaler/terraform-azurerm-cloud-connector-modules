@@ -41,15 +41,39 @@ jobs:
           terraform validate -no-color
 
       - name: Terraform Init
-        id: init-zscc-identity
+        id: init-zscc-identity-cc-vmss
         run: |
-          cd modules/terraform-zscc-identity-azure
-          terraform init   
+          cd examples/cc_vmss
+          terraform init -backend=false
 
       - name: Terraform Validate
-        id: validate-zscc-identity
+        id: validate-zscc-identity-cc-vmss
         run: |
-          cd modules/terraform-zscc-identity-azure
+          cd examples/cc_vmss
+          terraform validate -no-color
+
+      - name: Terraform Init
+        id: init-zscc-identity-base-cc-vmss
+        run: |
+          cd examples/base_cc_vmss
+          terraform init -backend=false
+
+      - name: Terraform Validate
+        id: validate-zscc-identity-base-cc-vmss
+        run: |
+          cd examples/base_cc_vmss
+          terraform validate -no-color
+
+      - name: Terraform Init
+        id: init-zscc-identity-cc-lb
+        run: |
+          cd examples/cc_lb
+          terraform init -backend=false
+
+      - name: Terraform Validate
+        id: validate-zscc-identity-cc-lb
+        run: |
+          cd examples/cc_lb
           terraform validate -no-color
 
       - name: Terraform Init
