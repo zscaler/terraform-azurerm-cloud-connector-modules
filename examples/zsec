@@ -636,67 +636,23 @@ first_run="yes"
             PS3="${CYAN}Select desired Azure VM type for Cloud Connector: ${RESET}"
             if [[ "$azure_location" == "chinanorth" || "$azure_location" == "chinaeast" ]]; then
                 vm_sizes=("Standard_DS2_v2")
-                select ccvm_instance_type in "${vm_sizes[@]}"
-                do
-                    case $REPLY in
-                        1)
-                            echo "Cloud Connector VM type $ccvm_instance_type selected"
-                            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
-                            break
-                            ;;
-                        *) 
-                            echo "${RED}Invalid response. Please enter a number selection${RESET}"
-                    esac
-                done
-            elif [[ "$azure_location" == "china"* ]]; then
-                vm_sizes=("Standard_DS3_v2" "Standard_DS2_v2")
-                select ccvm_instance_type in "${vm_sizes[@]}"
-                do
-                    case $REPLY in
-                        1)
-                            echo "Cloud Connector VM type $ccvm_instance_type selected"
-                            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
-                            break
-                            ;;
-                        2)
-                            echo "Cloud Connector VM type $ccvm_instance_type selected"
-                            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
-                            break
-                            ;;
-                        *) 
-                            echo "${RED}Invalid response. Please enter a number selection${RESET}"
-                    esac
-                done
+            elif [[ "$azure_location" == "chinanorth2" || "$azure_location" == "chinaeast2" ]]; then
+                vm_sizes=("Standard_DS3_v2" "Standard_D2ds_v5" "Standard_DS2_v2")
+            elif [[ "$azure_location" == "chinanorth3" || "$azure_location" == "chinaeast3" ]]; then
+                vm_sizes=("Standard_DS3_v2" "Standard_D2ds_v5" "Standard_D2ads_v5" "Standard_DS2_v2")
             else
-                vm_sizes=("Standard_D2s_v3" "Standard_DS2_v2" "Standard_DS3_v2" "Standard_D2ds_v5")
-                select ccvm_instance_type in "${vm_sizes[@]}"
-                do
-                    case $REPLY in
-                        1)
-                            echo "Cloud Connector VM type $ccvm_instance_type selected"
-                            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
-                            break
-                            ;;
-                        2)
-                            echo "Cloud Connector VM type $ccvm_instance_type selected"
-                            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
-                            break
-                            ;;
-                        3)
-                            echo "Cloud Connector VM type $ccvm_instance_type selected"
-                            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
-                            break
-                            ;;
-                        4)
-                            echo "Cloud Connector VM type $ccvm_instance_type selected"
-                            echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
-                            break
-                            ;;
-                        *) 
-                            echo "${RED}Invalid response. Please enter a number selection${RESET}"
-                    esac
-                done
+                vm_sizes=("Standard_D2ds_v5" "Standard_D2ads_v5")
             fi
+            select ccvm_instance_type in "${vm_sizes[@]}"
+            do
+                if [[ -n "$ccvm_instance_type" ]]; then
+                    echo "Cloud Connector VM type $ccvm_instance_type selected"
+                    echo "export TF_VAR_ccvm_instance_type='$ccvm_instance_type'" >> .zsecrc
+                    break
+                else
+                    echo "${RED}Invalid response. Please enter a number selection${RESET}"
+                fi
+            done
         fi
 
         read -r -p "${CYAN}Enter CC Provisioning URL${RESET} (E.g. connector.zscaler.net/api/v1/provUrl?name=azure_prov_url): " cc_vm_prov_url
@@ -716,6 +672,25 @@ first_run="yes"
                 echo "${YELLOW}Delete .zsecrc file and re-run zsec up...${RESET}"
                 exit 1
             fi
+        while true; do
+            read -r -p "${CYAN}Enable FIPS mode for this Cloud Connector deployment? (yes/no): ${RESET}" fips_response
+            case $fips_response in
+            yes|y )
+                echo "FIPS mode will be ${GREEN}enabled${RESET}"
+                echo "export TF_VAR_fips_enabled='True'" >> .zsecrc
+            break
+            ;;
+            no|n )
+                echo "FIPS mode will be ${GREEN}disabled${RESET}"
+                echo "export TF_VAR_fips_enabled='False'" >> .zsecrc
+            break
+            ;;
+            *)
+                echo "${RED}Invalid response. Please enter yes or no${RESET}"
+            ;;
+            esac
+        done
+
         echo "Cloud Connector User Managed Identity Information:"
 
         while true; do

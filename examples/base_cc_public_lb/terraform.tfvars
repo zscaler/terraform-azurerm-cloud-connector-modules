@@ -75,13 +75,13 @@
 #arm_location                               = "westus2"
 
 ## 10. Cloud Connector Azure VM Instance size selection. Uncomment ccvm_instance_type line with desired vm size to change.
-##    (Default: Standard_D2s_v3)
+##    (Default: Standard_D2ds_v5)
 
 #ccvm_instance_type                         = "Standard_D2s_v3"
+#ccvm_instance_type                         = "Standard_DS2_v2"
 #ccvm_instance_type                         = "Standard_DS3_v2"
-#ccvm_instance_type                         = "Standard_D8s_v3"
-#ccvm_instance_type                         = "Standard_D16s_v3"
-#ccvm_instance_type                         = "Standard_DS5_v2"
+#ccvm_instance_type                         = "Standard_D2ds_v5"
+#ccvm_instance_type                         = "Standard_D2ads_v5"
 
 ## 11. The number of Cloud Connector appliances to provision. Each incremental Cloud Connector will be created in alternating 
 ##    subnets based on the zones or byo_subnet_names variable and loop through for any deployments where cc_count > zones.

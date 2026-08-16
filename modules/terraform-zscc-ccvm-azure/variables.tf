@@ -63,12 +63,9 @@ variable "ccvm_instance_type" {
     condition = (
       var.ccvm_instance_type == "Standard_D2s_v3" ||
       var.ccvm_instance_type == "Standard_DS2_v2" ||
-      var.ccvm_instance_type == "Standard_D2ds_v4" ||
-      var.ccvm_instance_type == "Standard_D2ds_v5" ||
       var.ccvm_instance_type == "Standard_DS3_v2" ||
-      var.ccvm_instance_type == "Standard_D8s_v3" ||
-      var.ccvm_instance_type == "Standard_D16s_v3" ||
-      var.ccvm_instance_type == "Standard_DS5_v2"
+      var.ccvm_instance_type == "Standard_D2ds_v5" ||
+      var.ccvm_instance_type == "Standard_D2ads_v5"
     )
     error_message = "Input ccvm_instance_type must be set to an approved vm size."
   }

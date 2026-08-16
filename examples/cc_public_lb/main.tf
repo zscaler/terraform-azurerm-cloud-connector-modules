@@ -120,6 +120,7 @@ module "cc_vm" {
   public_lb_deployed             = true
   backend_address_pool           = module.cc_ilb.lb_backend_address_pool
   lb_association_enabled         = true
+  private_lb_enabled             = false
   location                       = var.arm_location
   zones_enabled                  = var.zones_enabled
   zones                          = var.zones

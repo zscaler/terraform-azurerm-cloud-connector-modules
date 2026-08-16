@@ -104,12 +104,14 @@ variable "azure_vault_url" {
 variable "ccvm_instance_type" {
   type        = string
   description = "Cloud Connector Image size"
-  default     = "Standard_D2s_v3"
+  default     = "Standard_D2ds_v5"
   validation {
     condition = (
       var.ccvm_instance_type == "Standard_D2s_v3" ||
       var.ccvm_instance_type == "Standard_DS2_v2" ||
-      var.ccvm_instance_type == "Standard_DS3_v2"
+      var.ccvm_instance_type == "Standard_DS3_v2" ||
+      var.ccvm_instance_type == "Standard_D2ds_v5" ||
+      var.ccvm_instance_type == "Standard_D2ads_v5"
     )
     error_message = "Input ccvm_instance_type must be set to an approved vm size."
   }
@@ -236,4 +238,14 @@ variable "zssupport_server" {
   type        = string
   description = "destination IP address of Zscaler Support access server. IP resolution of remotesupport.<zscaler_customer_cloud>.net"
   default     = "199.168.148.101" #for commercial clouds
+}
+
+variable "fips_enabled" {
+  type        = string
+  description = "Enable FIPS mode for Cloud Connector provisioning. Supported values are 'False' or 'True'."
+  default     = "False"
+  validation {
+    condition     = var.fips_enabled == "False" || var.fips_enabled == "True"
+    error_message = "Variable fips_enabled must be either 'False' or 'True'."
+  }
 }
