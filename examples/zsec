@@ -715,7 +715,7 @@ first_run="yes"
         echo "export TF_VAR_cc_vm_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
 
         while true; do
-            read -r -p "${CYAN}(TF-AZ-10) Create a least-privilege Custom Role (networkInterfaces/read) for the CC managed identity instead of using an out-of-band role assignment? [yes/no]: ${RESET}" cc_read_role_response
+            read -r -p "${CYAN}Create a least-privilege Custom Role (networkInterfaces/read) for the CC managed identity instead of using an out-of-band role assignment? [yes/no]: ${RESET}" cc_read_role_response
             case $cc_read_role_response in
             yes|y )
                 echo "export TF_VAR_create_cc_read_role=true" >> .zsecrc
@@ -755,7 +755,7 @@ first_run="yes"
             done  
 
             while true; do
-                read -r -p "${CYAN}(TF-AZ-09) Create a least-privilege Custom Role (VMSS ops) + 'Key Vault Secrets User' for the Function App identity instead of using out-of-band role assignments? [yes/no]: ${RESET}" fa_role_response
+                read -r -p "${CYAN}Create a least-privilege Custom Role (VMSS ops) + 'Key Vault Secrets User' for the Function App identity instead of using out-of-band role assignments? [yes/no]: ${RESET}" fa_role_response
                 case $fa_role_response in
                 yes|y )
                     echo "export TF_VAR_create_function_app_role=true" >> .zsecrc
