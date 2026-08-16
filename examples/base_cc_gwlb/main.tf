@@ -196,9 +196,15 @@ module "cc_identity" {
   cc_vm_managed_identity_name = var.cc_vm_managed_identity_name
   cc_vm_managed_identity_rg   = var.cc_vm_managed_identity_rg
 
+  # TF-AZ-10 (opt-in): create and assign a least-privilege Custom Role for the CC
+  # managed identity instead of relying on an out-of-band role assignment.
+  cc_resource_group_name = module.network.resource_group_name
+  create_cc_read_role    = var.create_cc_read_role
+  cc_read_role_name      = var.cc_read_role_name
+
   #optional variable provider block defined in versions.tf to support managed identity resource being in a different subscription
   providers = {
-    azurerm = azurerm.managed_identity_sub
+    azurerm.managed_identity_sub = azurerm.managed_identity_sub
   }
 }
 

@@ -30,11 +30,15 @@
 #http_probe_port                            = 50000
 
 #####################################################################################################################
-##### Prerequisite Provisioned Managed Identity Resource and Resource Group  #####
-##### Managed Identity should have GET/LIST access to Key Vault Secrets and  #####
-##### Network Contributor Role Assignment to Subscription or RG where Cloud  #####
-##### Connectors will be provisioned prior to terraform deployment.          #####
-##### (minimum Role permissions: Microsoft.Network/networkInterfaces/read)   ##### 
+##### Prerequisite Provisioned Managed Identity Resource and Resource Group                                     #####
+##### The Managed Identity should have GET/LIST access to Key Vault Secrets AND a least-privilege Custom Role   #####
+##### that grants ONLY the permission Microsoft.Network/networkInterfaces/read, assigned at Resource Group      #####
+##### scope (the RG where the Cloud Connector VMs will be deployed).                                            #####
+##### Do NOT use the built-in Network Contributor role at Subscription scope. It grants write access to every   #####
+##### NIC, NSG, route table, load balancer, and VNet peering across the entire subscription, far beyond what    #####
+##### Cloud Connector requires at runtime. If a Custom Role cannot be created in your environment, Network      #####
+##### Contributor scoped to the single Cloud Connector Resource Group is an acceptable (over-privileged)        #####
+##### fallback.                                                                                                 #####
 #####################################################################################################################
 
 ## 5. Provide the Azure Subscription ID where the User Managed Identity resides. Leave commented out unless the
@@ -328,11 +332,24 @@
 #existing_storage_account_rg = "<storage-account-resource-group"
 
 
-#### Optional inputs: By default, Terraform will use the same Managed Identity as the CC VMSS for the Function App
-# Provide your existing Azure Managed Identity name to attach to the Function App. E.g tunction_app_managed_identity
+#### REQUIRED for VMSS deployments (TF-AZ-09): Function App autoscaler managed identity.
+#### This MUST reference a DIFFERENT User-Assigned Managed Identity than cc_vm_managed_identity_*
+#### above. The Function App needs VMSS Compute write/delete and Key Vault secret-read; the CC
+#### VMs do not. Sharing one identity means a compromised CC VM inherits the autoscaler's power
+#### to delete sibling CCs and read every Zscaler provisioning secret.
+#### Terraform plan will FAIL with a TF-AZ-09 error if these are empty or match the CC identity.
 
-#function_app_managed_identity_name                = "function_app_managed_identity"
+# Name of the User-Assigned Managed Identity to attach to the Function App. E.g. function_app_managed_identity
+function_app_managed_identity_name = ""
 
-# Provide the existing Resource Group of the Azure Managed Identity name to attach to the CC VM. E.g. function_connector_rg_1
+# Resource Group of the Function App Managed Identity. E.g. function_rg_1
+function_app_managed_identity_rg = ""
 
-#function_app_managed_identity_rg                  = "function_rg_1"
+## TF-AZ-09/TF-AZ-10 (opt-in): create and assign least-privilege Custom Roles for the CC
+## and/or Function App managed identities instead of relying on out-of-band role assignments.
+## See modules/terraform-zscc-identity-azure. Key Vault Secrets User is Azure RBAC and only
+## takes effect if the target vault has enable_rbac_authorization = true.
+#create_cc_read_role      = true
+#cc_read_role_name        = "cc-nic-read"
+#create_function_app_role = true
+#function_app_role_name   = "function-app-vmss-ops"

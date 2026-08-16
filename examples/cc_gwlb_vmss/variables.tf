@@ -465,6 +465,30 @@ variable "function_app_managed_identity_rg" {
   default     = ""
 }
 
+variable "create_cc_read_role" {
+  type        = bool
+  description = "TF-AZ-10 (opt-in): create and assign a least-privilege Custom Role (networkInterfaces/read only) to the CC managed identity at this deployment's Resource Group scope."
+  default     = false
+}
+
+variable "cc_read_role_name" {
+  type        = string
+  description = "Custom name for the TF-AZ-10 role definition. Defaults to '<cc_vm_managed_identity_name>-nic-read'. Used only when create_cc_read_role = true."
+  default     = ""
+}
+
+variable "create_function_app_role" {
+  type        = bool
+  description = "TF-AZ-09 (opt-in): create a least-privilege VMSS-ops Custom Role and assign it, plus 'Key Vault Secrets User', to the Function App identity at this deployment's Resource Group scope. Key Vault assignment requires enable_rbac_authorization = true on the vault."
+  default     = false
+}
+
+variable "function_app_role_name" {
+  type        = string
+  description = "Custom name for the TF-AZ-09 Function App VMSS ops role. Defaults to '<function_app_managed_identity_name>-vmss-ops'. Used only when create_function_app_role = true."
+  default     = ""
+}
+
 variable "existing_log_analytics_workspace" {
   type        = bool
   description = "Set to True if you wish to use an existing Log Analytics Workspace to associate with the AppInsights Instance. Default is false meaning Terraform module will create a new one"

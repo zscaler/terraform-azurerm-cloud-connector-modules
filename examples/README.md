@@ -12,10 +12,14 @@
     - Directory (tenant) ID
     - Client Secret Value
 3. Azure Region (e.g. westus2) where Cloud Connector resources are to be deployed
-4. User-created Azure Managed Identity. Role Assignment: Network Contributor (If using a Custom Role, the minimum requirement is: Microsoft. Network/networkInterfaces/read) Scope: Subscription or Resource Group (where Cloud Connector VMs will be deployed)
+4. User-created Azure Managed Identity with a **least-privilege** Role Assignment. **Recommended**: create a Custom Role that grants only `Microsoft.Network/networkInterfaces/read` and assign it at **Resource Group scope** (the Resource Group where the Cloud Connector VMs will be deployed). **Do NOT** use the built-in `Network Contributor` role at Subscription scope — it grants write access to every NIC, NSG, route table, load balancer, and VNet peering across the entire subscription, well beyond what Cloud Connector needs at runtime. If your environment cannot create Custom Roles, `Network Contributor` scoped to only the single Cloud Connector Resource Group is an acceptable (still over-privileged) fallback.
+
+    > **VMSS deployments (`vmss_enabled = true`) — TF-AZ-09:** create a **second, separate** User-Assigned Managed Identity for the Function App autoscaler. Do **NOT** reuse the CC VM identity. The Function App requires `Microsoft.Compute/virtualMachineScaleSets/write` + `delete/action` (to add and remove CC instances) and `Key Vault Secrets User` (to read Zscaler provisioning secrets) — permissions Cloud Connector VMs themselves do not need. Sharing one identity means a compromised CC VM inherits the autoscaler's ability to delete sibling CCs and read all vault secrets. Set `function_app_managed_identity_name` and `function_app_managed_identity_rg` in your `terraform.tfvars` accordingly; Terraform plan will fail with a TF-AZ-09 error if empty or equal to the CC identity.
 5. Azure Vault URL with Zscaler Cloud Connector Credentials (E.g. [https://zscaler-cc-demo.vault.azure.net](https://zscaler-cc-demo.vault.azure.net/)) Add an access policy to the above Key Vault as below
     - Secret Permissions: Get, List
     - Select Principal: The Managed Identity created in the above step
+
+    > **create_function_app_role opt-in — TF-AZ-09:** if you enable `create_function_app_role`, the module also assigns the built-in `Key Vault Secrets User` role to the Function App identity. This is an **Azure RBAC** assignment and only takes effect if the Key Vault has `enable_rbac_authorization = true`. Vaults using the legacy Access Policy model shown above will need the access policy entry in addition to (or instead of) the RBAC assignment.
 6. Accept the Cloud Connector VM image terms for the Subscription(s) where Cloud Connector is to be deployed. This can be done via the Azure Portal, Cloud Shell or az cli / powershell with a valid admin user/service principal in the correct subscription where Cloud Connector is being deployed Run Command: `az vm image terms accept --urn zscaler1579058425289:zia_cloud_connector:zs_ser_gen1_cc_01:latest`
 
 ### Terraform client requirements

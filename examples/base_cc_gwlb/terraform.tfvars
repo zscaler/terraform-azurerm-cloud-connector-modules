@@ -30,11 +30,15 @@
 #http_probe_port                            = 50000
 
 #####################################################################################################################
-##### Prerequisite Provisioned Managed Identity Resource and Resource Group  #####
-##### Managed Identity should have GET/LIST access to Key Vault Secrets and  #####
-##### Network Contributor Role Assignment to Subscription or RG where Cloud  #####
-##### Connectors will be provisioned prior to terraform deployment.          #####
-##### (minimum Role permissions: Microsoft.Network/networkInterfaces/read)   ##### 
+##### Prerequisite Provisioned Managed Identity Resource and Resource Group                                     #####
+##### The Managed Identity should have GET/LIST access to Key Vault Secrets AND a least-privilege Custom Role   #####
+##### that grants ONLY the permission Microsoft.Network/networkInterfaces/read, assigned at Resource Group      #####
+##### scope (the RG where the Cloud Connector VMs will be deployed).                                            #####
+##### Do NOT use the built-in Network Contributor role at Subscription scope. It grants write access to every   #####
+##### NIC, NSG, route table, load balancer, and VNet peering across the entire subscription, far beyond what    #####
+##### Cloud Connector requires at runtime. If a Custom Role cannot be created in your environment, Network      #####
+##### Contributor scoped to the single Cloud Connector Resource Group is an acceptable (over-privileged)        #####
+##### fallback.                                                                                                 #####
 #####################################################################################################################
 
 ## 5. Provide the Azure Subscription ID where the User Managed Identity resides. Leave commented out unless the
@@ -50,6 +54,11 @@
 ## 7. Provide the existing Resource Group of the Azure Managed Identity name to attach to the CC VM. E.g. cloud_connector_rg_1
 
 #cc_vm_managed_identity_rg                  = "cloud_connector_rg_1"
+
+## TF-AZ-10 (opt-in): create and assign a least-privilege Custom Role for the CC managed
+## identity instead of relying on an out-of-band role assignment. See modules/terraform-zscc-identity-azure.
+#create_cc_read_role                        = true
+#cc_read_role_name                          = "cc-nic-read"
 
 
 #####################################################################################################################

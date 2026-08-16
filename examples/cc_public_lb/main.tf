@@ -104,20 +104,22 @@ locals {
 }
 
 module "cc_vm" {
-  source                         = "../../modules/terraform-zscc-ccvm-azure"
-  cc_count                       = var.cc_count
-  name_prefix                    = var.name_prefix
-  resource_tag                   = random_string.suffix.result
-  global_tags                    = local.global_tags
-  resource_group                 = module.network.resource_group_name
-  mgmt_subnet_id                 = module.network.cc_subnet_ids
-  service_subnet_id              = module.network.cc_subnet_ids
-  ssh_key                        = tls_private_key.key.public_key_openssh
-  managed_identity_id            = module.cc_identity.managed_identity_id
-  user_data                      = local.userdata
+  source              = "../../modules/terraform-zscc-ccvm-azure"
+  cc_count            = var.cc_count
+  name_prefix         = var.name_prefix
+  resource_tag        = random_string.suffix.result
+  global_tags         = local.global_tags
+  resource_group      = module.network.resource_group_name
+  mgmt_subnet_id      = module.network.cc_subnet_ids
+  service_subnet_id   = module.network.cc_subnet_ids
+  ssh_key             = tls_private_key.key.public_key_openssh
+  managed_identity_id = module.cc_identity.managed_identity_id
+  user_data           = local.userdata
+  # Join both the PLB and ILB backend pools (PLB -> CC -> ILB topology above).
   public_lb_backend_address_pool = module.cc_public_lb.lb_backend_address_pool
-  lb_association_enabled         = true
   public_lb_deployed             = true
+  backend_address_pool           = module.cc_ilb.lb_backend_address_pool
+  lb_association_enabled         = true
   private_lb_enabled             = false
   location                       = var.arm_location
   zones_enabled                  = var.zones_enabled
@@ -168,8 +170,14 @@ module "cc_identity" {
   cc_vm_managed_identity_name = var.cc_vm_managed_identity_name
   cc_vm_managed_identity_rg   = var.cc_vm_managed_identity_rg
 
+  # TF-AZ-10 (opt-in): create and assign a least-privilege Custom Role for the CC
+  # managed identity instead of relying on an out-of-band role assignment.
+  cc_resource_group_name = module.network.resource_group_name
+  create_cc_read_role    = var.create_cc_read_role
+  cc_read_role_name      = var.cc_read_role_name
+
   providers = {
-    azurerm = azurerm.managed_identity_sub
+    azurerm.managed_identity_sub = azurerm.managed_identity_sub
   }
 }
 

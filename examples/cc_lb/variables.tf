@@ -73,6 +73,18 @@ variable "cc_vm_managed_identity_rg" {
   description = "Resource Group of the Azure Managed Identity name to attach to the CC VM. E.g. edgeconnector_rg_1"
 }
 
+variable "create_cc_read_role" {
+  type        = bool
+  description = "TF-AZ-10 (opt-in): create and assign a least-privilege Custom Role (networkInterfaces/read only) to the CC managed identity at this deployment's Resource Group scope."
+  default     = false
+}
+
+variable "cc_read_role_name" {
+  type        = string
+  description = "Custom name for the TF-AZ-10 role definition. Defaults to '<cc_vm_managed_identity_name>-nic-read'. Used only when create_cc_read_role = true."
+  default     = ""
+}
+
 variable "cc_vm_prov_url" {
   type        = string
   description = "Zscaler Cloud Connector Provisioning URL"

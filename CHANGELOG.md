@@ -3,6 +3,17 @@
 ENHANCEMENTS:
 * add new `fips_enabled` variable for enabling FIPS mode via userdata
 * bump `hashicorp/azurerm` provider constraint to `>= 3.108.0, < 5.0.0` across examples and modules
+* security (TF-AZ-09): require a **separate** User-Assigned Managed Identity for the Function App autoscaler in VMSS deployments (`vmss_enabled = true`). Reusing the CC VM identity let a compromised CC instance inherit the autoscaler's ability to delete sibling CCs and read all Key Vault secrets. Set `function_app_managed_identity_name`/`function_app_managed_identity_rg` to a distinct identity — plan will fail with a clear TF-AZ-09 error if left empty or equal to the CC identity.
+    - add: opt-in `create_function_app_role` variable — provisions a least-privilege Custom Role (VMSS Compute ops only) + `Key Vault Secrets User` role assignment for the Function App identity, scoped to `cc_resource_group_name`, as a replacement for broader out-of-band role grants. Default `false`; existing deployments are unaffected until explicitly opted in.
+* security (TF-AZ-10): recommend a least-privilege Custom Role (`Microsoft.Network/networkInterfaces/read` only) for the CC VM managed identity instead of the built-in `Network Contributor` role at Subscription scope, which grants unnecessary write access across all network resources in the subscription.
+    - add: opt-in `create_cc_read_role` variable — provisions the Custom Role and assigns it to the CC managed identity at the `cc_resource_group_name` scope. Default `false`; existing deployments are unaffected until explicitly opted in.
+* fix (identity module): the new TF-AZ-09/TF-AZ-10 Resource Group lookup and role resources now correctly use the CC deployment subscription's provider (not the managed-identity subscription's provider) when `cc_vm_managed_identity_name`/`_rg` reference an identity in a different subscription than the Cloud Connector deployment.
+
+BREAKING CHANGES:
+* **VMSS deployments only**: `function_app_managed_identity_name` and `function_app_managed_identity_rg` must now reference a managed identity distinct from `cc_vm_managed_identity_name`/`cc_vm_managed_identity_rg` (TF-AZ-09). Deployments that previously reused the CC VM identity for the Function App must create a second identity before running `terraform plan`/`apply` on this version, or plan will fail with a validation error.
+
+NOTES:
+* create_function_app_role's `Key Vault Secrets User` assignment is Azure RBAC and only takes effect on Key Vaults with `enable_rbac_authorization = true`. Vaults using the legacy Access Policy model (see README prerequisites) additionally need an access policy entry for the Function App identity.
 
 ## v0.9.0 (Unreleased)
 
