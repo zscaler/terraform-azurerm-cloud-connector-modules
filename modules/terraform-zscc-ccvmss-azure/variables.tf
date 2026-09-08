@@ -271,8 +271,15 @@ variable "scheduled_scaling_enabled" {
 
 variable "scheduled_scaling_vmss_min_ccs" {
   type        = number
-  description = "Minimum number of CCs in vmss for scheduled scaling profile."
+  description = "Minimum number of CCs in vmss for scheduled scaling profile. This is a hard floor enforced by the autoscale setting itself and must stay at least 1: leaving the fleet able to scale to zero here removes the last line of defense against ending up with zero healthy Cloud Connectors, which is exactly the failure mode this floor exists to prevent."
   default     = 2
+
+  validation {
+    condition = (
+      var.scheduled_scaling_vmss_min_ccs >= 1 && var.scheduled_scaling_vmss_min_ccs <= 16
+    )
+    error_message = "Input scheduled_scaling_vmss_min_ccs must be set to a number between 1 and 16."
+  }
 }
 
 variable "scheduled_scaling_timezone" {
