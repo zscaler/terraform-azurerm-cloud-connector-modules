@@ -237,10 +237,10 @@
 #### Terraform plan will FAIL if these are empty or match the CC identity.
 
 # Name of the User-Assigned Managed Identity to attach to the Function App. E.g. function_app_managed_identity
-function_app_managed_identity_name = ""
+#function_app_managed_identity_name = "function_app_managed_identity"
 
 # Resource Group of the Function App Managed Identity. E.g. function_rg_1
-function_app_managed_identity_rg = ""
+#function_app_managed_identity_rg = "function_rg_1"
 
 ## Opt-in: create and assign least-privilege Custom Roles for the CC
 ## and/or Function App managed identities instead of relying on out-of-band role assignments.

@@ -27,11 +27,11 @@ data "azurerm_user_assigned_identity" "function_app_identity_selected" {
   lifecycle {
     precondition {
       condition     = var.function_app_managed_identity_name != "" && var.function_app_managed_identity_rg != ""
-      error_message = "function_app_managed_identity_name/rg must be set to a distinct identity from cc_vm_managed_identity_name/rg when vmss_enabled = true."
+      error_message = "vmss_enabled = true requires function_app_managed_identity_name and function_app_managed_identity_rg to be set. Set them in terraform.tfvars, or run './zsec up' to be prompted for them."
     }
     precondition {
       condition     = var.function_app_managed_identity_name != var.cc_vm_managed_identity_name || var.function_app_managed_identity_rg != var.cc_vm_managed_identity_rg
-      error_message = "function_app_managed_identity_name/rg must differ from cc_vm_managed_identity_name/rg."
+      error_message = "function_app_managed_identity_name/rg must reference a different User-Assigned Managed Identity than cc_vm_managed_identity_name/rg. The Function App autoscaler needs VMSS write/delete and Key Vault secret-read permissions that Cloud Connector VMs must not have."
     }
   }
 }

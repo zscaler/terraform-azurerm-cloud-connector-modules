@@ -57,8 +57,8 @@
 ## to delete sibling CCs and read every Zscaler provisioning secret.
 ## Terraform plan will FAIL if these are empty or match the CC identity.
 
-function_app_managed_identity_name = ""
-function_app_managed_identity_rg   = ""
+#function_app_managed_identity_name = "function_app_managed_identity"
+#function_app_managed_identity_rg   = "function_rg_1"
 
 ## Opt-in: create and assign least-privilege Custom Roles for the CC
 ## and/or Function App managed identities instead of relying on out-of-band role assignments.
