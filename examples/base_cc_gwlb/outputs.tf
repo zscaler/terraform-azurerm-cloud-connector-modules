@@ -72,12 +72,26 @@ locals {
     for index, ip in module.cc_vm.private_ip :
     index => ip
   }
+  workload_map = {
+    for index, ip in module.workload.private_ip :
+    index => ip
+  }
   ssh_config_contents = <<-SSH_CONFIG
     Host bastion
       HostName ${module.bastion.public_ip}
       User ${module.bastion.admin_username}
       IdentityFile ${var.name_prefix}-key-${random_string.suffix.result}.pem
     
+    %{for k, v in local.workload_map~}
+    Host workload-${k}
+      HostName ${v}
+      User ${module.workload.admin_username}
+      IdentityFile ${var.name_prefix}-key-${random_string.suffix.result}.pem
+      StrictHostKeyChecking no
+      ProxyJump bastion
+      ProxyCommand ssh bastion -W %h:%p
+    %{endfor~}
+
     %{for k, v in local.cc_map~}
     Host ccvm-${k}
       HostName ${v}
