@@ -18,7 +18,7 @@ Use this repository to create the deployment resources required to deploy and op
 
 ## **Prerequisites**
 
-Our Deployment scripts are leveraging Terraform v1.1.9 which includes full binary and provider support for macOS M1 chips, but any Terraform version 0.13.7 should be generally supported.
+Our Deployment scripts are leveraging Terraform v1.5.7 which includes full binary and provider support for macOS M1 chips, but any Terraform version between 0.13.7 and 2.0.0 should be generally supported.
 
 - provider registry.terraform.io/hashicorp/azurerm v3.116.x (minimum 3.108.x)
 - provider registry.terraform.io/hashicorp/random v3.3.x
@@ -34,22 +34,23 @@ Our Deployment scripts are leveraging Terraform v1.1.9 which includes full binar
     - Directory (tenant) ID
     - Client Secret Value
 3. Azure Region (e.g. westus2) where Cloud Connector resources are to be deployed
-4. User-created Azure Managed Identity. Role Assignment: Network Contributor (If using a Custom Role, the minimum requirement is: Microsoft. Network/networkInterfaces/read) Scope: Subscription or Resource Group (where Cloud Connector VMs will be deployed)
-5. Azure Vault URL with Zscaler Cloud Connector Credentials (E.g. [https://zscaler-cc-demo.vault.azure.net](https://zscaler-cc-demo.vault.azure.net/)) Add an access policy to the above Key Vault as below
+4. User-created Azure Managed Identity for Cloud Connector VMs.
+5. **(VMSS deployments only)** A second User-Assigned Managed Identity for the Function App autoscaler.
+6. Azure Vault URL with Zscaler Cloud Connector Credentials (E.g. [https://zscaler-cc-demo.vault.azure.net](https://zscaler-cc-demo.vault.azure.net/)) Add an access policy to the above Key Vault as below
     - Secret Permissions: Get, List
-    - Select Principal: The Managed Identity created in the above step
-6. Accept the Cloud Connector VM image terms for the Subscription(s) where Cloud Connector is to be deployed. This can be done via the Azure Portal, Cloud Shell or az cli / powershell with a valid admin user/service principal in the correct subscription where Cloud Connector is being deployed Run Command: `az vm image terms accept --urn zscaler1579058425289:zia_cloud_connector:zs_ser_gen1_cc_01:latest`
+    - Select Principal: The CC VM Managed Identity created in step 4
+7. Accept the Cloud Connector VM image terms for the Subscription(s) where Cloud Connector is to be deployed. This can be done via the Azure Portal, Cloud Shell or az cli / powershell with a valid admin user/service principal in the correct subscription where Cloud Connector is being deployed Run Command: `az vm image terms accept --urn zscaler1579058425289:zia_cloud_connector:zs_ser_gen1_cc_01:latest`
 
 ### Terraform client requirements
-7. If executing Terraform via the "zsec" wrapper bash script, it is advised that you run from a MacOS or Linux workstation. Minimum installed application requirements to successfully from the script are:
+8. If executing Terraform via the "zsec" wrapper bash script, it is advised that you run from a MacOS or Linux workstation. Minimum installed application requirements to successfully from the script are:
     - bash | curl | unzip | rm | cp | find | grep | sed | dig | jq (for vmss manual_sync script)
 
 <p>These can all be installed via your distribution app installer. ie: sudo apt install bash curl unzip</p>
 
 ### **Zscaler requirements**
 
-8. A valid Zscaler Cloud Connector provisioning URL generated. This is done via the Cloud Connector portal (E.g. connector..net/login)
-9. Zscaler Cloud Connector Credentials (api key, username, password) are stored in Azure Key Vault from step 5.
+9. A valid Zscaler Cloud Connector provisioning URL generated. This is done via the Cloud Connector portal (E.g. connector..net/login)
+10. Zscaler Cloud Connector Credentials (api key, username, password) are stored in Azure Key Vault from step 6.
 
 ### *Host Disk Encryption*
 To enable host encryption. You **must** subscribe to the feature on your azure account. Official Microsoft Documentation on how to enable this feature can be found [here](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-enable-host-based-encryption-portal?tabs=azure-cli#prerequisites)

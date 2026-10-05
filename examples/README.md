@@ -12,22 +12,23 @@
     - Directory (tenant) ID
     - Client Secret Value
 3. Azure Region (e.g. westus2) where Cloud Connector resources are to be deployed
-4. User-created Azure Managed Identity. Role Assignment: Network Contributor (If using a Custom Role, the minimum requirement is: Microsoft. Network/networkInterfaces/read) Scope: Subscription or Resource Group (where Cloud Connector VMs will be deployed)
-5. Azure Vault URL with Zscaler Cloud Connector Credentials (E.g. [https://zscaler-cc-demo.vault.azure.net](https://zscaler-cc-demo.vault.azure.net/)) Add an access policy to the above Key Vault as below
+4. User-created Azure Managed Identity for Cloud Connector VMs.
+5. **(VMSS deployments only)** A second User-Assigned Managed Identity for the Function App autoscaler.
+6. Azure Vault URL with Zscaler Cloud Connector Credentials (E.g. [https://zscaler-cc-demo.vault.azure.net](https://zscaler-cc-demo.vault.azure.net/)) Add an access policy to the above Key Vault as below
     - Secret Permissions: Get, List
-    - Select Principal: The Managed Identity created in the above step
-6. Accept the Cloud Connector VM image terms for the Subscription(s) where Cloud Connector is to be deployed. This can be done via the Azure Portal, Cloud Shell or az cli / powershell with a valid admin user/service principal in the correct subscription where Cloud Connector is being deployed Run Command: `az vm image terms accept --urn zscaler1579058425289:zia_cloud_connector:zs_ser_gen1_cc_01:latest`
+    - Select Principal: The CC VM Managed Identity created in step 4
+7. Accept the Cloud Connector VM image terms for the Subscription(s) where Cloud Connector is to be deployed. This can be done via the Azure Portal, Cloud Shell or az cli / powershell with a valid admin user/service principal in the correct subscription where Cloud Connector is being deployed Run Command: `az vm image terms accept --urn zscaler1579058425289:zia_cloud_connector:zs_ser_gen1_cc_01:latest`
 
 ### Terraform client requirements
-7. If executing Terraform via the "zsec" wrapper bash script, it is advised that you run from a MacOS or Linux workstation. Minimum installed application requirements to successfully from the script are:
+8. If executing Terraform via the "zsec" wrapper bash script, it is advised that you run from a MacOS or Linux workstation. Minimum installed application requirements to successfully from the script are:
     - bash | curl | unzip | rm | cp | find | grep | sed | dig | jq (for vmss manual_sync script)
 
 <p>These can all be installed via your distribution app installer. ie: sudo apt install bash curl unzip</p>
 
 ### **Zscaler requirements**
 
-8. A valid Zscaler Cloud Connector provisioning URL generated. This is done via the Cloud Connector portal (E.g. connector..net/login)
-9. Zscaler Cloud Connector Credentials (api key, username, password) are stored in Azure Key Vault from step 5.
+9. A valid Zscaler Cloud Connector provisioning URL generated. This is done via the Cloud Connector portal (E.g. connector..net/login)
+10. Zscaler Cloud Connector Credentials (api key, username, password) are stored in Azure Key Vault from step 6.
 
 See: [Zscaler Cloud Cloud Connector Azure Deployment Guide](https://help.zscaler.com/cloud-connector/deploying-cloud-connector-microsoft-azure) for additional prerequisite provisioning steps.
 

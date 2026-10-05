@@ -345,7 +345,7 @@ fi
 echo "Discovering processor architecture..."
 archdetect=$(uname -m)
 
-tversion=1.1.9
+tversion=1.5.7
 echo "Detecting OS..."
 if [[ "$OSTYPE" == "linux"* ]]; then
     os_str=linux
@@ -714,30 +714,59 @@ first_run="yes"
         read -r -p "${CYAN}Enter Managed Identity Resource Group: ${RESET}" cc_vm_managed_identity_rg
         echo "export TF_VAR_cc_vm_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
 
+        while true; do
+            read -r -p "${CYAN}Create a least-privilege Custom Role (networkInterfaces/read) for the CC managed identity instead of using an out-of-band role assignment? [yes/no]: ${RESET}" cc_read_role_response
+            case $cc_read_role_response in
+            yes|y )
+                echo "export TF_VAR_create_cc_read_role=true" >> .zsecrc
+                break
+                ;;
+            no|n )
+                echo "export TF_VAR_create_cc_read_role=false" >> .zsecrc
+                break
+                ;;
+            * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
+            esac
+        done
+
         if [[ "$dtype" == *"vmss"* ]]; then
 	      if [[ "$dtype" != *"pub"* && "$dtype" != *"gwlb"* ]]; then
             query_public_lb
           fi 
-          echo "Function App User Managed Identity Information:"
+          # The Function App autoscaler must use a distinct managed identity from the CC VM identity.
+          # Sharing identities would allow a compromised CC VM to inherit the autoscaler's ability
+          # to delete sibling CC instances and read Key Vault secrets.
+          echo ""
+          echo "${YELLOW}Security: The Function App autoscaler requires a DISTINCT managed identity from the CC VM identity.${RESET}"
+          echo "Function App User Managed Identity Information (must differ from: $cc_vm_managed_identity_name):"
+            read -r -p "${CYAN}Enter Function App designated Managed Identity Name: ${RESET}" function_app_managed_identity_name
+            while [[ -z "$function_app_managed_identity_name" || "$function_app_managed_identity_name" == "$cc_vm_managed_identity_name" ]]; do
+                if [[ -z "$function_app_managed_identity_name" ]]; then
+                    echo "${RED}Function App Managed Identity Name cannot be empty.${RESET}"
+                else
+                    echo "${RED}Function App Managed Identity must be DIFFERENT from the CC VM identity ($cc_vm_managed_identity_name). Enter a distinct identity.${RESET}"
+                fi
+                read -r -p "${CYAN}Enter Function App designated Managed Identity Name: ${RESET}" function_app_managed_identity_name
+            done
+            echo "export TF_VAR_function_app_managed_identity_name=${function_app_managed_identity_name}" >> .zsecrc
+            read -r -p "${CYAN}Enter Function App designated Managed Identity Resource Group: ${RESET}" function_app_managed_identity_rg
+            echo "export TF_VAR_function_app_managed_identity_rg=${function_app_managed_identity_rg}" >> .zsecrc
+            echo "${GREEN}Function App will use distinct identity: ${function_app_managed_identity_name} (RG: ${function_app_managed_identity_rg})${RESET}"
+
             while true; do
-                read -r -p "${CYAN}Assign the same User Managed Identity ($cc_vm_managed_identity_name) to Function App? [yes/no]: ${RESET}" function_mui_response
-                case $function_mui_response in 
-                yes|y ) 
-                    echo "Terraform will associate the same Managed Identity to both the VMSS and Function App"
-                    echo "export TF_VAR_function_app_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
-                    echo "export TF_VAR_function_app_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
-                break
-                ;;
+                read -r -p "${CYAN}Create a least-privilege Custom Role (VMSS ops) + 'Key Vault Secrets User' for the Function App identity instead of using out-of-band role assignments? [yes/no]: ${RESET}" fa_role_response
+                case $fa_role_response in
+                yes|y )
+                    echo "export TF_VAR_create_function_app_role=true" >> .zsecrc
+                    break
+                    ;;
                 no|n )
-                    read -r -p "${CYAN}Enter Function App designated Managed Identity Name: ${RESET}" function_app_managed_identity_name 
-                    echo "export TF_VAR_function_app_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
-                    read -r -p "${CYAN}Enter Function App designated Managed Identity Resource Group: ${RESET}" function_app_managed_identity_rg
-                    echo "export TF_VAR_function_app_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
-                break
-                ;;
+                    echo "export TF_VAR_create_function_app_role=false" >> .zsecrc
+                    break
+                    ;;
                 * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
                 esac
-            done  
+            done
         fi
 
         cc_count_default=2
