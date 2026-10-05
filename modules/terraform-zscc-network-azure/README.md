@@ -2,6 +2,36 @@
 
 This module has multi-purpose use and is leveraged by all other Zscaler Cloud Connector child modules in some capacity. All network infrastructure resources pertaining to connectivity dependencies for a successful Cloud Connector deployment in a private subnet are referenced here. Full list of resources can be found below, but in general this module will handle all Resource Group, VNet, Subnets, NAT Gateways, Public IP, and Route Table creations to build out a resilient Azure network architecture. Most resources also have "conditional create" capabilities where, by default, they will all be created unless instructed not to with various "byo" and "enabled" variables. Use cases are documented in more detail in each description in variables.tf as well as the terraform.tfvars example file for all non-base deployment types (ie: cc_lb, etc.).
 
+## Bring-Your-Own (BYO) Networking
+
+This module supports deploying Cloud Connector into existing (brownfield) Azure network resources via the `byo_*` variables. These resources are **hierarchical** and must be provided top-down:
+
+```
+byo_rg  ->  byo_vnet  ->  byo_subnets
+```
+
+- `byo_vnet = true` requires `byo_rg = true` (an existing VNet lives in an existing Resource Group).
+- `byo_subnets = true` requires `byo_vnet = true` (existing subnets live in an existing VNet).
+
+Incoherent combinations (e.g. `byo_subnets = true` with `byo_vnet = false`) are rejected at plan time by module coherency assertion checks with an actionable error message. The `zsec` interactive wrapper enforces the same hierarchy by only prompting for a child resource once its parent has been selected.
+
+### Cloud Connector Subnet role and order
+
+When `byo_subnets = true`, populate `byo_subnet_names` as an **ordered** `list(string)`. The list is consumed positionally and each entry maps to a Cloud Connector availability zone / instance, in the same order as the `zones` variable:
+
+| `byo_subnet_names` index | Maps to | Role |
+|--------------------------|---------|------|
+| 0 | Cloud Connector zone 1 | Primary management + service (data path) subnet |
+| 1 | Cloud Connector zone 2 | Management + service subnet |
+| 2 | Cloud Connector zone 3 | Management + service subnet |
+
+Notes:
+
+- Provide **one** Cloud Connector subnet per selected zone, in the same order the zones were selected.
+- For `cc_gwlb` deployments, the same Cloud Connector subnet(s) also host the Gateway Load Balancer endpoint; no separate GWLB endpoint subnet is required in this list.
+- For ZPA / Private DNS deployments, the Private DNS Resolver outbound endpoint uses a **separate module-managed subnet** and must **not** be included in `byo_subnet_names`.
+- A maximum of 10 subnets is supported (validated on the `byo_subnet_names` variable).
+
 ## Private DNS Resolver Network Restrictions
 
 <https://learn.microsoft.com/en-us/azure/dns/dns-private-resolver-overview> <br>

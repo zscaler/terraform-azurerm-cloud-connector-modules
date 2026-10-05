@@ -889,7 +889,168 @@ first_run="yes"
             fi
         fi
 
-        #Browfield/BYO Networking Options
+        # Brownfield / BYO Networking Options
+        # Interactive prompts for Bring-Your-Own existing Azure resources.
+        # Applies to every brownfield deployment (cc_lb, cc_gwlb, cc_vmss).
+        # Each block defaults to "no" so customers who want fully
+        # Terraform-managed networking can Enter through them. Values are
+        # exported as TF_VAR_* into .zsecrc and win over the commented-out
+        # defaults in the chosen dtype's terraform.tfvars.
+        #
+        # BYO resources are strictly hierarchical:
+        #   BYO Resource Group  ->  BYO VNet  ->  BYO Subnets
+        # A child prompt is only presented if its parent was answered "yes",
+        # because an existing VNet must live in the provided existing Resource
+        # Group, and existing subnets must live in the provided existing VNet.
+        # The Terraform network module additionally enforces these combinations
+        # with precondition blocks as a defense-in-depth guard.
+        if [[ "$deployment" == "brownfield" ]]; then
+
+            # Track parent answers so child prompts can be skipped when the
+            # parent resource is Terraform-managed (default no).
+            byo_rg_response=no
+            byo_vnet_response=no
+
+            # ---- BYO Resource Group ----
+            byo_rg_default=no
+            while true; do
+                read -r -p "${CYAN}Deploy Cloud Connector into an existing Azure Resource Group? [Default=$byo_rg_default]: ${RESET}" byo_rg_input
+                byo_rg_response=${byo_rg_input:-$byo_rg_default}
+                case $byo_rg_response in
+                yes|y )
+                    byo_rg_response=yes
+                    while true; do
+                        read -r -p "${CYAN}Enter the existing Resource Group name: ${RESET}" byo_rg_name_input
+                        if [[ -z "$byo_rg_name_input" ]]; then
+                            echo "${RED}Resource Group name cannot be empty${RESET}"
+                        elif [[ ! "$byo_rg_name_input" =~ ^[a-zA-Z0-9._()-]+$ ]]; then
+                            echo "${RED}Invalid Resource Group name. Allowed: alphanumeric, dot, underscore, hyphen, parentheses.${RESET}"
+                        else
+                            echo "export TF_VAR_byo_rg=true" >> .zsecrc
+                            echo "export TF_VAR_byo_rg_name=${byo_rg_name_input}" >> .zsecrc
+                            echo "${GREEN}Using existing Resource Group '${byo_rg_name_input}'${RESET}"
+                            break
+                        fi
+                    done
+                    break
+                    ;;
+                no|n )
+                    byo_rg_response=no
+                    break
+                    ;;
+                * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
+                esac
+            done
+
+            # ---- BYO VNet ---- (only offered if BYO Resource Group was chosen)
+            if [[ "$byo_rg_response" == "yes" ]]; then
+                byo_vnet_default=no
+                while true; do
+                    read -r -p "${CYAN}Deploy Cloud Connector into an existing Azure VNet? [Default=$byo_vnet_default]: ${RESET}" byo_vnet_input
+                    byo_vnet_response=${byo_vnet_input:-$byo_vnet_default}
+                    case $byo_vnet_response in
+                    yes|y )
+                        byo_vnet_response=yes
+                        while true; do
+                            read -r -p "${CYAN}Enter the existing VNet name: ${RESET}" byo_vnet_name_input
+                            if [[ -z "$byo_vnet_name_input" ]]; then
+                                echo "${RED}VNet name cannot be empty${RESET}"
+                            elif [[ ! "$byo_vnet_name_input" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+                                echo "${RED}Invalid VNet name. Allowed: alphanumeric, dot, underscore, hyphen.${RESET}"
+                            else
+                                break
+                            fi
+                        done
+                        while true; do
+                            read -r -p "${CYAN}Enter the Resource Group name that contains the VNet: ${RESET}" byo_vnet_rg_input
+                            if [[ -z "$byo_vnet_rg_input" ]]; then
+                                echo "${RED}Resource Group name cannot be empty${RESET}"
+                            elif [[ ! "$byo_vnet_rg_input" =~ ^[a-zA-Z0-9._()-]+$ ]]; then
+                                echo "${RED}Invalid Resource Group name.${RESET}"
+                            else
+                                echo "export TF_VAR_byo_vnet=true" >> .zsecrc
+                                echo "export TF_VAR_byo_vnet_name=${byo_vnet_name_input}" >> .zsecrc
+                                echo "export TF_VAR_byo_vnet_subnets_rg_name=${byo_vnet_rg_input}" >> .zsecrc
+                                echo "${GREEN}Using existing VNet '${byo_vnet_name_input}' in RG '${byo_vnet_rg_input}'${RESET}"
+                                break
+                            fi
+                        done
+                        break
+                        ;;
+                    no|n )
+                        byo_vnet_response=no
+                        break
+                        ;;
+                    * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
+                    esac
+                done
+            else
+                echo "${YELLOW}Skipping BYO VNet prompt (requires an existing Resource Group). Terraform will create the VNet.${RESET}"
+            fi
+
+            # ---- BYO Subnets ---- (only offered if BYO VNet was chosen)
+            if [[ "$byo_vnet_response" == "yes" ]]; then
+                # Subnet role/order matters. Terraform consumes byo_subnet_names as
+                # an ordered list(string) and maps each entry positionally to a
+                # Cloud Connector availability zone / instance:
+                #   index 0 -> CC subnet for zone 1 (primary mgmt + service data path)
+                #   index 1 -> CC subnet for zone 2
+                #   index 2 -> CC subnet for zone 3
+                # For a Gateway Load Balancer (cc_gwlb) deployment the same CC
+                # subnet(s) also host the GWLB endpoint; for ZPA/Private DNS the
+                # private endpoint uses a separate module-managed subnet and is not
+                # part of this list. Provide subnets in the SAME order as the zones
+                # selected above, one CC subnet per zone.
+                byo_subnet_max=10
+                byo_subnets_default=no
+                while true; do
+                    read -r -p "${CYAN}Deploy Cloud Connector into existing subnet(s)? [Default=$byo_subnets_default]: ${RESET}" byo_subnets_input
+                    byo_subnets_response=${byo_subnets_input:-$byo_subnets_default}
+                    case $byo_subnets_response in
+                    yes|y )
+                        echo "${YELLOW}Provide Cloud Connector subnet names in zone order (subnet #1 -> zone 1, #2 -> zone 2, ...). Max ${byo_subnet_max}.${RESET}"
+                        while true; do
+                            read -r -p "${CYAN}How many existing Cloud Connector subnets will you provide? (1-${byo_subnet_max}): ${RESET}" byo_subnet_count_input
+                            if [[ ! "$byo_subnet_count_input" =~ ^[1-9][0-9]*$ ]]; then
+                                echo "${RED}Please enter a positive whole number.${RESET}"
+                            elif (( byo_subnet_count_input > byo_subnet_max )); then
+                                echo "${RED}Too many subnets. Please enter a value between 1 and ${byo_subnet_max}.${RESET}"
+                            else
+                                break
+                            fi
+                        done
+                        byo_subnet_array=()
+                        for i in $(seq $byo_subnet_count_input); do
+                            while true; do
+                                read -r -p "${CYAN}Enter existing subnet name #$i (zone $i): ${RESET}" byo_subnet_name_input
+                                if [[ -z "$byo_subnet_name_input" ]]; then
+                                    echo "${RED}Subnet name cannot be empty${RESET}"
+                                elif [[ ! "$byo_subnet_name_input" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+                                    echo "${RED}Invalid subnet name. Allowed: alphanumeric, dot, underscore, hyphen.${RESET}"
+                                else
+                                    byo_subnet_array+=("\"$byo_subnet_name_input\"")
+                                    break
+                                fi
+                            done
+                        done
+                        byo_subnet_list=$(IFS=,; echo "${byo_subnet_array[*]}")
+                        echo "export TF_VAR_byo_subnets=true" >> .zsecrc
+                        echo "export TF_VAR_byo_subnet_names='[${byo_subnet_list}]'" >> .zsecrc
+                        echo "${GREEN}Using existing subnets (in zone order): [${byo_subnet_list}]${RESET}"
+                        break
+                        ;;
+                    no|n )
+                        break
+                        ;;
+                    * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
+                    esac
+                done
+            else
+                echo "${YELLOW}Skipping BYO Subnets prompt (requires an existing VNet). Terraform will create the subnet(s).${RESET}"
+            fi
+
+        fi
+
         # ZPA Private DNS is only supported by cc_lb — not cc_gwlb
         if [[ "$deployment" == "brownfield" && "$dtype" != "cc_gwlb" ]]; then
             while true; do

@@ -225,3 +225,21 @@ resource "azurerm_subnet_route_table_association" "private_dns_rt_association" {
   subnet_id      = azurerm_subnet.private_dns_subnet[count.index].id
   route_table_id = azurerm_route_table.private_dns_rt[count.index].id
 }
+
+
+################################################################################
+# BYO (Bring-Your-Own) Coherency Assertions
+################################################################################
+# Reject incoherent BYO combinations (byo_subnets -> byo_vnet -> byo_rg) at
+# plan time. Written for the pinned Terraform 1.1.9 (no precondition/check).
+resource "null_resource" "assert_byo_vnet_requires_rg" {
+  count = !(var.byo_vnet && var.byo_rg == false) ? 0 : tonumber("Invalid BYO combination: byo_vnet=true requires byo_rg=true. An existing VNet must reside in an existing (bring-your-own) Resource Group. Set byo_rg=true and provide byo_rg_name, or set byo_vnet=false.")
+}
+
+resource "null_resource" "assert_byo_subnets_requires_vnet" {
+  count = !(var.byo_subnets && var.byo_vnet == false) ? 0 : tonumber("Invalid BYO combination: byo_subnets=true requires byo_vnet=true. Existing subnets must reside in an existing (bring-your-own) VNet. Set byo_vnet=true and provide byo_vnet_name/byo_vnet_subnets_rg_name, or set byo_subnets=false.")
+}
+
+resource "null_resource" "assert_byo_subnet_names_present" {
+  count = !(var.byo_subnets && (var.byo_subnet_names == null ? true : length(var.byo_subnet_names) == 0)) ? 0 : tonumber("Invalid BYO combination: byo_subnets=true requires byo_subnet_names to contain at least one existing subnet name.")
+}

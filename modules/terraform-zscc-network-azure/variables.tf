@@ -153,8 +153,13 @@ variable "byo_subnets" {
 
 variable "byo_subnet_names" {
   type        = list(string)
-  description = "User provided existing Azure subnet name(s). This must be populated if byo_subnets variable is true"
+  description = "User provided existing Azure subnet name(s). This must be populated if byo_subnets variable is true. Order matters: the list is consumed positionally and each entry maps to a Cloud Connector availability zone/instance in the same order as the zones variable (index 0 -> zone 1 mgmt+service subnet, index 1 -> zone 2, index 2 -> zone 3). For cc_gwlb deployments the same CC subnet(s) also host the GWLB endpoint; the ZPA/Private DNS private endpoint uses a separate module-managed subnet and must NOT be included here. Provide one CC subnet per selected zone."
   default     = null
+
+  validation {
+    condition     = var.byo_subnet_names == null ? true : length(var.byo_subnet_names) <= 10
+    error_message = "The byo_subnet_names list supports at most 10 subnets."
+  }
 }
 
 variable "byo_vnet_subnets_rg_name" {
