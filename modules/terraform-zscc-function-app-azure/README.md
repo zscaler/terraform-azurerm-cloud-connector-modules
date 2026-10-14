@@ -4,6 +4,7 @@ This module provides the necessary resource creation and configuration parameter
 
 | Function ZIP Version | SHA256 Hash | GitHub Release Date/Tag |
 | ----------- | --------| ------------ |
+| 1.0.4 | 5e4fcd825b27a2fe16a23d8db52191e6ce255975b0a34d2c993316a0d7dee36f | 09/16/2026 - unreleased |
 | 1.0.3 | 8cbe698b57164c757f80e93961867408bb9d172185a246833b9b78e86f671361 | 06/12/2026 - [v0.8.1](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/releases/tag/v0.8.1) |
 | 1.0.2 | 8439872aac693b1d472ea0565b76585e2ac617e4323f3b6bc15dda7f15600171 | 07/11/2025 - [v0.8.0](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/releases/tag/v0.8.0) |
 | 1.0.1 | aed981cf32c7cf62623f3195b8e1315afb570b43d451a0ba0e782e4ba0d828dd | 12/06/2024 - [v0.6.2](https://github.com/zscaler/terraform-azurerm-cloud-connector-modules/releases/tag/v0.6.2) |

@@ -53,6 +53,18 @@ override.tf.json
 
 examples/base_cc_vmss/terraform.tfvars.sample
 modules/terraform-zscc-ccvmss-azure/zscaler_cc_function_app_*
+
+# Contents of modules/terraform-zscc-function-app-azure/zscaler_cc_function_app.zip.
+# The function app sources and its vendored dependencies ship inside that zip and are not
+# tracked separately, so anything extracted from it locally is a build artifact. Without these
+# rules a `git add -A` after unzipping stages ~3550 files / 194MB of vendored packages.
+# Use `git add -f` if a file here ever genuinely needs to be tracked.
+modules/terraform-zscc-function-app-azure/.python_packages/
+modules/terraform-zscc-function-app-azure/lib/
+modules/terraform-zscc-function-app-azure/*.py
+modules/terraform-zscc-function-app-azure/host.json
+modules/terraform-zscc-function-app-azure/requirements.txt
+modules/terraform-zscc-function-app-azure/ReleaseNotes.md
 scripts/exitstatus
 scripts/stderr
 scripts/stdout

@@ -730,9 +730,9 @@ first_run="yes"
                 ;;
                 no|n )
                     read -r -p "${CYAN}Enter Function App designated Managed Identity Name: ${RESET}" function_app_managed_identity_name 
-                    echo "export TF_VAR_function_app_managed_identity_name=${cc_vm_managed_identity_name}" >> .zsecrc
+                    echo "export TF_VAR_function_app_managed_identity_name=${function_app_managed_identity_name}" >> .zsecrc
                     read -r -p "${CYAN}Enter Function App designated Managed Identity Resource Group: ${RESET}" function_app_managed_identity_rg
-                    echo "export TF_VAR_function_app_managed_identity_rg=${cc_vm_managed_identity_rg}" >> .zsecrc
+                    echo "export TF_VAR_function_app_managed_identity_rg=${function_app_managed_identity_rg}" >> .zsecrc
                 break
                 ;;
                 * ) echo "${RED}Invalid response. Please enter yes or no${RESET}";;
