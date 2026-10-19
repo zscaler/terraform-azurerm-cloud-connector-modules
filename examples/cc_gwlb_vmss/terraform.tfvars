@@ -30,10 +30,15 @@
 
 
 #####################################################################################################################
-##### Prerequisite Provisioned Managed Identity Resource and Resource Group  #####
-##### Managed Identity should have GET/LIST access to Key Vault Secrets and  #####
-##### Network Contributor Role Assignment to Subscription or RG where Cloud  #####
-##### Connectors will be provisioned prior to terraform deployment.          #####
+##### Prerequisite Provisioned Managed Identity Resource and Resource Group                                     #####
+##### The Managed Identity should have GET/LIST access to Key Vault Secrets AND a least-privilege Custom Role   #####
+##### that grants ONLY the permission Microsoft.Network/networkInterfaces/read, assigned at Resource Group      #####
+##### scope (the RG where the Cloud Connector VMs will be deployed).                                            #####
+##### Do NOT use the built-in Network Contributor role at Subscription scope. It grants write access to every   #####
+##### NIC, NSG, route table, load balancer, and VNet peering across the entire subscription, far beyond what    #####
+##### Cloud Connector requires at runtime. If a Custom Role cannot be created in your environment, Network      #####
+##### Contributor scoped to the single Cloud Connector Resource Group is an acceptable (over-privileged)        #####
+##### fallback.                                                                                                 #####
 #####################################################################################################################
 
 ## 5. Managed Identity subscription ID — only set if different from env_subscription_id
