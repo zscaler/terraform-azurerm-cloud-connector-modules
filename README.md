@@ -35,6 +35,8 @@ Our Deployment scripts are leveraging Terraform v1.1.9 which includes full binar
     - Client Secret Value
 3. Azure Region (e.g. westus2) where Cloud Connector resources are to be deployed
 4. User-created Azure Managed Identity. Role Assignment: Network Contributor (If using a Custom Role, the minimum requirement is: Microsoft. Network/networkInterfaces/read) Scope: Subscription or Resource Group (where Cloud Connector VMs will be deployed)
+
+    > **VMSS deployments (`vmss_enabled = true`) — TF-AZ-09:** create a **second, separate** User-Assigned Managed Identity for the Function App autoscaler. Do **NOT** reuse the CC VM identity. The Function App requires `Microsoft.Compute/virtualMachineScaleSets/write` + `delete/action` (to add and remove CC instances) and `Key Vault Secrets User` (to read Zscaler provisioning secrets) — permissions Cloud Connector VMs themselves do not need. Sharing one identity means a compromised CC VM inherits the autoscaler's ability to delete sibling CCs and read all vault secrets. Set `function_app_managed_identity_name` and `function_app_managed_identity_rg` in your `terraform.tfvars` accordingly; Terraform plan will fail with a TF-AZ-09 error if empty or equal to the CC identity.
 5. Azure Vault URL with Zscaler Cloud Connector Credentials (E.g. [https://zscaler-cc-demo.vault.azure.net](https://zscaler-cc-demo.vault.azure.net/)) Add an access policy to the above Key Vault as below
     - Secret Permissions: Get, List
     - Select Principal: The Managed Identity created in the above step
