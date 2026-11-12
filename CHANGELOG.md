@@ -16,7 +16,7 @@ FEATURES:
 
 ENHANCEMENTS:
 * add new `fips_enabled` variable for enabling FIPS mode via userdata
-* bump `hashicorp/azurerm` provider constraint to `>= 3.108.0, < 5.0.0` across examples and modules
+* bump `hashicorp/azurerm` provider constraint to `>= 4.9.0, < 5.0.0` across examples and modules
 * add: Azure D-v5 VM/VMSS sizes `Standard_D2ds_v5` and `Standard_D2ads_v5` (adds an AMD-based option) added **additively** — legacy `Standard_D2s_v3`, `Standard_DS2_v2`, and `Standard_DS3_v2` remain in the allow-list to preserve compatibility with Azure China (Mooncake) regions where the v5 SKUs are not universally available. VM/VMSS source module and example wrapper defaults for `ccvm_instance_type` are `Standard_D2ds_v5` across all clouds; users in China regions must explicitly override `ccvm_instance_type` per-region (see each example's `terraform.tfvars` sample block). d8/d16-family and D2ds_v4 remain removed.
 * update: zsec VM size menu is now region-aware — for `chinanorth`/`chinaeast` (v1) it offers `Standard_DS2_v2`; for `chinanorth2`/`chinaeast2` it offers `Standard_D2ds_v5`, `Standard_DS3_v2`, `Standard_DS2_v2`; for `chinanorth3`/`chinaeast3` it offers `Standard_D2ds_v5`, `Standard_D2ads_v5`, `Standard_DS3_v2`, `Standard_DS2_v2`; every other Azure cloud (public) offers `Standard_D2ds_v5` and `Standard_D2ads_v5`.
 * refactor: zsec portability fixes — eliminate BSD sed artifacts so the wrapper script works consistently on macOS and Linux
