@@ -73,6 +73,8 @@
 #ccvm_instance_type                         = "Standard_DS3_v2"
 #ccvm_instance_type                         = "Standard_D2ds_v5"
 #ccvm_instance_type                         = "Standard_D2ads_v5"
+#ccvm_instance_type                         = "Standard_D2ds_v6"
+#ccvm_instance_type                         = "Standard_D2ads_v6"
 
 ## 11. The number of Cloud Connector appliances to provision. Each incremental Cloud Connector will be created in alternating 
 ##    subnets based on the zones or byo_subnet_names variable and loop through for any deployments where cc_count > zones.

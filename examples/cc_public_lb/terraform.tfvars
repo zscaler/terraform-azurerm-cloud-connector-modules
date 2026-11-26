@@ -17,6 +17,8 @@
 #ccvm_instance_type           = "Standard_DS3_v2"
 #ccvm_instance_type           = "Standard_D2ds_v5"
 #ccvm_instance_type           = "Standard_D2ads_v5"
+#ccvm_instance_type           = "Standard_D2ds_v6"
+#ccvm_instance_type           = "Standard_D2ads_v6"
 #http_probe_port              = 50000
 #zones_enabled                = false
 #zones                        = ["1"]
